@@ -25,7 +25,6 @@ class MinterContract(sp.Contract):
         # Implicitly (1 - <dev fund split>) is given to the stability fund.
         devFundSplit = sp.nat(100000000000000000), # 10%
         liquidationFeePercent = sp.nat(80000000000000000),  # 8%
-        ovenMax = sp.some(sp.tez(100))
     ):
         self.exception_optimization_level = "DefaultUnit"
         self.add_flag("no_comment")
@@ -39,7 +38,6 @@ class MinterContract(sp.Contract):
             stabilityFundContractAddress = stabilityFundContractAddress,
             liquidationFeePercent = liquidationFeePercent,
             devFundSplit = devFundSplit,
-            ovenMax = ovenMax,
  
             # Interest Calculations
             interestIndex = interestIndex,
@@ -213,10 +211,6 @@ class MinterContract(sp.Contract):
         # Verify the sender is a oven.
         sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
 
-        # Verify the balance did not exceed the threshold.
-        sp.if self.data.ovenMax.is_some():
-            sp.verify(sp.balance <= self.data.ovenMax.open_some(), Errors.OVEN_MAXIMUM_EXCEEDED)
-
         # Destructure input params.        
         ovenAddress,           pair1 = sp.match_pair(param)
         ownerAddress,          pair2 = sp.match_pair(pair1)
@@ -387,6 +381,7 @@ class MinterContract(sp.Contract):
     # size.
     ################################################################
 
+    # NOTE: `ovenMax` is deprecated and has no effect. This parameter will be removed in a future update.
     # Params: (stabilityFee, (liquidationFeePercent, (collateralizationPercentage, ovenMax)))
     @sp.entry_point
     def updateParams(self, newParams):
@@ -404,12 +399,11 @@ class MinterContract(sp.Contract):
         # Update to new parameters.
         newStabilityFee, pair1                     = sp.match_pair(newParams)
         newLiquidationFeePercent, pair2            = sp.match_pair(pair1)
-        newCollateralizationPercentage, newOvenMax = sp.match_pair(pair2)
+        newCollateralizationPercentage             = sp.fst(pair2)
 
         self.data.stabilityFee                = newStabilityFee
         self.data.liquidationFeePercent       = newLiquidationFeePercent
         self.data.collateralizationPercentage = newCollateralizationPercentage
-        self.data.ovenMax                     = newOvenMax
 
     # DEPRECATED: Please use setXXXContract entrypoints instead. This entrypoint will be removed in a future update.
     # Params: (governor (token, (ovenProxy, (stabilityFund, devFund))))
@@ -2214,7 +2208,6 @@ if __name__ == "__main__":
         # AND an Minter contract with no oven max.
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxy.address,
-            ovenMax = sp.none
         )
         scenario += minter
 
@@ -2255,53 +2248,6 @@ if __name__ == "__main__":
 
         # AND the mutez balance is sent to the oven proxy
         scenario.verify(ovenProxy.balance == balance)
-
-    @sp.add_test(name="deposit - fails if over oven max")
-    def test():
-        scenario = sp.test_scenario()
-
-        # GIVEN an OvenProxy
-        ovenProxy = MockOvenProxy.MockOvenProxyContract()
-        scenario += ovenProxy
-
-        # AND an Minter contract with an oven maximum
-        ovenMax = sp.tez(100)
-        minter = MinterContract(
-            ovenProxyContractAddress = ovenProxy.address,
-            ovenMax = sp.some(ovenMax)
-        )
-        scenario += minter
-
-        # WHEN deposit is called with an amount greater than the maximum
-        ovenAddress = Addresses.OVEN_ADDRESS
-        ownerAddress = Addresses.OVEN_OWNER_ADDRESS
-        balance = ovenMax + sp.mutez(1) # 100.000001 XTZ
-        balanceNat = sp.nat(100000001000000000000) # 100.000001 XTZ
-        borrowedTokens = sp.nat(2)
-        stabilityFeeTokens = sp.int(0)
-        interestIndex = sp.int(1000000000000000000)
-        param = (
-            ovenAddress, (
-                ownerAddress, (
-                    balanceNat, (
-                        borrowedTokens, (
-                            False, (
-                                stabilityFeeTokens,
-                                interestIndex
-                            )
-                        )
-                    )
-                )
-            )
-        )
-
-        # THEN the call fails.
-        scenario += minter.deposit(param).run(
-            amount = balance,
-            sender = ovenProxy.address,
-            now = sp.timestamp_from_utc_now(),
-            valid = False
-        )
 
     @sp.add_test(name="deposit - fails when oven is liquidated")
     def test():
@@ -2708,8 +2654,7 @@ if __name__ == "__main__":
         newStabilityFee = sp.nat(1)
         newLiquidationFeePercent = sp.nat(2)
         newCollateralizationPercentage = sp.nat(3)
-        newOvenMax = sp.some(sp.tez(4))
-        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, newOvenMax)))
+        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, sp.none)))
         now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)    
         scenario += minter.updateParams(newParams).run(
             sender = governorAddress,
@@ -2735,8 +2680,7 @@ if __name__ == "__main__":
         newStabilityFee = sp.nat(1)
         newLiquidationFeePercent = sp.nat(2)
         newCollateralizationPercentage = sp.nat(3)
-        newOvenMax = sp.some(sp.tez(123))
-        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, newOvenMax)))
+        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, sp.none)))
         scenario += minter.updateParams(newParams).run(
             sender = governorAddress,
             now = sp.timestamp_from_utc_now(),
@@ -2746,7 +2690,6 @@ if __name__ == "__main__":
         scenario.verify(minter.data.stabilityFee == newStabilityFee)
         scenario.verify(minter.data.liquidationFeePercent == newLiquidationFeePercent)
         scenario.verify(minter.data.collateralizationPercentage == newCollateralizationPercentage)
-        scenario.verify(minter.data.ovenMax.open_some() == newOvenMax.open_some())
 
     @sp.add_test(name="updateParams - fails if not called by governor")
     def test():
@@ -2763,8 +2706,7 @@ if __name__ == "__main__":
         newStabilityFee = sp.nat(1)
         newLiquidationFeePercent = sp.nat(2)
         newCollateralizationPercentage = sp.nat(3)
-        newOvenMax = sp.some(sp.tez(123))
-        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, newOvenMax)))
+        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, sp.none)))
         notGovernor = Addresses.NULL_ADDRESS
         scenario += minter.updateParams(newParams).run(
             sender = notGovernor,
