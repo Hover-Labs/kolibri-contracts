@@ -411,6 +411,7 @@ class MinterContract(sp.Contract):
         self.data.collateralizationPercentage = newCollateralizationPercentage
         self.data.ovenMax                     = newOvenMax
 
+    # DEPRECATED: Please use setXXXContract entrypoints instead. This entrypoint will be removed in a future update.
     # Params: (governor (token, (ovenProxy, (stabilityFund, devFund))))
     @sp.entry_point
     def updateContracts(self, newParams):
@@ -428,6 +429,31 @@ class MinterContract(sp.Contract):
         self.data.ovenProxyContractAddress     = newOvenProxyContractAddress       
         self.data.stabilityFundContractAddress = newStabilityFundContractAddress
         self.data.developerFundContractAddress = newDeveloperFundContractAddress
+
+    @sp.entry_point   
+    def setGovernorContract(self, newGovernorContract):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.governorContractAddress = newGovernorContract
+
+    @sp.entry_point
+    def setTokenContract(self, newTokenContract):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.tokenContractAddress = newTokenContract
+
+    @sp.entry_point
+    def setOvenProxyContract(self, newOvenProxyContract):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.ovenProxyContractAddress = newOvenProxyContract       
+
+    @sp.entry_point
+    def setStabilityFundContract(self, newStabilityFund):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.stabilityFundContractAddress = newStabilityFund
+        
+    @sp.entry_point
+    def setDeveloperFundContract(self, newDeveloperFund):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.developerFundContractAddress = newDeveloperFund        
 
     # Update the splits between the funds
     @sp.entry_point
@@ -2432,6 +2458,234 @@ if __name__ == "__main__":
             valid = False
         )
 
+    ################################################################
+    # setGovernorContract
+    ################################################################
+    
+    @sp.add_test(name="setGovernorContract - updates governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress
+        )
+        scenario += minter
+
+        # WHEN setGovernorContract is called by the governor
+        newGovernorContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setGovernorContract(newGovernorContractAddress).run(
+            sender = governorAddress,
+        )
+
+        # THEN the governor is updated.
+        scenario.verify(minter.data.governorContractAddress == newGovernorContractAddress)
+
+    @sp.add_test(name="setGovernorContract - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress
+        )
+        scenario += minter
+
+        # WHEN setGovernorContract is called by someone other than the governor
+        # THEN the request fails
+        newGovernorContractAddress = Addresses.ROTATED_ADDRESS
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += minter.setGovernorContract(newGovernorContractAddress).run(
+            sender = notGovernor,
+            valid = False
+        )
+
+    ################################################################
+    # setTokenContract
+    ################################################################
+    
+    @sp.add_test(name="setTokenContract - updates token")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        tokenContractAddress = Addresses.TOKEN_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+            tokenContractAddress = tokenContractAddress
+        )
+        scenario += minter
+
+        # WHEN setTokenContract is called by the governor
+        newTokenContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setTokenContract(newTokenContractAddress).run(
+            sender = Addresses.GOVERNOR_ADDRESS,
+        )
+
+        # THEN the token contract is updated.
+        scenario.verify(minter.data.tokenContractAddress == newTokenContractAddress)
+
+    @sp.add_test(name="setTokenContract - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        tokenContractAddress = Addresses.TOKEN_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+            tokenContractAddress = tokenContractAddress
+        )
+        scenario += minter
+
+        # WHEN setTokenContract is called by someone other than the governor
+        # THEN the request fails
+        newTokenContractAddress = Addresses.ROTATED_ADDRESS
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += minter.setTokenContract(newTokenContractAddress).run(
+            sender = notGovernor,
+            valid = False
+        )
+
+    ################################################################
+    # setOvenProxyContract
+    ################################################################
+    
+    @sp.add_test(name="setOvenProxyContract - updates oven proxy")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        ovenProxyAddress = Addresses.OVEN_PROXY_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+            ovenProxyContractAddress = ovenProxyAddress
+        )
+        scenario += minter
+
+        # WHEN setOvenProxyContract is called by the governor
+        newOvenProxyContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setOvenProxyContract(newOvenProxyContractAddress).run(
+            sender = Addresses.GOVERNOR_ADDRESS,
+        )
+
+        # THEN the oven proxy contract is updated.
+        scenario.verify(minter.data.ovenProxyContractAddress == newOvenProxyContractAddress)
+
+    @sp.add_test(name="setOvenProxyContract - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        ovenProxyAddress = Addresses.OVEN_PROXY_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+            ovenProxyContractAddress = ovenProxyAddress
+        )
+        scenario += minter
+
+        # WHEN setOvenProxyContract is called by someone other than the governor
+        # THEN the request fails
+        newOvenProxyContractAddress = Addresses.ROTATED_ADDRESS
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += minter.setOvenProxyContract(newOvenProxyContractAddress).run(
+            sender = notGovernor,
+            valid = False
+        )        
+
+    ################################################################
+    # setStabilityFundContract
+    ################################################################
+    
+    @sp.add_test(name="setStabilityFundContract - updates stability fund")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+            stabilityFundContractAddress = stabilityFundContractAddress
+        )
+        scenario += minter
+
+        # WHEN setStabilityFundContract is called by the governor
+        newStabilityFundAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setStabilityFundContract(newStabilityFundAddress).run(
+            sender = Addresses.GOVERNOR_ADDRESS,
+        )
+
+        # THEN the stability fund contract is updated.
+        scenario.verify(minter.data.stabilityFundContractAddress == newStabilityFundAddress)
+
+    @sp.add_test(name="setStabilityFundContract - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+            stabilityFundContractAddress = stabilityFundContractAddress
+        )
+        scenario += minter
+
+        # WHEN setStabilityFundContract is called by someone other than the governor
+        # THEN the request fails
+        newStabilityFundAddress = Addresses.ROTATED_ADDRESS
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += minter.setStabilityFundContract(newStabilityFundAddress).run(
+            sender = notGovernor,
+            valid = False
+        ) 
+
+    ################################################################
+    # setDeveloperFundContract
+    ################################################################
+    
+    @sp.add_test(name="setDeveloperFundContract - updates developer fund")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        developerFundContractAddress = Addresses.DEVELOPER_FUND_ADDRESS
+        minter = MinterContract(
+            developerFundContractAddress = developerFundContractAddress,
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        )
+        scenario += minter
+
+        # WHEN setDeveloperFundContract is called by the governor
+        newDeveloperFundAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setDeveloperFundContract(newDeveloperFundAddress).run(
+            sender = Addresses.GOVERNOR_ADDRESS,
+        )
+
+        # THEN the developer fund contract is updated.
+        scenario.verify(minter.data.developerFundContractAddress == newDeveloperFundAddress)
+
+    @sp.add_test(name="setDeveloperFundContract - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        developerFundContractAddress = Addresses.DEVELOPER_FUND_ADDRESS
+        minter = MinterContract(
+            developerFundContractAddress = developerFundContractAddress,
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        )
+        scenario += minter
+
+        # WHEN setDeveloperFundContract is called by someone other than the governor
+        # THEN the request fails
+        newDeveloperFundAddress = Addresses.ROTATED_ADDRESS
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += minter.setDeveloperFundContract(newDeveloperFundAddress).run(
+            sender = notGovernor,
+            valid = False
+        )         
+   
     ################################################################
     # updateParams
     ################################################################
