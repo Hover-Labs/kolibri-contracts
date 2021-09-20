@@ -78,3 +78,6 @@ TOKEN_UNSAFE_ALLOWANCE_CHANGE = 23
 
 # The operation was not performed by the token administrator.
 TOKEN_NOT_ADMINISTRATOR = 24
+
+# The splits given did not sum to one.
+BAD_SPLITS = 25
