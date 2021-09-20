@@ -21,7 +21,9 @@ class MinterContract(sp.Contract):
         stabilityFee = sp.nat(0),
         lastInterestIndexUpdateTime = sp.timestamp(1601871456),
         interestIndex = 1000000000000000000,
-        stabilityDevFundSplit = sp.nat(100000000000000000), # 10%
+        # The amount of interest given to the dev fund.
+        # Implicitly (1 - <dev fund split>) is given to the stability fund.
+        devFundSplit = sp.nat(100000000000000000), # 10%
         liquidationFeePercent = sp.nat(80000000000000000),  # 8%
         ovenMax = sp.some(sp.tez(100))
     ):
@@ -36,7 +38,7 @@ class MinterContract(sp.Contract):
             developerFundContractAddress = developerFundContractAddress,
             stabilityFundContractAddress = stabilityFundContractAddress,
             liquidationFeePercent = liquidationFeePercent,
-            stabilityDevFundSplit = stabilityDevFundSplit,
+            devFundSplit = devFundSplit,
             ovenMax = ovenMax,
  
             # Interest Calculations
@@ -427,6 +429,22 @@ class MinterContract(sp.Contract):
         self.data.stabilityFundContractAddress = newStabilityFundContractAddress
         self.data.developerFundContractAddress = newDeveloperFundContractAddress
 
+    # Update the splits between the funds
+    @sp.entry_point
+    def updateFundSplits(self, newSplits):
+        sp.set_type(newSplits, sp.TRecord(
+            developerFundSplit = sp.TNat,
+            stabilityFundSplit = sp.TNat,
+        ).layout(("developerFundSplit", "stabilityFundSplit")))
+
+        # Verify splits sum to 1.0
+        sp.verify((newSplits.developerFundSplit + newSplits.stabilityFundSplit) == Constants.PRECISION, Errors.BAD_SPLITS)
+
+        # Verify sender is the governor
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+
+        self.data.devFundSplit = newSplits.developerFundSplit
+     
     ################################################################
     # Helpers
     ################################################################
@@ -439,7 +457,7 @@ class MinterContract(sp.Contract):
         sp.set_type(tokensToMint, sp.TNat)
 
         # Determine proportion of tokens minted to dev fund.
-        tokensForDevFund = (tokensToMint * self.data.stabilityDevFundSplit) // Constants.PRECISION
+        tokensForDevFund = (tokensToMint * self.data.devFundSplit) // Constants.PRECISION
         tokensForStabilityFund = sp.as_nat(tokensToMint - tokensForDevFund)
 
         # Mint tokens
@@ -661,7 +679,7 @@ if __name__ == "__main__":
 
         # AND a Minter contract
         liquidationFeePercent = sp.nat(80000000000000000) # 8%
-        stabilityDevFundSplit = sp.nat(100000000000000000) # 10%
+        devFundSplit = sp.nat(100000000000000000) # 10%
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
@@ -739,7 +757,7 @@ if __name__ == "__main__":
 
         # AND the stability and dev funds receive a split of the liquidation fee and stability tokens
         tokensReclaimedForFunds = liquidationFee + stabilityFeeTokens + expectedNewlyAccruedStabilityFees
-        expectedDevFundTokens = (tokensReclaimedForFunds * stabilityDevFundSplit) // Constants.PRECISION
+        expectedDevFundTokens = (tokensReclaimedForFunds * devFundSplit) // Constants.PRECISION
         expectedStabilityFundTokens = sp.as_nat(tokensReclaimedForFunds - expectedDevFundTokens)
 
         # AND the oven is marked as liquidated with values cleared correctly.
@@ -770,7 +788,7 @@ if __name__ == "__main__":
 
         # AND a Minter contract
         liquidationFeePercent = sp.nat(80000000000000000) # 8%
-        stabilityDevFundSplit = sp.nat(100000000000000000) # 10%
+        devFundSplit = sp.nat(100000000000000000) # 10%
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
@@ -831,7 +849,7 @@ if __name__ == "__main__":
 
         # AND the stability and dev funds receive a split of the liquidation fee and stability tokens
         tokensReclaimedForFunds = liquidationFee + stabilityFeeTokens
-        expectedDevFundTokens = (tokensReclaimedForFunds * stabilityDevFundSplit) // Constants.PRECISION
+        expectedDevFundTokens = (tokensReclaimedForFunds * devFundSplit) // Constants.PRECISION
         expectedStabilityFundTokens = sp.as_nat(tokensReclaimedForFunds - expectedDevFundTokens)
 
         # AND the oven is marked as liquidated with values cleared correctly.
@@ -1101,7 +1119,7 @@ if __name__ == "__main__":
         scenario += stabilityFund
 
         # AND a Minter contract
-        stabilityDevFundSplit = sp.nat(250000000000000000) # 25%
+        devFundSplit = sp.nat(250000000000000000) # 25%
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxy.address,
             governorContractAddress = governorAddress,
@@ -1109,7 +1127,7 @@ if __name__ == "__main__":
             stabilityFundContractAddress = stabilityFund.address,
             developerFundContractAddress = developerFund.address,
             stabilityFee = sp.nat(0),
-            stabilityDevFundSplit = stabilityDevFundSplit
+            devFundSplit = devFundSplit
         )
         scenario += minter
 
@@ -1152,7 +1170,7 @@ if __name__ == "__main__":
         scenario.verify(token.data.balances[ovenOwner].balance == sp.as_nat(ovenOwnerTokens - tokensToRepay))
 
         # AND the stability fund and dev fund received the proportion of tokens from the stability fees paid.
-        expectedDeveloperFundBalance = (sp.as_nat(stabilityFeeTokens) * stabilityDevFundSplit) // Constants.PRECISION    
+        expectedDeveloperFundBalance = (sp.as_nat(stabilityFeeTokens) * devFundSplit) // Constants.PRECISION    
         scenario.verify(token.data.balances[developerFund.address].balance == expectedDeveloperFundBalance)
         scenario.verify(token.data.balances[stabilityFund.address].balance == sp.as_nat(sp.as_nat(stabilityFeeTokens) - expectedDeveloperFundBalance))
 
@@ -1198,7 +1216,7 @@ if __name__ == "__main__":
         scenario += stabilityFund
 
         # AND a Minter contract
-        stabilityDevFundSplit = sp.nat(250000000000000000) # 25%
+        devFundSplit = sp.nat(250000000000000000) # 25%
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxy.address,
             governorContractAddress = governorAddress,
@@ -1206,7 +1224,7 @@ if __name__ == "__main__":
             stabilityFundContractAddress = stabilityFund.address,
             developerFundContractAddress = developerFund.address,
             stabilityFee = sp.nat(0),
-            stabilityDevFundSplit = stabilityDevFundSplit
+            devFundSplit = devFundSplit
         )
         scenario += minter
 
@@ -1247,7 +1265,7 @@ if __name__ == "__main__":
         scenario.verify(token.data.balances[ovenOwner].balance == sp.as_nat(ovenOwnerTokens - tokensToRepay))
 
         # AND the stability fund and dev fund received the proportion of tokens from the stability fees paid.
-        expectedDeveloperFundBalance = (tokensToRepay * stabilityDevFundSplit) // Constants.PRECISION    
+        expectedDeveloperFundBalance = (tokensToRepay * devFundSplit) // Constants.PRECISION    
         scenario.verify(token.data.balances[developerFund.address].balance == expectedDeveloperFundBalance)
         scenario.verify(token.data.balances[stabilityFund.address].balance == sp.as_nat(tokensToRepay - expectedDeveloperFundBalance))
 
@@ -2497,5 +2515,82 @@ if __name__ == "__main__":
         scenario += minter.updateParams(newParams).run(
             sender = notGovernor,
             now = sp.timestamp_from_utc_now(),
+            valid = False
+        )
+
+    ################################################################
+    # updateFundSplits
+    ################################################################
+
+    @sp.add_test(name="updateFundSplits - updates the fund splits")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract with a devFundSplit
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            devFundSplit = 100000000000000000,
+        )
+        scenario += minter
+
+        # WHEN updateFundSplits is called by the governor
+        newDevFundSplit = 200000000000000000
+        newStabilityFundSplit = sp.as_nat(Constants.PRECISION - newDevFundSplit)
+        newSplits = sp.record(
+            developerFundSplit = newDevFundSplit, 
+            stabilityFundSplit = newStabilityFundSplit
+        )
+        scenario += minter.updateFundSplits(newSplits).run(
+            sender = governorAddress,
+        )
+
+        # THEN the splits are updated
+        scenario.verify(minter.data.devFundSplit == newDevFundSplit)
+
+    @sp.add_test(name="updateFundSplits - fails if splits do not sum to one")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract with a devFundSplit
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            devFundSplit = 100000000000000000,
+        )
+        scenario += minter
+
+        # WHEN updateFundSplits is called by the governor with splits that do not add to 1.0
+        # THEN the update fails
+        newDevFundSplit = 200000000000000000
+        newStabilityFundSplit = sp.as_nat(Constants.PRECISION - newDevFundSplit - 1)
+        newSplits = sp.record(
+            developerFundSplit = newDevFundSplit, 
+            stabilityFundSplit = newStabilityFundSplit
+        )
+        scenario += minter.updateFundSplits(newSplits).run(
+            sender = governorAddress,
+            valid = False
+        )
+
+    @sp.add_test(name="updateFundSplits - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract with a devFundSplit
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            devFundSplit = 100000000000000000,
+        )
+        scenario += minter
+
+        # WHEN updateFundSplits is called by someone other than the governor
+        # THEN the call fails
+        newDevFundSplit = 200000000000000000
+        newStabilityFundSplit = sp.as_nat(Constants.PRECISION - newDevFundSplit)
+        newSplits = sp.record(
+            developerFundSplit = newDevFundSplit, 
+            stabilityFundSplit = newStabilityFundSplit
+        )
+        scenario += minter.updateFundSplits(newSplits).run(
+            sender = Addresses.NULL_ADDRESS,
             valid = False
         )
