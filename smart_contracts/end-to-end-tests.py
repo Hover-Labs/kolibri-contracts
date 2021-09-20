@@ -29,14 +29,14 @@ def test():
   scenario += fakeHarbinger
 
   # AND a universe of Stablecoin contracts
-  stabilityDevFundSplit = sp.nat(100000000000000000) # 10%
+  devFundSplit = sp.nat(100000000000000000) # 10%
   liquidationFeePercent = sp.nat(100000000000000000) # 10%
   developerFund = DevFund.DevFundContract()
   stabilityFund = StabilityFund.StabilityFundContract()
   minter = Minter.MinterContract(
     collateralizationPercentage = sp.nat(200000000000000000000), # 200%
     lastInterestIndexUpdateTime = currentTime,
-    stabilityDevFundSplit = stabilityDevFundSplit,
+    devFundSplit = devFundSplit,
     liquidationFeePercent = liquidationFeePercent
   )
   oracle = Oracle.OracleContract(harbingerContractAddress = fakeHarbinger.address)
@@ -102,14 +102,14 @@ def test():
   scenario += fakeHarbinger
 
   # AND a universe of Stablecoin contracts
-  stabilityDevFundSplit = sp.nat(100000000000000000) # 10%
+  devFundSplit = sp.nat(100000000000000000) # 10%
   liquidationFeePercent = sp.nat(100000000000000000) # 10%
   developerFund = DevFund.DevFundContract()
   stabilityFund = StabilityFund.StabilityFundContract()
   minter = Minter.MinterContract(
     collateralizationPercentage = sp.nat(200000000000000000000), # 200%
     lastInterestIndexUpdateTime = currentTime,
-    stabilityDevFundSplit = stabilityDevFundSplit,
+    devFundSplit = devFundSplit,
     liquidationFeePercent = liquidationFeePercent
   )
   oracle = Oracle.OracleContract(harbingerContractAddress = fakeHarbinger.address)
@@ -184,14 +184,14 @@ def test():
   scenario += fakeHarbinger
 
   # AND a universe of Stablecoin contracts
-  stabilityDevFundSplit = sp.nat(100000000000000000) # 10%
+  devFundSplit = sp.nat(100000000000000000) # 10%
   liquidationFeePercent = sp.nat(100000000000000000) # 10%
   developerFund = DevFund.DevFundContract()
   stabilityFund = StabilityFund.StabilityFundContract()
   minter = Minter.MinterContract(
     collateralizationPercentage = sp.nat(200000000000000000000), # 200%
     lastInterestIndexUpdateTime = currentTime,
-    stabilityDevFundSplit = stabilityDevFundSplit,
+    devFundSplit = devFundSplit,
     liquidationFeePercent = liquidationFeePercent
   )
   oracle = Oracle.OracleContract(harbingerContractAddress = fakeHarbinger.address)
@@ -286,14 +286,14 @@ def test():
   scenario += fakeHarbinger
 
   # AND a universe of Stablecoin contracts
-  stabilityDevFundSplit = sp.nat(100000000000000000) # 10%
+  devFundSplit = sp.nat(100000000000000000) # 10%
   liquidationFeePercent = sp.nat(100000000000000000) # 10%
   developerFund = DevFund.DevFundContract()
   stabilityFund = StabilityFund.StabilityFundContract()
   minter = Minter.MinterContract(
     collateralizationPercentage = sp.nat(200000000000000000000), # 200%
     lastInterestIndexUpdateTime = currentTime,
-    stabilityDevFundSplit = stabilityDevFundSplit,
+    devFundSplit = devFundSplit,
     liquidationFeePercent = liquidationFeePercent
   )
   oracle = Oracle.OracleContract(harbingerContractAddress = fakeHarbinger.address)
@@ -394,7 +394,7 @@ def test():
   scenario += fakeHarbinger
 
   # AND a universe of Stablecoin contracts
-  stabilityDevFundSplit = sp.nat(100000000000000000) # 10%
+  devFundSplit = sp.nat(100000000000000000) # 10%
   liquidationFeePercent = sp.nat(100000000000000000) # 10%
   administrator = Dummy.DummyContract()
   developerFund = DevFund.DevFundContract(
@@ -406,7 +406,7 @@ def test():
   minter = Minter.MinterContract(
     collateralizationPercentage = sp.nat(200000000000000000000), # 200%
     lastInterestIndexUpdateTime = currentTime,
-    stabilityDevFundSplit = stabilityDevFundSplit,
+    devFundSplit = devFundSplit,
     liquidationFeePercent = liquidationFeePercent
   )
   oracle = Oracle.OracleContract(harbingerContractAddress = fakeHarbinger.address)
