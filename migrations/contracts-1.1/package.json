@@ -1,0 +1,20 @@
+{
+  "name": "contracts-1.1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hover-labs/kolibri-js": "^1.13.4",
+    "@tacoinfra/harbinger-lib": "^1.7.1",
+    "@taquito/signer": "^10.1.2",
+    "@taquito/taquito": "^10.1.2",
+    "@types/node": "^16.9.2",
+    "bignumber.js": "^9.0.1"
+  }
+}

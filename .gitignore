@@ -1,0 +1,3 @@
+migrations/*/src/config.ts
+migrations/*/deploy-data.json
+node_modules/
