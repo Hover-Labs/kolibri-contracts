@@ -13,8 +13,8 @@ SMART_PY_CLI=~/smartpy-cli/SmartPy.sh
 OUT_DIR=./.smartpy_out
 
 # Parallel sorted arrays.
-CONTRACTS_ARRAY=(oven-factory         dev-fund token                stability-fund            minter                  oven-proxy            oracle              oven             oven-registry)
-INVOCATION_ARRAY=("OvenFactoryContract()" "DevFundContract()" "FA12()"  "StabilityFundContract()" "MinterContract()"   "OvenProxyContract()" "OracleContract()"  "OvenContract()" "OvenRegistryContract()")
+CONTRACTS_ARRAY=(oven-factory         dev-fund token                stability-fund            minter                  oven-proxy            oracle              oven             oven-registry  sandbox-oracle)
+INVOCATION_ARRAY=("OvenFactoryContract()" "DevFundContract()" "FA12()"  "StabilityFundContract()" "MinterContract()"   "OvenProxyContract()" "OracleContract()"  "OvenContract()" "OvenRegistryContract()" "SandboxOracleContract()")
 
 # Ensure we have a SmartPy binary.
 if [ ! -f "$SMART_PY_CLI" ]; then
