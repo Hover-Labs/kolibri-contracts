@@ -10,4 +10,3 @@ test-minter:
 compile-minter:
 	$(SMART_PY_CLI) compile minter.py MinterContract\(\) $(OUT_DIR)
 	cp $(OUT_DIR)/minter_compiled.tz minter.tz
-	rm -rf $(OUT_DIR)
