@@ -14,10 +14,13 @@ $ git status
 
 **Ensure correct SmartPy Version**
 
-
+```
+sh <(curl -s https://smartpy.io/releases/20210708-4662b0f8b1fe2186a243078f9f1ba0a4aa1c6f16/cli/install.sh)
+```
 
 **Remove any stale data**
 ```
+npm run install-submodules
 rm -f src/config.ts deploy-data.json
 ```
 
@@ -61,13 +64,17 @@ $ git pull
 $ git status
 ```
 
-**Remove any stale data**
+**Ensure correct SmartPy Version**
+
 ```
-rm -f src/config.ts deploy-data.json
+sh <(curl -s https://smartpy.io/releases/20210708-4662b0f8b1fe2186a243078f9f1ba0a4aa1c6f16/cli/install.sh)
 ```
 
-**Reset Sandbox**
-TODO
+**Remove any stale data**
+```
+npm run install-submodules
+rm -f src/config.ts deploy-data.json
+```
 
 **Run Migration**
 ```

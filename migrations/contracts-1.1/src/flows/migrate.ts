@@ -49,7 +49,7 @@ const main = async () => {
     const wireGovernorHash: string = await fetchOrRun(
         'wire-governor',
         async () => {
-            return sendOperation(config, minterDeployResult.contractAddress, 'setGovernorContractAddress', breakGlassDeployResult.contractAddress)
+            return sendOperation(config, minterDeployResult.contractAddress, 'setGovernorContract', breakGlassDeployResult.contractAddress)
         }
     )
 
@@ -61,6 +61,7 @@ const main = async () => {
     console.log("Contracts:")
     console.log(`New Minter Contract:        ${minterDeployResult.contractAddress} / ${minterDeployResult.operationHash}`)
     console.log(`New Break Glass Contract:   ${breakGlassDeployResult.contractAddress} / ${breakGlassDeployResult.operationHash}`)
+    console.log("")
 
     console.log("Operations:")
     console.log(`Wire Minter To Break Glass: ${wireGovernorHash}`)

@@ -32,7 +32,7 @@ export async function generateMinterStorage(
   const collateralizationPercentage = oldMinterStorage.collateralizationPercentage
   const developerFundContractAddress = oldMinterStorage.developerFundContractAddress
   const interestIndex = oldMinterStorage.interestIndex
-  const lastInterestIndexUpdateTime = oldMinterStorage.lastInterestIndexUpdateTime
+  const lastInterestIndexUpdateTime = new Date(oldMinterStorage.lastInterestIndexUpdateTime).getTime() / 1000
   const liquidationFeePercent = oldMinterStorage.liquidationFeePercent
   const ovenProxyContractAddress = oldMinterStorage.ovenProxyContractAddress
   const devFundSplit = oldMinterStorage.stabilityDevFundSplit
@@ -52,7 +52,7 @@ export async function generateMinterStorage(
         )
       ) 
       (Pair 
-        "(address %governorAddress)
+        (address %governorAddress)
         (Pair 
           (nat %interestIndex) 
           (timestamp %lastInterestIndexUpdateTime)

@@ -10,24 +10,25 @@ const main = async () => {
     console.log("Validating storage from old minter copied correctly")
     const tezos: TezosToolkit = await config.getTezos()
 
-    const oldMinterContract = await tezos.contract.at(config.coreContracts.MINTER)
+    const oldMinterContract = await tezos.contract.at(config.coreContracts.MINTER!)
     const oldMinterStorage: any = await oldMinterContract.storage()
 
     const newMinterContract = await tezos.contract.at(newMinterContractAddress)
     const newMinterStorage: any = await newMinterContract.storage()
 
     if (
-        oldMinterStorage.collateralizationPercentage !== newMinterStorage.collateralizationPercentation ||
-        oldMinterStorage.developerFundContractAddress !== newMinterStorage.developerFundContractAddress ||
-        oldMinterStorage.interestIndex !== newMinterStorage.interestIndex ||
+        !oldMinterStorage.collateralizationPercentage.isEqualTo(newMinterStorage.collateralizationPercentage) ||
+        !oldMinterStorage.interestIndex.isEqualTo(newMinterStorage.interestIndex) ||
+        !oldMinterStorage.liquidationFeePercent.isEqualTo(newMinterStorage.liquidationFeePercent) ||
+        !oldMinterStorage.stabilityDevFundSplit.isEqualTo(newMinterStorage.devFundSplit) ||
+        !oldMinterStorage.stabilityFee.isEqualTo(newMinterStorage.stabilityFee) ||
         oldMinterStorage.lastInterestIndexUpdateTime !== newMinterStorage.lastInterestIndexUpdateTime ||
-        oldMinterStorage.liquidationFeePercent !== newMinterStorage.liquidationFeePercent ||
+        oldMinterStorage.developerFundContractAddress !== newMinterStorage.developerFundContractAddress ||
         oldMinterStorage.ovenProxyContractAddress !== newMinterStorage.ovenProxyContractAddress ||
-        oldMinterStorage.devFundSplit !== newMinterStorage.devFundSplit ||
-        oldMinterStorage.stabilityFee !== newMinterStorage.stabilityFee ||
         oldMinterStorage.stabilityFundContractAddress !== newMinterStorage.stabilityFundContractAddress ||
         oldMinterStorage.tokenContractAddress !== newMinterStorage.tokenContractAddress
     ) {
+
         throw new Error("Storage did not copy correctly!")
     }
     console.log("   > Validated")
@@ -37,7 +38,7 @@ const main = async () => {
     if (
         newMinterStorage.governorContractAddress !== breakGlassContractAddress ||
         newMinterStorage.liquidityPoolContractAddress !== config.coreContracts.LIQUIDITY_POOL ||
-        newMinterStorage.privateOwnerLiquidationThreshold !== config.PRIVATE_OWNER_LIQUIDATION_THRESHOLD
+        !newMinterStorage.privateOwnerLiquidationThreshold.isEqualTo(config.PRIVATE_OWNER_LIQUIDATION_THRESHOLD)
     ) {
         throw new Error("New values in minter storage are not set correctly!")
     }

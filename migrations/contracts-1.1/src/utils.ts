@@ -48,9 +48,16 @@ export async function sendOperation(
 
         const Tezos = await config.getTezos()
 
+        console.log("Using address: " + contractAddress)
         const contract = await Tezos.contract.at(contractAddress)
+
+
+        console.log("DEBUG: " + JSON.stringify(contract.methods))
+        console.log("Entrypoint..." + entrypoint)
+
         let invocation
         if (Array.isArray(parameter)) {
+
             invocation = contract.methods[entrypoint].apply(null, parameter)
         } else if (parameter === null) {
             invocation = contract.methods[entrypoint]()
@@ -302,7 +309,7 @@ export const executeGovProposal = async (
     const proposalSubmission = tezos.contract.batch([])
         .withContractCall(
             vestingVaultContract.methods.propose(
-                config.GOV_PARAMS.escrowAmount,
+                config.ESCROW_AMOUNT,
                 "Some Title",
                 "http://some.description.link",
                 "some-hash-here",

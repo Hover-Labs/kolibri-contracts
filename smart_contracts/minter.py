@@ -471,7 +471,7 @@ class MinterContract(sp.Contract):
         self.data.liquidityPoolContractAddress = newLiquidityPoolContract
 
     @sp.entry_point
-    def setPrivateOwnerLiquidationThreshold(self, newValue):
+    def setPrivateLiquidationThreshold(self, newValue):
         sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
         self.data.privateOwnerLiquidationThreshold = newValue
 
@@ -3558,30 +3558,30 @@ if __name__ == "__main__":
         )
 
     ################################################################
-    # setPrivateOwnerLiquidationThreshold
+    # setPrivateLiquidationThreshold
     ################################################################
 
-    @sp.add_test(name="setPrivateOwnerLiquidationThreshold - updates the private liquidation fee percent")
+    @sp.add_test(name="setPrivateLiquidationThreshold - updates the private liquidation fee percent")
     def test():
         scenario = sp.test_scenario()
 
-        # GIVEN a Minter contract with a setPrivateOwnerLiquidationThreshold
+        # GIVEN a Minter contract with a setPrivateLiquidationThreshold
         governorAddress = Addresses.GOVERNOR_ADDRESS
         minter = MinterContract(
             privateOwnerLiquidationThreshold = 12345,
         )
         scenario += minter
 
-        # WHEN setPrivateOwnerLiquidationThreshold is called by the governor
+        # WHEN setPrivateLiquidationThreshold is called by the governor
         newprivateOwnerLiquidationThreshold = 67890
-        scenario += minter.setPrivateOwnerLiquidationThreshold(newprivateOwnerLiquidationThreshold).run(
+        scenario += minter.setPrivateLiquidationThreshold(newprivateOwnerLiquidationThreshold).run(
             sender = governorAddress,
         )
 
         # THEN the percent is updated
         scenario.verify(minter.data.privateOwnerLiquidationThreshold == newprivateOwnerLiquidationThreshold)
 
-    @sp.add_test(name="setPrivateOwnerLiquidationThreshold - fails if not called by governor")
+    @sp.add_test(name="setPrivateLiquidationThreshold - fails if not called by governor")
     def test():
         scenario = sp.test_scenario()
 
@@ -3592,10 +3592,10 @@ if __name__ == "__main__":
         )
         scenario += minter
 
-        # WHEN setPrivateOwnerLiquidationThreshold is called by someone other than the governor
+        # WHEN setPrivateLiquidationThreshold is called by someone other than the governor
         # THEN the call fails
         newprivateOwnerLiquidationThreshold = 67890
-        scenario += minter.setPrivateOwnerLiquidationThreshold(newprivateOwnerLiquidationThreshold).run(
+        scenario += minter.setPrivateLiquidationThreshold(newprivateOwnerLiquidationThreshold).run(
             sender = Addresses.NULL_ADDRESS,
             valid = False
         )

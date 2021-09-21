@@ -14,12 +14,13 @@ const main = async () => {
     const breakGlassContractAddress = (await fetchFromCache('new-minter-break-glass')).contractAddress
 
     console.log("Passing a DAO proposal to set stability fee to zero...")
-    executeGovProposal(
-        config.VESTING_VAULT_ADDRESS,
+    await executeGovProposal(
+        config.coreContracts.VESTING_CONTRACTS[keystore.publicKeyHash]!,
         breakGlassContractAddress,
         newMinterContractAddress,
-        'setStabilityFee', `sp.nat(0)`,
-        'sp.TString',
+        'setStabilityFee',
+        `sp.nat(0)`,
+        'sp.TNat',
         config.coreContracts.DAO_TOKEN,
         config.coreContracts.DAO,
         tezos,
@@ -39,7 +40,7 @@ const main = async () => {
     console.log("")
 
     console.log("Breaking Glass")
-    await breakGlass(breakGlassContractAddress, config.coreContracts.BREAK_GLASS_MULTISIG, keystore.publicKeyHash)
+    await breakGlass(breakGlassContractAddress, config.coreContracts.BREAK_GLASS_MULTISIG!, keystore.publicKeyHash)
     console.log("   > Done")
 
     console.log("Validating Break Glass Applied")
