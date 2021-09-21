@@ -52,6 +52,3 @@ PAUSE_GUARDIAN_ADDRESS = sp.address("tz1LLNkQK4UQV6QcFShiXJ2vT2ELw449MzAA")
 
 # An address which is never used. This is a `null` value for addresses.
 NULL_ADDRESS = sp.address("tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")
-
-# The address which acts as the liquidity pool
-LIQUIDITY_POOL_ADDRESS = sp.address("tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D")
