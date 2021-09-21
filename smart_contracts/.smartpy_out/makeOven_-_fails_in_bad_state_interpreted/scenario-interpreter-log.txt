@@ -1,0 +1,28 @@
+Creating contract
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "tz1irJKkXS2DBWkU1NnmFQx1c1L7pbGg4yhk" {}))
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractStorage.0.0.tz.json 1
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractCode.0.0.tz 140
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractCode.0.0.tz.json 162
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testPrettyPrint.0.0.py 33
+Creating contract
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX" "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair 1000000000000000000 (Pair "1601871456" 80000000000000000))) (Pair (Pair (Some 100000000) (Pair "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm" 100000000000000000)) (Pair 0 (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))))
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractStorage.1.1.tz 1
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractStorage.1.1.tz.json 34
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractTypes.1.1.txt 8
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractCode.1.1.tz 3807
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractCode.1.1.tz.json 3741
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testPrettyPrint.1.1.py 234
+Creating contract
+ -> (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair (Some "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") None)) (Pair (Pair "Contract_1" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm") (Pair "Contract_0" 1)))
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractStorage.3.2.tz 1
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractStorage.3.2.tz.json 19
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractTypes.3.2.txt 5
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractCode.3.2.tz 946
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testContractCode.3.2.tz.json 1239
+ => ./.smartpy_out/makeOven_-_fails_in_bad_state_interpreted/testPrettyPrint.3.2.py 60
+Executing setOvenFactoryContract(sp.contract_address(Contract3))...
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "Contract_3" {}))
+Executing makeOven(sp.unit)...
+ -> --- Expected failure in transaction --- WrongCondition in line 54: self.data.state == 0 [12]

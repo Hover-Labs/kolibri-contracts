@@ -1,0 +1,10 @@
+Creating contract
+ -> (Pair (Pair "tz1VmiY38m3y95HqQLjMwqnMS7sdMfGomzKi" "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair "tz1hAYfexyzPGG6RhZZMpDvAHifubsbb6kgn" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))
+ => ./.smartpy_out/setOvenRegistryContract_-_fails_when_not_called_by_governor_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/setOvenRegistryContract_-_fails_when_not_called_by_governor_interpreted/testContractStorage.0.0.tz.json 7
+ => ./.smartpy_out/setOvenRegistryContract_-_fails_when_not_called_by_governor_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/setOvenRegistryContract_-_fails_when_not_called_by_governor_interpreted/testContractCode.0.0.tz 269
+ => ./.smartpy_out/setOvenRegistryContract_-_fails_when_not_called_by_governor_interpreted/testContractCode.0.0.tz.json 289
+ => ./.smartpy_out/setOvenRegistryContract_-_fails_when_not_called_by_governor_interpreted/testPrettyPrint.0.0.py 52
+Executing setOvenRegistryContract(sp.address('tz1UMCB2AHSTwG7YcGNr31CqYCtGN873royv'))...
+ -> --- Expected failure in transaction --- WrongCondition in line 67: sp.sender == self.data.governorContractAddress [4]

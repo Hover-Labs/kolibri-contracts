@@ -1,0 +1,35 @@
+parameter (pair (pair %k0 (pair (pair (address %administrator) (big_map %balances address (pair (map %approvals address nat) (nat %balance)))) (pair (nat %debtCeiling) (address %governorContractAddress))) (pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)))) (pair %k1 (int %intValue) (nat %natValue)));
+storage   unit;
+code
+  {
+    DUP;        # pair @parameter @storage : pair @parameter @storage
+    CDR;        # @storage : pair @parameter @storage
+    SWAP;       # pair @parameter @storage : @storage
+    CAR;        # @parameter : @storage
+    # == verify ==
+    # sp.verify(params.k0.balances[sp.contract_address(Contract1)].balance == 100) # @parameter : @storage
+    CAAADR;     # big_map address (pair (map %approvals address nat) (nat %balance)) : @storage
+    PUSH nat 100; # nat : big_map address (pair (map %approvals address nat) (nat %balance)) : @storage
+    SWAP;       # big_map address (pair (map %approvals address nat) (nat %balance)) : nat : @storage
+    PUSH address "Contract_1"; # address : big_map address (pair (map %approvals address nat) (nat %balance)) : nat : @storage
+    GET;        # option (pair (map %approvals address nat) (nat %balance)) : nat : @storage
+    IF_SOME
+      {
+        # of_some: Get-item:340 # @some : nat : @storage
+      }
+      {
+        PUSH int 340; # int : nat : @storage
+        FAILWITH;   # FAILED
+      }; # @some : nat : @storage
+    CDR;        # nat : nat : @storage
+    COMPARE;    # int : @storage
+    EQ;         # bool : @storage
+    IF
+      {}
+      {
+        PUSH string "WrongCondition: params.k0.balances[sp.contract_address(Contract1)].balance == 100"; # string : @storage
+        FAILWITH;   # FAILED
+      }; # @storage
+    NIL operation; # list operation : @storage
+    PAIR;       # pair (list operation) @storage
+  };
