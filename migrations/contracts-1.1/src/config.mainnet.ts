@@ -23,8 +23,12 @@ export const NUMBER_OF_CONFIRMATIONS = 2
 // Contracts to use for Core.
 export const coreContracts: ContractGroup = CONTRACTS.MAIN
 
-// The escrow amount for governance proposals
-export const ESCROW_AMOUNT = new BigNumber('3000000000000000000000')
+// Governance parameters
+export const GOV_PARAMS = {
+    escrowAmount: new BigNumber('3000000000000000000000'),
+    voteLengthBlocks: new BigNumber('10080'),
+    blocksInTimelockForExecution: new BigNumber('4320')
+}
 
 // Deployer configuration
 export const privateKeyName = 'DEPLOY_SK'

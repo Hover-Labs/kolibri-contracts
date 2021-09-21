@@ -47,13 +47,7 @@ export async function sendOperation(
         console.log(`Using param: ${parameter}`)
 
         const Tezos = await config.getTezos()
-
-        console.log("Using address: " + contractAddress)
         const contract = await Tezos.contract.at(contractAddress)
-
-
-        console.log("DEBUG: " + JSON.stringify(contract.methods))
-        console.log("Entrypoint..." + entrypoint)
 
         let invocation
         if (Array.isArray(parameter)) {
@@ -284,8 +278,7 @@ export const executeGovProposal = async (
     entryPoint: string,
     entryArguments: string,
     entryArgumentType: string,
-    kDAOToken: any,
-    dao: any,
+    daoAddress: string,
     tezos: TezosToolkit,
     config: any
 ) => {
@@ -309,7 +302,7 @@ export const executeGovProposal = async (
     const proposalSubmission = tezos.contract.batch([])
         .withContractCall(
             vestingVaultContract.methods.propose(
-                config.ESCROW_AMOUNT,
+                config.GOV_PARAMS.escrowAmount,
                 "Some Title",
                 "http://some.description.link",
                 "some-hash-here",
@@ -331,6 +324,7 @@ export const executeGovProposal = async (
     await Utils.sleep((config.GOV_PARAMS.voteLengthBlocks * config.OPERATION_DELAY_SECS) * 1.1)
 
     console.log("  - Ending vote...")
+    const dao = await tezos.contract.at(daoAddress)
     const endVotingOp = await dao.methods.endVoting(null).send()
     await checkConfirmed(config, endVotingOp.hash)
     console.log("  - endVoting injected in", endVotingOp.hash)

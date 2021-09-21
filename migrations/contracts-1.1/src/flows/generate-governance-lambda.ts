@@ -9,9 +9,9 @@ const main = async () => {
     const tokenContract = config.coreContracts.TOKEN
 
     // Break Glasses
-    const ovenFactoryBreakGlassContract = config.breakGlassContracts.OVEN_FACTORY
-    const ovenProxyBreakGlassContract = config.breakGlassContracts.OVEN_PROXY
-    const tokenBreakGlassContract = config.breakGlassContracts.TOKEN
+    const ovenFactoryBreakGlassContract = config.coreContracts.BREAK_GLASS_CONTRACTS.OVEN_FACTORY!
+    const ovenProxyBreakGlassContract = config.coreContracts.BREAK_GLASS_CONTRACTS.OVEN_PROXY
+    const tokenBreakGlassContract = config.coreContracts.BREAK_GLASS_CONTRACTS.TOKEN
 
     // New minter contract
     const newMinterContract = (await fetchFromCache('new-minter')).contractAddress
