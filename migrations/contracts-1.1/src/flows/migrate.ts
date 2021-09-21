@@ -17,8 +17,8 @@ const main = async () => {
         'new-minter',
         async () => {
             const minterStorage = await generateMinterStorage(
-                config.coreContracts.MINTER,
-                config.coreContracts.LIQUIDITY_POOL,
+                config.coreContracts.MINTER!,
+                config.coreContracts.LIQUIDITY_POOL!,
                 keystore.publicKeyHash,
                 config.PRIVATE_OWNER_LIQUIDATION_THRESHOLD,
                 config
@@ -34,8 +34,8 @@ const main = async () => {
         async () => {
             const breakGlassStorage = generateBreakGlassStorage(
                 {
-                    daoAddress: config.coreContracts.DAO,
-                    multisigAddress: config.coreContracts.BREAK_GLASS_MULTISIG,
+                    daoAddress: config.coreContracts.DAO!,
+                    multisigAddress: config.coreContracts.BREAK_GLASS_MULTISIG!,
                     targetAddress: minterDeployResult.contractAddress
 
                 }

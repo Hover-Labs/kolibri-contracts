@@ -1,8 +1,0 @@
-[submodule "break-glass-contracts"]
-	path = break-glass-contracts
-	url = https://github.com/Hover-Labs/break-glass-contracts
-	branch = main
-[submodule "multisig-timelock"]
-	path = multisig-timelock
-	url = https://github.com/Hover-Labs/multisig-timelock
-	branch = main

@@ -42,37 +42,43 @@ export async function generateMinterStorage(
 
   // Formulate a new storage
   let contractStorage = `
+  (Pair 
     (Pair 
       (Pair 
-          (Pair 
-            (nat %collateralizationPercentage) 
-            (nat %devFundSplit)
-          ) 
-          (Pair 
-              (address %devFundAddress) 
-              (Pair 
-                (address %governorAddress) 
-                (nat %interestIndex)
-              )
-            )
-          ) 
-          (Pair 
-            (Pair 
-              (timestamp %lastInterestIndexUpdateTime) 
-              (Pair 
-                (nat %liquidationFeePercent) 
-                (address %ovenProxyAddress)
-              )
-            ) 
-            (Pair 
-              (nat %stabilityFee) 
-              (Pair 
-                (address %stabilityFundAddress) 
-                (address %tokenAddress)
-              )
-            )
-          )
+        (nat %collateralizationPercentage) 
+        (Pair 
+          (nat %devFundSplit) 
+          (address %devFundAddress)
         )
+      ) 
+      (Pair 
+        "(address %governorAddress)
+        (Pair 
+          (nat %interestIndex) 
+          (timestamp %lastInterestIndexUpdateTime)
+        )
+      )
+    ) 
+    (Pair 
+      (Pair
+        (nat %liquidationFeePercent) 
+        (Pair 
+          (address $liquidityPoolAddress) 
+          (address %ovenProxyAddress)
+        )
+      ) 
+      (Pair 
+        (Pair 
+          (nat %privateOwnerLiquidationThreshold) 
+          (nat %stabilityFee)
+        ) 
+        (Pair 
+          (address %stabilityFundAddress) 
+          (address %tokenAddress)
+        )
+      )
+    )
+  )
   `
 
   contractStorage = substituteVariables(contractStorage, {
@@ -83,7 +89,9 @@ export async function generateMinterStorage(
     "(nat %interestIndex)": interestIndex,
     "(timestamp %lastInterestIndexUpdateTime)": lastInterestIndexUpdateTime,
     "(nat %liquidationFeePercent)": liquidationFeePercent,
+    "(address $liquidityPoolAddress)": liquidityPoolContractAddress,
     "(address %ovenProxyAddress)": ovenProxyContractAddress,
+    "(nat %privateOwnerLiquidationThreshold)": privateOwnerLiquidationThreshold,
     "(nat %stabilityFee)": stabilityFee,
     "(address %stabilityFundAddress)": stabilityFundContractAddress,
     "(address %tokenAddress)": tokenContractAddress,
