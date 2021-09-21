@@ -81,6 +81,3 @@ TOKEN_NOT_ADMINISTRATOR = 24
 
 # The splits given did not sum to one.
 BAD_SPLITS = 25
-
-# The sender was not allowed to liquidate, even though the oven was undercollateralized
-NOT_ALLOWED_TO_LIQUIDATE = 26
