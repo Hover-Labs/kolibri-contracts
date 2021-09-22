@@ -38,7 +38,34 @@ const main = async () => {
     console.log("   > Validated")
     console.log("")
 
+    console.log("Breaking Glass")
+    await breakGlass(breakGlassContractAddress, config.coreContracts.BREAK_GLASS_MULTISIG!, keystore.publicKeyHash)
+    console.log("   > Done")
+
+    console.log("Validating Break Glass Applied")
+    // Refetch minter storage to pick up updates.
+    newMinterStorage = await newMinterContract.storage()
+    if (newMinterStorage.governorContractAddress !== keystore.publicKeyHash) {
+        throw new Error("Breaking glass was not successful!")
+    }
+    console.log("   > Validated")
+    console.log("")
+
     console.log("All tests pass!")
+}
+
+const breakGlass = async (
+    breakGlassAddress: string,
+    multisigAddress: string,
+    newGovernor: string,
+) => {
+    return await callThroughMultisig(
+        config,
+        multisigAddress,
+        breakGlassAddress,
+        'breakGlass',
+        `sp.address("${newGovernor}")`
+    )
 }
 
 main()
