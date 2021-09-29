@@ -1,0 +1,10 @@
+Creating contract
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "tz1irJKkXS2DBWkU1NnmFQx1c1L7pbGg4yhk" {}))
+ => ./.smartpy_out/addOven_-_fails_when_not_called_by_OvenFactory_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/addOven_-_fails_when_not_called_by_OvenFactory_interpreted/testContractStorage.0.0.tz.json 1
+ => ./.smartpy_out/addOven_-_fails_when_not_called_by_OvenFactory_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/addOven_-_fails_when_not_called_by_OvenFactory_interpreted/testContractCode.0.0.tz 140
+ => ./.smartpy_out/addOven_-_fails_when_not_called_by_OvenFactory_interpreted/testContractCode.0.0.tz.json 162
+ => ./.smartpy_out/addOven_-_fails_when_not_called_by_OvenFactory_interpreted/testPrettyPrint.0.0.py 33
+Executing addOven((sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), sp.address('tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2')))...
+ -> --- Expected failure in transaction --- WrongCondition in line 54: sp.sender == self.data.ovenFactoryContractAddress [7]

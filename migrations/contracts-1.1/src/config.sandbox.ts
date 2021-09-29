@@ -41,7 +41,7 @@ if (privateKey === '') {
 export const SMARTPY_CLI = '~/smartpy-cli/SmartPy.sh'
 
 // New Configuration
-export const PRIVATE_OWNER_LIQUIDATION_THRESHOLD = 180 * MANTISSA // 180%
+export const PRIVATE_OWNER_LIQUIDATION_THRESHOLD = 20 * MANTISSA // 20%
 
 const Tezos = new TezosToolkit(NODE_URL);
 let initialized = false;

@@ -1,0 +1,40 @@
+[
+  { "prim": "storage", "args": [ { "prim": "pair", "args": [ { "prim": "int", "annots": [ "%intValue" ] }, { "prim": "nat", "annots": [ "%natValue" ] } ] } ] },
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "or",
+        "args": [
+          { "prim": "unit", "annots": [ "%default" ] },
+          { "prim": "or", "args": [ { "prim": "int", "annots": [ "%intCallback" ] }, { "prim": "nat", "annots": [ "%natCallback" ] } ] }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        { "prim": "DUP" },
+        { "prim": "CDR" },
+        { "prim": "SWAP" },
+        { "prim": "CAR" },
+        {
+          "prim": "IF_LEFT",
+          "args": [
+            [ { "prim": "DROP" } ],
+            [
+              {
+                "prim": "IF_LEFT",
+                "args": [ [ { "prim": "SWAP" }, { "prim": "CDR" }, { "prim": "SWAP" }, { "prim": "PAIR" } ], [ { "prim": "SWAP" }, { "prim": "CAR" }, { "prim": "PAIR" } ] ]
+              }
+            ]
+          ]
+        },
+        { "prim": "NIL", "args": [ { "prim": "operation" } ] },
+        { "prim": "PAIR" }
+      ]
+    ]
+  }
+]

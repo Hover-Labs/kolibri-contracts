@@ -1,0 +1,23 @@
+parameter (pair (pair %k0 (string %harbingerAsset) (pair (timestamp %harbingerUpdateTime) (nat %harbingerValue))) (pair (pair %k1 (pair (option %clientCallback address) (address %governorContractAddress)) (pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)))) (pair %k2 (int %intValue) (nat %natValue))));
+storage   unit;
+code
+  {
+    DUP;        # pair @parameter @storage : pair @parameter @storage
+    CDR;        # @storage : pair @parameter @storage
+    SWAP;       # pair @parameter @storage : @storage
+    CAR;        # @parameter : @storage
+    # == verify ==
+    # sp.verify(params.k2.natValue == 2310000000000000000) # @parameter : @storage
+    CDDDR;      # nat : @storage
+    PUSH nat 2310000000000000000; # nat : nat : @storage
+    COMPARE;    # int : @storage
+    EQ;         # bool : @storage
+    IF
+      {}
+      {
+        PUSH string "WrongCondition: params.k2.natValue == 2310000000000000000"; # string : @storage
+        FAILWITH;   # FAILED
+      }; # @storage
+    NIL operation; # list operation : @storage
+    PAIR;       # pair (list operation) @storage
+  };

@@ -1,0 +1,4 @@
+Storage: sp.TRecord(harbingerAsset = sp.TString, harbingerUpdateTime = sp.TTimestamp, harbingerValue = sp.TNat).layout(("harbingerAsset", ("harbingerUpdateTime", "harbingerValue")))
+Params: sp.TVariant(get = sp.TPair(sp.TString, sp.TContract(sp.TPair(sp.TString, sp.TPair(sp.TTimestamp, sp.TNat)))), setNewPrice = sp.TNat, update = sp.TUnit).layout(("get", ("setNewPrice", "update")))
+Globals:
+Views:

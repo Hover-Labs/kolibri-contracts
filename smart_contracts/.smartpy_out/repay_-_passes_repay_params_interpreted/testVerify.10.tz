@@ -1,0 +1,23 @@
+parameter (pair (pair %k0 (address %governorContractAddress) (pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address))) (pair (pair %k1 (pair (pair (pair (pair (nat %borrow_borrowedTokens) (bool %borrow_liquidated)) (pair (nat %borrow_oracleValue) (pair (address %borrow_ovenAddress) (nat %borrow_ovenBalance)))) (pair (pair (int %borrow_ovenInterestIndex) (address %borrow_ownerAddress)) (pair (int %borrow_stabilityFeeTokens) (pair (nat %borrow_tokensToBorrow) (nat %deposit_borrowedTokens))))) (pair (pair (pair (bool %deposit_liquidated) (address %deposit_ovenAddress)) (pair (nat %deposit_ovenBalance) (pair (int %deposit_ovenInterestIndex) (address %deposit_ownerAddress)))) (pair (pair (int %deposit_stabilityFeeTokens) (pair (nat %liquidate_borrowedTokens) (bool %liquidate_liquidated))) (pair (address %liquidate_liquidatorAddress) (pair (nat %liquidate_oracleValue) (address %liquidate_ovenAddress)))))) (pair (pair (pair (pair (nat %liquidate_ovenBalance) (int %liquidate_ovenInterestIndex)) (pair (address %liquidate_ownerAddress) (pair (int %liquidate_stabilityFeeTokens) (nat %repay_borrowedTokens)))) (pair (pair (bool %repay_liquidated) (address %repay_ovenAddress)) (pair (nat %repay_ovenBalance) (pair (int %repay_ovenInterestIndex) (address %repay_ownerAddress))))) (pair (pair (pair (int %repay_stabilityFeeTokens) (nat %repay_tokensToRepay)) (pair (nat %withdraw_borrowedTokens) (pair (bool %withdraw_liquidated) (mutez %withdraw_mutezToWithdraw)))) (pair (pair (nat %withdraw_oracleValue) (pair (address %withdraw_ovenAddress) (nat %withdraw_ovenBalance))) (pair (int %withdraw_ovenInterestIndex) (pair (address %withdraw_ownerAddress) (int %withdraw_stabilityFeeTokens))))))) (pair %k2 (pair (pair (option %borrowParams (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int nat)))))))) (address %governorContractAddress)) (pair (option %liquidateParams (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int address)))))))) (pair (address %minterContractAddress) (address %oracleContractAddress)))) (pair (pair (address %ovenRegistryContractAddress) (address %pauseGuardianContractAddress)) (pair (bool %paused) (pair (int %state) (option %withdrawParams (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int mutez))))))))))))));
+storage   unit;
+code
+  {
+    DUP;        # pair @parameter @storage : pair @parameter @storage
+    CDR;        # @storage : pair @parameter @storage
+    SWAP;       # pair @parameter @storage : @storage
+    CAR;        # @parameter : @storage
+    # == verify ==
+    # sp.verify(params.k1.repay_stabilityFeeTokens == 3) # @parameter : @storage
+    CDADDAAAR;  # int : @storage
+    PUSH int 3; # int : int : @storage
+    COMPARE;    # int : @storage
+    EQ;         # bool : @storage
+    IF
+      {}
+      {
+        PUSH string "WrongCondition: params.k1.repay_stabilityFeeTokens == 3"; # string : @storage
+        FAILWITH;   # FAILED
+      }; # @storage
+    NIL operation; # list operation : @storage
+    PAIR;       # pair (list operation) @storage
+  };

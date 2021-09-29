@@ -1,0 +1,10 @@
+Creating contract
+ -> (Pair "tz1VmiY38m3y95HqQLjMwqnMS7sdMfGomzKi" (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))
+ => ./.smartpy_out/setDelegate_-_fails_when_not_called_by_administrator_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/setDelegate_-_fails_when_not_called_by_administrator_interpreted/testContractStorage.0.0.tz.json 7
+ => ./.smartpy_out/setDelegate_-_fails_when_not_called_by_administrator_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/setDelegate_-_fails_when_not_called_by_administrator_interpreted/testContractCode.0.0.tz 177
+ => ./.smartpy_out/setDelegate_-_fails_when_not_called_by_administrator_interpreted/testContractCode.0.0.tz.json 210
+ => ./.smartpy_out/setDelegate_-_fails_when_not_called_by_administrator_interpreted/testPrettyPrint.0.0.py 39
+Executing setDelegate(sp.some(sp.key_hash('tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf')))...
+ -> --- Expected failure in transaction --- WrongCondition in line 46: sp.sender == self.data.administratorContractAddress [8]

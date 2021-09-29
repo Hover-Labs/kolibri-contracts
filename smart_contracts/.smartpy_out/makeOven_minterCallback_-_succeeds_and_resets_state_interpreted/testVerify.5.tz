@@ -1,0 +1,31 @@
+parameter (pair (pair %k0 (address %governorContractAddress) (pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address))) (pair (pair %k2 (pair (address %governorContractAddress) (pair (option %initialDelegate key_hash) (option %makeOvenOwner address))) (pair (pair (address %minterContractAddress) (address %ovenProxyContractAddress)) (pair (address %ovenRegistryContractAddress) (int %state)))) (pair %kDyn_0 (pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated))) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))))));
+storage   unit;
+code
+  {
+    DUP;        # pair @parameter @storage : pair @parameter @storage
+    CDR;        # @storage : pair @parameter @storage
+    SWAP;       # pair @parameter @storage : @storage
+    CAR;        # @parameter : @storage
+    # == verify ==
+    # sp.verify(params.k2.makeOvenOwner.is_some() == False) # @parameter : @storage
+    CDAADDR;    # option address : @storage
+    IF_SOME
+      {
+        DROP;       # @storage
+        PUSH bool True; # bool : @storage
+      }
+      {
+        PUSH bool False; # bool : @storage
+      }; # bool : @storage
+    PUSH bool False; # bool : bool : @storage
+    COMPARE;    # int : @storage
+    EQ;         # bool : @storage
+    IF
+      {}
+      {
+        PUSH string "WrongCondition: params.k2.makeOvenOwner.is_some() == False"; # string : @storage
+        FAILWITH;   # FAILED
+      }; # @storage
+    NIL operation; # list operation : @storage
+    PAIR;       # pair (list operation) @storage
+  };

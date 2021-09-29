@@ -1,0 +1,13 @@
+Creating contract
+ -> (Pair (Pair (Pair None "tz1harbiBBB9smBiDY7fV6DYpVm5aZD7HT98") (Pair None (Pair "tz1UUgPwikRHW1mEyVZfGYy6QaxrY6Y7WaG5" "tz1P2Po7YM526ughEsRbY4oR9zaUPDZjxFrb"))) (Pair (Pair "tz1hAYfexyzPGG6RhZZMpDvAHifubsbb6kgn" "tz1LLNkQK4UQV6QcFShiXJ2vT2ELw449MzAA") (Pair True (Pair 0 None))))
+ => ./.smartpy_out/unpause_-_succeeds_when_called_by_governor_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/unpause_-_succeeds_when_called_by_governor_interpreted/testContractStorage.0.0.tz.json 25
+ => ./.smartpy_out/unpause_-_succeeds_when_called_by_governor_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/unpause_-_succeeds_when_called_by_governor_interpreted/testContractCode.0.0.tz 1068
+ => ./.smartpy_out/unpause_-_succeeds_when_called_by_governor_interpreted/testContractCode.0.0.tz.json 1698
+ => ./.smartpy_out/unpause_-_succeeds_when_called_by_governor_interpreted/testPrettyPrint.0.0.py 129
+Executing unpause(sp.unit)...
+ -> (Pair (Pair (Pair None "tz1harbiBBB9smBiDY7fV6DYpVm5aZD7HT98") (Pair None (Pair "tz1UUgPwikRHW1mEyVZfGYy6QaxrY6Y7WaG5" "tz1P2Po7YM526ughEsRbY4oR9zaUPDZjxFrb"))) (Pair (Pair "tz1hAYfexyzPGG6RhZZMpDvAHifubsbb6kgn" "tz1LLNkQK4UQV6QcFShiXJ2vT2ELw449MzAA") (Pair False (Pair 0 None))))
+Verifying sp.contract_data(0).paused == False...
+ => ./.smartpy_out/unpause_-_succeeds_when_called_by_governor_interpreted/testVerify.2.tz 23
+ OK

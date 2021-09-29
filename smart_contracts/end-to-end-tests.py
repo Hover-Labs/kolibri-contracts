@@ -416,7 +416,7 @@ def test():
   liquidityPool = FakeLiquidityPool.FakeLiquidityPoolContract()
   minter = Minter.MinterContract(
     collateralizationPercentage = sp.nat(200000000000000000000), # 200%
-    privateOwnerLiquidationThreshold = sp.nat(175000000000000000000), # 175%
+    privateOwnerLiquidationThreshold = sp.nat(25000000000000000000), # 20%
     lastInterestIndexUpdateTime = currentTime,
     devFundSplit = devFundSplit,
     liquidationFeePercent = liquidationFeePercent,
@@ -552,7 +552,7 @@ def test():
 #   liquidityPool = FakeLiquidityPool.FakeLiquidityPoolContract()
 #   minter = Minter.MinterContract(
 #     collateralizationPercentage = sp.nat(200000000000000000000), # 200%
-#     privateOwnerLiquidationThreshold = sp.nat(175000000000000000000), # 175%
+#     privateOwnerLiquidationThreshold = sp.nat(25000000000000000000), # 25%
 #     lastInterestIndexUpdateTime = currentTime,
 #     devFundSplit = devFundSplit,
 #     liquidationFeePercent = liquidationFeePercent,
@@ -659,7 +659,7 @@ def test():
   liquidityPool = FakeLiquidityPool.FakeLiquidityPoolContract()
   minter = Minter.MinterContract(
     collateralizationPercentage = sp.nat(200000000000000000000), # 200%
-    privateOwnerLiquidationThreshold = sp.nat(175000000000000000000), # 175%
+    privateOwnerLiquidationThreshold = sp.nat(25000000000000000000), # 25%
     lastInterestIndexUpdateTime = currentTime,
     devFundSplit = devFundSplit,
     liquidationFeePercent = liquidationFeePercent,
@@ -789,7 +789,7 @@ def test():
   liquidityPool = FakeLiquidityPool.FakeLiquidityPoolContract()
   minter = Minter.MinterContract(
     collateralizationPercentage = sp.nat(200000000000000000000), # 200%
-    privateOwnerLiquidationThreshold = sp.nat(175000000000000000000), # 175%
+    privateOwnerLiquidationThreshold = sp.nat(25000000000000000000), # 25%
     lastInterestIndexUpdateTime = currentTime,
     devFundSplit = devFundSplit,
     liquidationFeePercent = liquidationFeePercent,

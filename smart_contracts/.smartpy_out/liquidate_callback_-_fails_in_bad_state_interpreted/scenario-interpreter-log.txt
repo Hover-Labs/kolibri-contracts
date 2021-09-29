@@ -1,0 +1,18 @@
+Creating contract
+ -> (Pair (Pair (Pair (Pair (Pair 0 False) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))) (Pair (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 0)))) (Pair (Pair (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))) (Pair (Pair 0 (Pair 0 False)) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))))) (Pair (Pair (Pair (Pair 0 0) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")))) (Pair (Pair (Pair 0 0) (Pair 0 (Pair False 0))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))))))
+ => ./.smartpy_out/liquidate_callback_-_fails_in_bad_state_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/liquidate_callback_-_fails_in_bad_state_interpreted/testContractStorage.0.0.tz.json 97
+ => ./.smartpy_out/liquidate_callback_-_fails_in_bad_state_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/liquidate_callback_-_fails_in_bad_state_interpreted/testContractCode.0.0.tz 1348
+ => ./.smartpy_out/liquidate_callback_-_fails_in_bad_state_interpreted/testContractCode.0.0.tz.json 1874
+ => ./.smartpy_out/liquidate_callback_-_fails_in_bad_state_interpreted/testPrettyPrint.0.0.py 67
+Creating contract
+ -> (Pair (Pair (Pair None "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair None (Pair "Contract_0" "tz1P2Po7YM526ughEsRbY4oR9zaUPDZjxFrb"))) (Pair (Pair "tz1hAYfexyzPGG6RhZZMpDvAHifubsbb6kgn" "tz1LLNkQK4UQV6QcFShiXJ2vT2ELw449MzAA") (Pair False (Pair 0 None))))
+ => ./.smartpy_out/liquidate_callback_-_fails_in_bad_state_interpreted/testContractStorage.1.1.tz 1
+ => ./.smartpy_out/liquidate_callback_-_fails_in_bad_state_interpreted/testContractStorage.1.1.tz.json 19
+ => ./.smartpy_out/liquidate_callback_-_fails_in_bad_state_interpreted/testContractTypes.1.1.txt 5
+ => ./.smartpy_out/liquidate_callback_-_fails_in_bad_state_interpreted/testContractCode.1.1.tz 1068
+ => ./.smartpy_out/liquidate_callback_-_fails_in_bad_state_interpreted/testContractCode.1.1.tz.json 1698
+ => ./.smartpy_out/liquidate_callback_-_fails_in_bad_state_interpreted/testPrettyPrint.1.1.py 129
+Executing liquidate_callback(2)...
+ -> --- Expected failure in transaction --- WrongCondition in line 150: self.data.state == 3 [12]

@@ -1,0 +1,10 @@
+Creating contract
+ -> (Pair (Pair None "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair "tz1TDSmoZXwVevLTEvKCTHWpomG76oC9S2fJ" (Pair 1800 0)))
+ => ./.smartpy_out/setMaxDataDelaySec_-_fails_when_not_called_by_governor_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/setMaxDataDelaySec_-_fails_when_not_called_by_governor_interpreted/testContractStorage.0.0.tz.json 7
+ => ./.smartpy_out/setMaxDataDelaySec_-_fails_when_not_called_by_governor_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/setMaxDataDelaySec_-_fails_when_not_called_by_governor_interpreted/testContractCode.0.0.tz 279
+ => ./.smartpy_out/setMaxDataDelaySec_-_fails_when_not_called_by_governor_interpreted/testContractCode.0.0.tz.json 293
+ => ./.smartpy_out/setMaxDataDelaySec_-_fails_when_not_called_by_governor_interpreted/testPrettyPrint.0.0.py 43
+Executing setMaxDataDelaySec(60)...
+ -> --- Expected failure in transaction --- WrongCondition in line 137: sp.sender == self.data.governorContractAddress [4]

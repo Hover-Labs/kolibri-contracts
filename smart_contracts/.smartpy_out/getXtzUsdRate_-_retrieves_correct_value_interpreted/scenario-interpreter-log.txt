@@ -1,0 +1,41 @@
+Creating contract
+ -> (Pair "XTZ-USD" (Pair "1632869466" 2310000))
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractStorage.0.0.tz.json 1
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractCode.0.0.tz 56
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractCode.0.0.tz.json 95
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testPrettyPrint.0.0.py 18
+Creating contract
+ -> (Pair (Pair None "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair "Contract_0" (Pair 1800 0)))
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractStorage.1.1.tz 1
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractStorage.1.1.tz.json 7
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractTypes.1.1.txt 5
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractCode.1.1.tz 279
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractCode.1.1.tz.json 293
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testPrettyPrint.1.1.py 43
+Creating contract
+ -> (Pair 0 0)
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractStorage.2.2.tz 1
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractStorage.2.2.tz.json 1
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractTypes.2.2.txt 5
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractCode.2.2.tz 34
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testContractCode.2.2.tz.json 40
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testPrettyPrint.2.2.py 17
+Executing getXtzUsdRate(sp.contract(sp.TNat, sp.contract_address(Contract2), entry_point='natCallback').open_some())...
+ -> (Pair (Pair (Some "Contract_2%natCallback") "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair "Contract_0" (Pair 1800 1)))
+Executing get(('XTZ-USD', sp.contract(sp.TPair(sp.TString, sp.TPair(sp.TTimestamp, sp.TNat)), sp.contract_address(Contract1%getXtzUsdRate_callback)).open_some()))...
+ -> (Pair "XTZ-USD" (Pair "1632869466" 2310000))
+Executing getXtzUsdRate_callback(('XTZ-USD', (sp.timestamp(1632869466), 2310000)))...
+ -> (Pair (Pair None "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair "Contract_0" (Pair 1800 0)))
+Executing natCallback(2310000000000000000)...
+ -> (Pair 0 2310000000000000000)
+Verifying sp.contract_data(2).natValue == 2310000000000000000...
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testVerify.4.tz 23
+ OK
+Verifying sp.contract_data(1).state == 0...
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testVerify.5.tz 23
+ OK
+Verifying sp.contract_data(1).clientCallback.is_some() == False...
+ => ./.smartpy_out/getXtzUsdRate_-_retrieves_correct_value_interpreted/testVerify.6.tz 31
+ OK

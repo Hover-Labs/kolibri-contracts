@@ -1,0 +1,10 @@
+Creating contract
+ -> (Pair (Pair None "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair "tz1TDSmoZXwVevLTEvKCTHWpomG76oC9S2fJ" (Pair 1800 0)))
+ => ./.smartpy_out/getXtzUsdRate_callback_-_fails_when_called_from_bad_state_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/getXtzUsdRate_callback_-_fails_when_called_from_bad_state_interpreted/testContractStorage.0.0.tz.json 7
+ => ./.smartpy_out/getXtzUsdRate_callback_-_fails_when_called_from_bad_state_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/getXtzUsdRate_callback_-_fails_when_called_from_bad_state_interpreted/testContractCode.0.0.tz 279
+ => ./.smartpy_out/getXtzUsdRate_callback_-_fails_when_called_from_bad_state_interpreted/testContractCode.0.0.tz.json 293
+ => ./.smartpy_out/getXtzUsdRate_callback_-_fails_when_called_from_bad_state_interpreted/testPrettyPrint.0.0.py 43
+Executing getXtzUsdRate_callback(('XTZ-USD', (sp.timestamp(1632869468), 2310000)))...
+ -> --- Expected failure in transaction --- WrongCondition in line 92: self.data.state == 1 [12]

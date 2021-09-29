@@ -1,0 +1,44 @@
+parameter (pair (pair %k0 (pair (pair (pair (pair (nat %borrow_borrowedTokens) (bool %borrow_liquidated)) (pair (address %borrow_ovenAddress) (pair (nat %borrow_ovenBalance) (int %borrow_ovenInterestIndex)))) (pair (pair (address %borrow_ownerAddress) (pair (int %borrow_stabilityFeeTokens) (nat %borrow_tokensToBorrow))) (pair (nat %deposit_borrowedTokens) (pair (bool %deposit_liquidated) (address %deposit_ovenAddress))))) (pair (pair (pair (nat %deposit_ovenBalance) (int %deposit_ovenInterestIndex)) (pair (address %deposit_ownerAddress) (pair (int %deposit_stabilityFeeTokens) (nat %liquidate_borrowedTokens)))) (pair (pair (bool %liquidate_liquidated) (pair (address %liquidate_liquidatorAddress) (address %liquidate_ovenAddress))) (pair (nat %liquidate_ovenBalance) (pair (int %liquidate_ovenInterestIndex) (address %liquidate_ownerAddress)))))) (pair (pair (pair (pair (int %liquidate_stabilityFeeTokens) (nat %repay_borrowedTokens)) (pair (bool %repay_liquidated) (pair (address %repay_ovenAddress) (nat %repay_ovenBalance)))) (pair (pair (int %repay_ovenInterestIndex) (pair (address %repay_ownerAddress) (int %repay_stabilityFeeTokens))) (pair (nat %repay_tokensToRepay) (pair (nat %updateState_borrowedTokens) (int %updateState_interestIndex))))) (pair (pair (pair (bool %updateState_isLiquidated) (address %updateState_ovenAddress)) (pair (int %updateState_stabilityFeeTokens) (pair (nat %withdraw_borrowedTokens) (bool %withdraw_liquidated)))) (pair (pair (mutez %withdraw_mutezToWithdraw) (pair (address %withdraw_ovenAddress) (nat %withdraw_ovenBalance))) (pair (int %withdraw_ovenInterestIndex) (pair (address %withdraw_ownerAddress) (int %withdraw_stabilityFeeTokens))))))) (pair (pair %k1 (pair (pair (address %administrator) (big_map %balances address (pair (map %approvals address nat) (nat %balance)))) (pair (nat %debtCeiling) (address %governorContractAddress))) (pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)))) (pair (pair %k2 (address %administratorContractAddress) (pair (address %governorContractAddress) (address %tokenContractAddress))) (pair (pair %k3 (pair (address %administratorContractAddress) (address %governorContractAddress)) (pair (address %ovenRegistryContractAddress) (address %tokenContractAddress))) (pair %k4 (pair (pair (nat %collateralizationPercentage) (pair (nat %devFundSplit) (address %developerFundContractAddress))) (pair (address %governorContractAddress) (pair (nat %interestIndex) (timestamp %lastInterestIndexUpdateTime)))) (pair (pair (nat %liquidationFeePercent) (pair (address %liquidityPoolContractAddress) (address %ovenProxyContractAddress))) (pair (pair (nat %privateOwnerLiquidationThreshold) (nat %stabilityFee)) (pair (address %stabilityFundContractAddress) (address %tokenContractAddress)))))))));
+storage   unit;
+code
+  {
+    DUP;        # pair @parameter @storage : pair @parameter @storage
+    CDR;        # @storage : pair @parameter @storage
+    SWAP;       # pair @parameter @storage : @storage
+    CAR;        # @parameter : @storage
+    # == verify ==
+    # sp.verify(params.k1.balances[sp.address('tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2')].balance == sp.as_nat(100 - 8)) # @parameter : @storage
+    PUSH nat 8; # nat : @parameter : @storage
+    PUSH nat 100; # nat : nat : @parameter : @storage
+    SUB;        # int : @parameter : @storage
+    ISNAT;      # option nat : @parameter : @storage
+    IF_SOME
+      {}
+      {
+        PUSH int 1794; # int : @parameter : @storage
+        FAILWITH;   # FAILED
+      }; # @some : @parameter : @storage
+    SWAP;       # @parameter : @some : @storage
+    CDAAADR;    # big_map address (pair (map %approvals address nat) (nat %balance)) : @some : @storage
+    PUSH address "tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2"; # address : big_map address (pair (map %approvals address nat) (nat %balance)) : @some : @storage
+    GET;        # option (pair (map %approvals address nat) (nat %balance)) : @some : @storage
+    IF_SOME
+      {
+        # of_some: Get-item:1794 # @some : @some : @storage
+      }
+      {
+        PUSH int 1794; # int : @some : @storage
+        FAILWITH;   # FAILED
+      }; # @some : @some : @storage
+    CDR;        # nat : @some : @storage
+    COMPARE;    # int : @storage
+    EQ;         # bool : @storage
+    IF
+      {}
+      {
+        PUSH string "WrongCondition: params.k1.balances[sp.address('tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2')].balance == sp.as_nat(100 - 8)"; # string : @storage
+        FAILWITH;   # FAILED
+      }; # @storage
+    NIL operation; # list operation : @storage
+    PAIR;       # pair (list operation) @storage
+  };

@@ -1,0 +1,34 @@
+parameter (pair (pair (pair (address %administrator) (big_map %balances address (pair (map %approvals address nat) (nat %balance)))) (pair (nat %debtCeiling) (address %governorContractAddress))) (pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))));
+storage   unit;
+code
+  {
+    DUP;        # pair @parameter @storage : pair @parameter @storage
+    CDR;        # @storage : pair @parameter @storage
+    SWAP;       # pair @parameter @storage : @storage
+    CAR;        # @parameter : @storage
+    # == verify ==
+    # sp.verify(params.k0.metadata[''] == sp.bytes('0x1234567890')) # @parameter : @storage
+    CDAAR;      # big_map string bytes : @storage
+    PUSH bytes 0x1234567890; # bytes : big_map string bytes : @storage
+    SWAP;       # big_map string bytes : bytes : @storage
+    PUSH string ""; # string : big_map string bytes : bytes : @storage
+    GET;        # option bytes : bytes : @storage
+    IF_SOME
+      {
+        # of_some: Get-item:414 # @some : bytes : @storage
+      }
+      {
+        PUSH int 414; # int : bytes : @storage
+        FAILWITH;   # FAILED
+      }; # @some : bytes : @storage
+    COMPARE;    # int : @storage
+    EQ;         # bool : @storage
+    IF
+      {}
+      {
+        PUSH string "WrongCondition: params.k0.metadata[''] == sp.bytes('0x1234567890')"; # string : @storage
+        FAILWITH;   # FAILED
+      }; # @storage
+    NIL operation; # list operation : @storage
+    PAIR;       # pair (list operation) @storage
+  };

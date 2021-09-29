@@ -1,0 +1,11 @@
+Creating contract
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "tz1irJKkXS2DBWkU1NnmFQx1c1L7pbGg4yhk" {}))
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint_interpreted/testContractStorage.0.0.tz.json 1
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint_interpreted/testContractCode.0.0.tz 140
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint_interpreted/testContractCode.0.0.tz.json 162
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint_interpreted/testPrettyPrint.0.0.py 33
+Executing default(sp.record())...
+ -> --- Expected failure in transaction --- Failure: 19 
+ (line 43)

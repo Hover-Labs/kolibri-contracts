@@ -1,0 +1,149 @@
+parameter (or (pair %check (pair %params int (pair nat (pair nat nat))) (nat %result)) (pair %test int (pair nat (pair nat nat))));
+storage   (option nat);
+code
+  {
+    DUP;        # pair @parameter @storage : pair @parameter @storage
+    CDR;        # @storage : pair @parameter @storage
+    SWAP;       # pair @parameter @storage : @storage
+    CAR;        # @parameter : @storage
+    IF_LEFT
+      {
+        # == check ==
+        # sp.result(sp.as_nat(sp.fst(sp.ediv(sp.fst(sp.ediv(sp.snd(sp.snd(sp.snd(params.params))) * 1000000000000000000, sp.as_nat(sp.fst(params.params))).open_some()) * (sp.fst(sp.snd(params.params)) + sp.fst(sp.snd(sp.snd(params.params)))), 1000000000000000000).open_some()) - (sp.fst(sp.snd(params.params)) + sp.fst(sp.snd(sp.snd(params.params)))))) # @parameter%check : @storage
+        DUP;        # @parameter%check : @parameter%check : @storage
+        CADDAR;     # nat : @parameter%check : @storage
+        SWAP;       # @parameter%check : nat : @storage
+        DUP;        # @parameter%check : @parameter%check : nat : @storage
+        DUG 2;      # @parameter%check : nat : @parameter%check : @storage
+        CADAR;      # nat : nat : @parameter%check : @storage
+        ADD;        # nat : @parameter%check : @storage
+        PUSH nat 1000000000000000000; # nat : nat : @parameter%check : @storage
+        DIG 2;      # @parameter%check : nat : nat : @storage
+        DUP;        # @parameter%check : @parameter%check : nat : nat : @storage
+        CADDAR;     # nat : @parameter%check : nat : nat : @storage
+        SWAP;       # @parameter%check : nat : nat : nat : @storage
+        DUP;        # @parameter%check : @parameter%check : nat : nat : nat : @storage
+        DUG 4;      # @parameter%check : nat : nat : nat : @parameter%check : @storage
+        CADAR;      # nat : nat : nat : nat : @parameter%check : @storage
+        ADD;        # nat : nat : nat : @parameter%check : @storage
+        DIG 3;      # @parameter%check : nat : nat : nat : @storage
+        DUP;        # @parameter%check : @parameter%check : nat : nat : nat : @storage
+        DUG 4;      # @parameter%check : nat : nat : nat : @parameter%check : @storage
+        CAAR;       # int : nat : nat : nat : @parameter%check : @storage
+        ISNAT;      # option nat : nat : nat : nat : @parameter%check : @storage
+        IF_SOME
+          {}
+          {
+            PUSH int 569; # int : nat : nat : nat : @parameter%check : @storage
+            FAILWITH;   # FAILED
+          }; # @some : nat : nat : nat : @parameter%check : @storage
+        PUSH nat 1000000000000000000; # nat : @some : nat : nat : nat : @parameter%check : @storage
+        DIG 5;      # @parameter%check : nat : @some : nat : nat : nat : @storage
+        DUP;        # @parameter%check : @parameter%check : nat : @some : nat : nat : nat : @storage
+        DUG 6;      # @parameter%check : nat : @some : nat : nat : nat : @parameter%check : @storage
+        CADDDR;     # nat : nat : @some : nat : nat : nat : @parameter%check : @storage
+        MUL;        # nat : @some : nat : nat : nat : @parameter%check : @storage
+        EDIV;       # option (pair nat nat) : nat : nat : nat : @parameter%check : @storage
+        IF_SOME
+          {}
+          {
+            PUSH int 574; # int : nat : nat : nat : @parameter%check : @storage
+            FAILWITH;   # FAILED
+          }; # @some : nat : nat : nat : @parameter%check : @storage
+        CAR;        # nat : nat : nat : nat : @parameter%check : @storage
+        MUL;        # nat : nat : nat : @parameter%check : @storage
+        EDIV;       # option (pair nat nat) : nat : @parameter%check : @storage
+        IF_SOME
+          {}
+          {
+            PUSH int 576; # int : nat : @parameter%check : @storage
+            FAILWITH;   # FAILED
+          }; # @some : nat : @parameter%check : @storage
+        CAR;        # nat : nat : @parameter%check : @storage
+        SUB;        # int : @parameter%check : @storage
+        ISNAT;      # option nat : @parameter%check : @storage
+        IF_SOME
+          {}
+          {
+            PUSH int 577; # int : @parameter%check : @storage
+            FAILWITH;   # FAILED
+          }; # @some : @parameter%check : @storage
+        SWAP;       # @parameter%check : @some : @storage
+        # sp.verify(__s1.value == params.result) # @parameter%check : @some : @storage
+        CDR;        # nat : @some : @storage
+        COMPARE;    # int : @storage
+        EQ;         # bool : @storage
+        IF
+          {}
+          {
+            PUSH string "WrongCondition: __s1.value == params.result"; # string : @storage
+            FAILWITH;   # FAILED
+          }; # @storage
+      }
+      {
+        SWAP;       # @storage : @parameter%test
+        DROP;       # @parameter%test
+        # == test ==
+        # sp.result(sp.as_nat(sp.fst(sp.ediv(sp.fst(sp.ediv(sp.snd(sp.snd(sp.snd(params))) * 1000000000000000000, sp.as_nat(sp.fst(params))).open_some()) * (sp.fst(sp.snd(params)) + sp.fst(sp.snd(sp.snd(params)))), 1000000000000000000).open_some()) - (sp.fst(sp.snd(params)) + sp.fst(sp.snd(sp.snd(params)))))) # @parameter%test
+        DUP;        # @parameter%test : @parameter%test
+        CDDAR;      # nat : @parameter%test
+        SWAP;       # @parameter%test : nat
+        DUP;        # @parameter%test : @parameter%test : nat
+        DUG 2;      # @parameter%test : nat : @parameter%test
+        CDAR;       # nat : nat : @parameter%test
+        ADD;        # nat : @parameter%test
+        PUSH nat 1000000000000000000; # nat : nat : @parameter%test
+        DIG 2;      # @parameter%test : nat : nat
+        DUP;        # @parameter%test : @parameter%test : nat : nat
+        CDDAR;      # nat : @parameter%test : nat : nat
+        SWAP;       # @parameter%test : nat : nat : nat
+        DUP;        # @parameter%test : @parameter%test : nat : nat : nat
+        DUG 4;      # @parameter%test : nat : nat : nat : @parameter%test
+        CDAR;       # nat : nat : nat : nat : @parameter%test
+        ADD;        # nat : nat : nat : @parameter%test
+        DIG 3;      # @parameter%test : nat : nat : nat
+        DUP;        # @parameter%test : @parameter%test : nat : nat : nat
+        DUG 4;      # @parameter%test : nat : nat : nat : @parameter%test
+        CAR;        # int : nat : nat : nat : @parameter%test
+        ISNAT;      # option nat : nat : nat : nat : @parameter%test
+        IF_SOME
+          {}
+          {
+            PUSH int 569; # int : nat : nat : nat : @parameter%test
+            FAILWITH;   # FAILED
+          }; # @some : nat : nat : nat : @parameter%test
+        PUSH nat 1000000000000000000; # nat : @some : nat : nat : nat : @parameter%test
+        DIG 5;      # @parameter%test : nat : @some : nat : nat : nat
+        CDDDR;      # nat : nat : @some : nat : nat : nat
+        MUL;        # nat : @some : nat : nat : nat
+        EDIV;       # option (pair nat nat) : nat : nat : nat
+        IF_SOME
+          {}
+          {
+            PUSH int 574; # int : nat : nat : nat
+            FAILWITH;   # FAILED
+          }; # @some : nat : nat : nat
+        CAR;        # nat : nat : nat : nat
+        MUL;        # nat : nat : nat
+        EDIV;       # option (pair nat nat) : nat
+        IF_SOME
+          {}
+          {
+            PUSH int 576; # int : nat
+            FAILWITH;   # FAILED
+          }; # @some : nat
+        CAR;        # nat : nat
+        SUB;        # int
+        ISNAT;      # option nat
+        IF_SOME
+          {}
+          {
+            PUSH int 577; # int
+            FAILWITH;   # FAILED
+          }; # @some
+        # self.data.lambdaResult = sp.some(__s2.value) # @some
+        SOME;       # option nat
+      }; # @storage
+    NIL operation; # list operation : @storage
+    PAIR;       # pair (list operation) @storage
+  };

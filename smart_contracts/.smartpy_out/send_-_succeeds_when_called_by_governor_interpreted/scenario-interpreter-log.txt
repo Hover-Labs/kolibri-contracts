@@ -1,0 +1,26 @@
+Creating contract
+ -> (Pair "tz1VmiY38m3y95HqQLjMwqnMS7sdMfGomzKi" (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testContractStorage.0.0.tz.json 7
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testContractCode.0.0.tz 177
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testContractCode.0.0.tz.json 210
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testPrettyPrint.0.0.py 39
+Creating contract
+ -> (Pair 0 0)
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testContractStorage.1.1.tz 1
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testContractStorage.1.1.tz.json 1
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testContractTypes.1.1.txt 5
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testContractCode.1.1.tz 34
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testContractCode.1.1.tz.json 40
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testPrettyPrint.1.1.py 17
+Executing send((sp.mutez(10), sp.contract_address(Contract1)))...
+ -> (Pair "tz1VmiY38m3y95HqQLjMwqnMS7sdMfGomzKi" (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))
+Executing default(sp.unit)...
+ -> (Pair 0 0)
+Verifying sp.contract_balance(0) == sp.tez(0)...
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testVerify.3.tz 23
+ OK
+Verifying sp.contract_balance(1) == sp.mutez(10)...
+ => ./.smartpy_out/send_-_succeeds_when_called_by_governor_interpreted/testVerify.4.tz 23
+ OK

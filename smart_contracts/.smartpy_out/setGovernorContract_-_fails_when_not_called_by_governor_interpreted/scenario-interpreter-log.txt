@@ -1,0 +1,10 @@
+Creating contract
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "tz1irJKkXS2DBWkU1NnmFQx1c1L7pbGg4yhk" {}))
+ => ./.smartpy_out/setGovernorContract_-_fails_when_not_called_by_governor_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/setGovernorContract_-_fails_when_not_called_by_governor_interpreted/testContractStorage.0.0.tz.json 1
+ => ./.smartpy_out/setGovernorContract_-_fails_when_not_called_by_governor_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/setGovernorContract_-_fails_when_not_called_by_governor_interpreted/testContractCode.0.0.tz 140
+ => ./.smartpy_out/setGovernorContract_-_fails_when_not_called_by_governor_interpreted/testContractCode.0.0.tz.json 162
+ => ./.smartpy_out/setGovernorContract_-_fails_when_not_called_by_governor_interpreted/testPrettyPrint.0.0.py 33
+Executing setGovernorContract(sp.address('tz1UMCB2AHSTwG7YcGNr31CqYCtGN873royv'))...
+ -> --- Expected failure in transaction --- WrongCondition in line 70: sp.sender == self.data.governorContractAddress [4]

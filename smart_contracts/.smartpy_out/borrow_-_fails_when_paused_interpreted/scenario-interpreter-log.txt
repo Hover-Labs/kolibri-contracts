@@ -1,0 +1,44 @@
+Creating contract
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "tz1irJKkXS2DBWkU1NnmFQx1c1L7pbGg4yhk" {}))
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractStorage.0.0.tz.json 1
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractCode.0.0.tz 140
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractCode.0.0.tz.json 162
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testPrettyPrint.0.0.py 33
+Executing addOven((sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF')))...
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "tz1irJKkXS2DBWkU1NnmFQx1c1L7pbGg4yhk" {Elt "tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF" "tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF"}))
+Creating contract
+ -> (Pair (Pair (Pair (Pair (Pair 0 False) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))) (Pair (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 0)))) (Pair (Pair (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))) (Pair (Pair 0 (Pair 0 False)) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))))) (Pair (Pair (Pair (Pair 0 0) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")))) (Pair (Pair (Pair 0 0) (Pair 0 (Pair False 0))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))))))
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractStorage.1.2.tz 1
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractStorage.1.2.tz.json 97
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractTypes.1.2.txt 5
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractCode.1.2.tz 1348
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractCode.1.2.tz.json 1874
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testPrettyPrint.1.2.py 67
+Creating contract
+ -> (Pair "XTZ-USD" (Pair "1632869340" 8))
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractStorage.2.3.tz 1
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractStorage.2.3.tz.json 1
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractTypes.2.3.txt 5
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractCode.2.3.tz 56
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractCode.2.3.tz.json 95
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testPrettyPrint.2.3.py 18
+Creating contract
+ -> (Pair (Pair None "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair "Contract_2" (Pair 1800 0)))
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractStorage.3.4.tz 1
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractStorage.3.4.tz.json 7
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractTypes.3.4.txt 5
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractCode.3.4.tz 279
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractCode.3.4.tz.json 293
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testPrettyPrint.3.4.py 43
+Creating contract
+ -> (Pair (Pair (Pair None "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair None (Pair "Contract_1" "Contract_3"))) (Pair (Pair "Contract_0" "tz1LLNkQK4UQV6QcFShiXJ2vT2ELw449MzAA") (Pair True (Pair 0 None))))
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractStorage.4.5.tz 1
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractStorage.4.5.tz.json 19
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractTypes.4.5.txt 5
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractCode.4.5.tz 1068
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testContractCode.4.5.tz.json 1698
+ => ./.smartpy_out/borrow_-_fails_when_paused_interpreted/testPrettyPrint.4.5.py 129
+Executing borrow((sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), (sp.address('tz1YfB2H1NoZVUq4heHqrVX4oVp99yz8gwNq'), (1, (2, (False, (3, (4, 5))))))))...
+ -> --- Expected failure in transaction --- WrongCondition in line 72: self.data.paused == False [18]

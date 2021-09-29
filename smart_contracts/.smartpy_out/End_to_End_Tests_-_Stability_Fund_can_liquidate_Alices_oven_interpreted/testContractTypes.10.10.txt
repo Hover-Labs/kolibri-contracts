@@ -1,0 +1,4 @@
+Storage: sp.TUnit
+Params: sp.TVariant(default = sp.TUnit, liquidate = sp.TAddress).layout(("default", "liquidate"))
+Globals:
+Views:

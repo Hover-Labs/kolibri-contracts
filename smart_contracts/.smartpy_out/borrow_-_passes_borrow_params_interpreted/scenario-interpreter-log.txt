@@ -1,0 +1,83 @@
+Creating contract
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "tz1irJKkXS2DBWkU1NnmFQx1c1L7pbGg4yhk" {}))
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractStorage.0.0.tz.json 1
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractCode.0.0.tz 140
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractCode.0.0.tz.json 162
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testPrettyPrint.0.0.py 33
+Executing addOven((sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF')))...
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "tz1irJKkXS2DBWkU1NnmFQx1c1L7pbGg4yhk" {Elt "tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF" "tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF"}))
+Creating contract
+ -> (Pair (Pair (Pair (Pair (Pair 0 False) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))) (Pair (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 0)))) (Pair (Pair (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))) (Pair (Pair 0 (Pair 0 False)) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))))) (Pair (Pair (Pair (Pair 0 0) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")))) (Pair (Pair (Pair 0 0) (Pair 0 (Pair False 0))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))))))
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractStorage.1.2.tz 1
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractStorage.1.2.tz.json 97
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractTypes.1.2.txt 5
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractCode.1.2.tz 1348
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractCode.1.2.tz.json 1874
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testPrettyPrint.1.2.py 67
+Creating contract
+ -> (Pair "XTZ-USD" (Pair "1632869342" 8))
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractStorage.2.3.tz 1
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractStorage.2.3.tz.json 1
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractTypes.2.3.txt 5
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractCode.2.3.tz 56
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractCode.2.3.tz.json 95
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testPrettyPrint.2.3.py 18
+Creating contract
+ -> (Pair (Pair None "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair "Contract_2" (Pair 1800 0)))
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractStorage.3.4.tz 1
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractStorage.3.4.tz.json 7
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractTypes.3.4.txt 5
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractCode.3.4.tz 279
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractCode.3.4.tz.json 293
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testPrettyPrint.3.4.py 43
+Creating contract
+ -> (Pair (Pair (Pair None "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair None (Pair "Contract_1" "Contract_3"))) (Pair (Pair "Contract_0" "tz1LLNkQK4UQV6QcFShiXJ2vT2ELw449MzAA") (Pair False (Pair 0 None))))
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractStorage.4.5.tz 1
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractStorage.4.5.tz.json 19
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractTypes.4.5.txt 5
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractCode.4.5.tz 1068
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testContractCode.4.5.tz.json 1698
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testPrettyPrint.4.5.py 129
+Executing borrow((sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), (sp.address('tz1YfB2H1NoZVUq4heHqrVX4oVp99yz8gwNq'), (1, (2, (False, (3, (4, 5))))))))...
+ -> (Pair (Pair (Pair (Some (Pair "tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF" (Pair "tz1YfB2H1NoZVUq4heHqrVX4oVp99yz8gwNq" (Pair 1 (Pair 2 (Pair False (Pair 3 (Pair 4 5)))))))) "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair None (Pair "Contract_1" "Contract_3"))) (Pair (Pair "Contract_0" "tz1LLNkQK4UQV6QcFShiXJ2vT2ELw449MzAA") (Pair False (Pair 1 None))))
+Executing isOven(sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'))...
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "tz1irJKkXS2DBWkU1NnmFQx1c1L7pbGg4yhk" {Elt "tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF" "tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF"}))
+Executing getXtzUsdRate(sp.contract(sp.TNat, sp.contract_address(Contract4%borrow_callback)).open_some())...
+ -> (Pair (Pair (Some "Contract_4%borrow_callback") "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair "Contract_2" (Pair 1800 1)))
+Executing get(('XTZ-USD', sp.contract(sp.TPair(sp.TString, sp.TPair(sp.TTimestamp, sp.TNat)), sp.contract_address(Contract3%getXtzUsdRate_callback)).open_some()))...
+ -> (Pair "XTZ-USD" (Pair "1632869342" 8))
+Executing getXtzUsdRate_callback(('XTZ-USD', (sp.timestamp(1632869342), 8)))...
+ -> (Pair (Pair None "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair "Contract_2" (Pair 1800 0)))
+Executing borrow_callback(8000000000000)...
+ -> (Pair (Pair (Pair None "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair None (Pair "Contract_1" "Contract_3"))) (Pair (Pair "Contract_0" "tz1LLNkQK4UQV6QcFShiXJ2vT2ELw449MzAA") (Pair False (Pair 0 None))))
+Executing borrow((8000000000000, (sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), (sp.address('tz1YfB2H1NoZVUq4heHqrVX4oVp99yz8gwNq'), (1, (2, (False, (3, (4, 5)))))))))...
+ -> (Pair (Pair (Pair (Pair (Pair 2 False) (Pair 8000000000000 (Pair "tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF" 1))) (Pair (Pair 4 "tz1YfB2H1NoZVUq4heHqrVX4oVp99yz8gwNq") (Pair 3 (Pair 5 0)))) (Pair (Pair (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))) (Pair (Pair 0 (Pair 0 False)) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))))) (Pair (Pair (Pair (Pair 0 0) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")))) (Pair (Pair (Pair 0 0) (Pair 0 (Pair False 0))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))))))
+Verifying sp.contract_data(1).borrow_ovenAddress == sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF')...
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testVerify.7.tz 23
+ OK
+Verifying sp.contract_data(1).borrow_ownerAddress == sp.address('tz1YfB2H1NoZVUq4heHqrVX4oVp99yz8gwNq')...
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testVerify.8.tz 23
+ OK
+Verifying sp.contract_data(1).borrow_ovenBalance == 1...
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testVerify.9.tz 23
+ OK
+Verifying sp.contract_data(1).borrow_borrowedTokens == 2...
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testVerify.10.tz 23
+ OK
+Verifying sp.contract_data(1).borrow_liquidated == False...
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testVerify.11.tz 23
+ OK
+Verifying sp.contract_data(1).borrow_stabilityFeeTokens == 3...
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testVerify.12.tz 23
+ OK
+Verifying sp.contract_data(1).borrow_ovenInterestIndex == 4...
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testVerify.13.tz 23
+ OK
+Verifying sp.contract_data(1).borrow_tokensToBorrow == 5...
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testVerify.14.tz 23
+ OK
+Verifying sp.contract_balance(1) == sp.mutez(1)...
+ => ./.smartpy_out/borrow_-_passes_borrow_params_interpreted/testVerify.15.tz 23
+ OK

@@ -1,0 +1,23 @@
+parameter (pair (pair (pair (option %borrowParams (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int nat)))))))) (address %governorContractAddress)) (pair (option %liquidateParams (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int address)))))))) (pair (address %minterContractAddress) (address %oracleContractAddress)))) (pair (pair (address %ovenRegistryContractAddress) (address %pauseGuardianContractAddress)) (pair (bool %paused) (pair (int %state) (option %withdrawParams (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int mutez))))))))))));
+storage   unit;
+code
+  {
+    DUP;        # pair @parameter @storage : pair @parameter @storage
+    CDR;        # @storage : pair @parameter @storage
+    SWAP;       # pair @parameter @storage : @storage
+    CAR;        # @parameter : @storage
+    # == verify ==
+    # sp.verify(params.k0.minterContractAddress == sp.address('tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf')) # @parameter : @storage
+    CADDAR;     # address : @storage
+    PUSH address "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf"; # address : address : @storage
+    COMPARE;    # int : @storage
+    EQ;         # bool : @storage
+    IF
+      {}
+      {
+        PUSH string "WrongCondition: params.k0.minterContractAddress == sp.address('tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf')"; # string : @storage
+        FAILWITH;   # FAILED
+      }; # @storage
+    NIL operation; # list operation : @storage
+    PAIR;       # pair (list operation) @storage
+  };

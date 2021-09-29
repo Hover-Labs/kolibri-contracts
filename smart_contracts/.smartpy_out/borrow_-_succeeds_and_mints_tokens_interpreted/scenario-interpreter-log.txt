@@ -1,0 +1,53 @@
+Creating contract
+ -> (Pair (Pair (Pair (Pair (Pair 0 False) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0)) (Pair 0 (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")))) (Pair (Pair (Pair 0 0) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")) (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))))) (Pair (Pair (Pair (Pair 0 0) (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair 0 0)))) (Pair (Pair (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 False))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))))))
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractStorage.0.0.tz.json 97
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractTypes.0.0.txt 5
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractCode.0.0.tz 1432
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractCode.0.0.tz.json 1968
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testPrettyPrint.0.0.py 73
+Creating contract
+ -> (Pair (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" {}) (Pair 1000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 0)))
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractStorage.1.1.tz 1
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractStorage.1.1.tz.json 65
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractTypes.1.1.txt 5
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractCode.1.1.tz 1125
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractCode.1.1.tz.json 1187
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testPrettyPrint.1.1.py 104
+Creating contract
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1601871456"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "Contract_0")) (Pair (Pair 20000000000000000000 0) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "Contract_1"))))
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractStorage.2.2.tz 1
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractStorage.2.2.tz.json 34
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractTypes.2.2.txt 8
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractCode.2.2.tz 4521
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testContractCode.2.2.tz.json 4592
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testPrettyPrint.2.2.py 290
+Executing setAdministrator(sp.contract_address(Contract2))...
+ -> (Pair (Pair (Pair "Contract_2" {}) (Pair 1000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 0)))
+Executing borrow((1000000000000000000, (sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), (sp.address('tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2'), (4 * 1000000000000000000, (1000000000000000000, (False, (0, (sp.to_int(1000000000000000000), 1000000000000000000)))))))))...
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1632868596"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "Contract_0")) (Pair (Pair 20000000000000000000 0) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "Contract_1"))))
+Executing mint(sp.record(address = sp.address('tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2'), value = 1000000000000000000))...
+ -> (Pair (Pair (Pair "Contract_2" {Elt "tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2" (Pair {} 1000000000000000000)}) (Pair 1000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 1000000000000000000)))
+Executing updateState((sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), (2000000000000000000, (0, (1000000000000000000, False)))))...
+ -> (Pair (Pair (Pair (Pair (Pair 0 False) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0)) (Pair 0 (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")))) (Pair (Pair (Pair 0 0) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")) (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))))) (Pair (Pair (Pair (Pair 0 0) (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair 2000000000000000000 1000000000000000000)))) (Pair (Pair (Pair False "tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF") (Pair 0 (Pair 0 False))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))))))
+Verifying sp.contract_data(1).balances[sp.address('tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2')].balance == 1000000000000000000...
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testVerify.5.tz 35
+ OK
+Verifying sp.contract_data(0).updateState_ovenAddress == sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF')...
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testVerify.6.tz 23
+ OK
+Verifying sp.contract_data(0).updateState_interestIndex == (sp.to_int(1000000000000000000))...
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testVerify.7.tz 25
+ OK
+Verifying sp.contract_data(0).updateState_isLiquidated == False...
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testVerify.8.tz 23
+ OK
+Verifying sp.contract_data(0).updateState_borrowedTokens == (1000000000000000000 + 1000000000000000000)...
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testVerify.9.tz 26
+ OK
+Verifying sp.contract_data(0).updateState_stabilityFeeTokens == 0...
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testVerify.10.tz 23
+ OK
+Verifying sp.contract_balance(0) == sp.tez(2)...
+ => ./.smartpy_out/borrow_-_succeeds_and_mints_tokens_interpreted/testVerify.11.tz 23
+ OK

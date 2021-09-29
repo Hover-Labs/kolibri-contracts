@@ -1,0 +1,10 @@
+Creating contract
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1601871456"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm")) (Pair (Pair 20000000000000000000 1) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))))
+ => ./.smartpy_out/setStabilityFee_-_fails_if_not_called_by_governor_interpreted/testContractStorage.0.0.tz 1
+ => ./.smartpy_out/setStabilityFee_-_fails_if_not_called_by_governor_interpreted/testContractStorage.0.0.tz.json 37
+ => ./.smartpy_out/setStabilityFee_-_fails_if_not_called_by_governor_interpreted/testContractTypes.0.0.txt 8
+ => ./.smartpy_out/setStabilityFee_-_fails_if_not_called_by_governor_interpreted/testContractCode.0.0.tz 4521
+ => ./.smartpy_out/setStabilityFee_-_fails_if_not_called_by_governor_interpreted/testContractCode.0.0.tz.json 4592
+ => ./.smartpy_out/setStabilityFee_-_fails_if_not_called_by_governor_interpreted/testPrettyPrint.0.0.py 290
+Executing setStabilityFee(2)...
+ -> --- Expected failure in transaction --- WrongCondition in line 429: sp.sender == self.data.governorContractAddress [4]

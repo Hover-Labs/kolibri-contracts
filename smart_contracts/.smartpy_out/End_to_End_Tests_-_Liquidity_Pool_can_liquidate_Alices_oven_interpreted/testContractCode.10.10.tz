@@ -1,0 +1,33 @@
+parameter (or (unit %default) (address %liquidate));
+storage   unit;
+code
+  {
+    DUP;        # pair @parameter @storage : pair @parameter @storage
+    CDR;        # @storage : pair @parameter @storage
+    SWAP;       # pair @parameter @storage : @storage
+    CAR;        # @parameter : @storage
+    IF_LEFT
+      {
+        DROP;       # @storage
+        # == default == # @storage
+        NIL operation; # list operation : @storage
+      }
+      {
+        # == liquidate ==
+        # sp.send(params, sp.tez(0)) # @parameter%liquidate : @storage
+        CONTRACT %liquidate unit; # option (contract unit) : @storage
+        IF_SOME
+          {}
+          {
+            PUSH int 21; # int : @storage
+            FAILWITH;   # FAILED
+          }; # @some : @storage
+        NIL operation; # list operation : @some : @storage
+        SWAP;       # @some : list operation : @storage
+        PUSH mutez 0; # mutez : @some : list operation : @storage
+        UNIT;       # unit : mutez : @some : list operation : @storage
+        TRANSFER_TOKENS; # operation : list operation : @storage
+        CONS;       # list operation : @storage
+      }; # list operation : @storage
+    PAIR;       # pair (list operation) @storage
+  };
