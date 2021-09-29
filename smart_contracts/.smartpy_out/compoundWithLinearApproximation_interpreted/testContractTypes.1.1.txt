@@ -1,4 +1,0 @@
-Storage: sp.TRecord(lambdaResult = sp.TOption(sp.TNat)).layout("lambdaResult")
-Params: sp.TVariant(check = sp.TRecord(params = sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)), result = sp.TNat).layout(("params", "result")), test = sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat))).layout(("check", "test"))
-Globals:
-Views:

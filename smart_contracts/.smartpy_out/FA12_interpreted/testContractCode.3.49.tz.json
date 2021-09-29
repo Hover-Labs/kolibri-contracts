@@ -1,5 +1,0 @@
-[
-  { "prim": "storage", "args": [ { "prim": "option", "args": [ { "prim": "nat" } ] } ] },
-  { "prim": "parameter", "args": [ { "prim": "nat" } ] },
-  { "prim": "code", "args": [ [ { "prim": "CAR" }, { "prim": "SOME" }, { "prim": "NIL", "args": [ { "prim": "operation" } ] }, { "prim": "PAIR" } ] ] }
-]

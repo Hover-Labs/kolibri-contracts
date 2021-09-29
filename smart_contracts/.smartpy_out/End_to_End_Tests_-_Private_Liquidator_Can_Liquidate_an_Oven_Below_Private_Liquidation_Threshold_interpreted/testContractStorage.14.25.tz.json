@@ -1,7 +1,0 @@
-{
-  "prim": "Pair",
-  "args": [
-    { "prim": "Pair", "args": [ { "int": "0" }, { "prim": "Pair", "args": [ { "int": "1000000000000000000" }, { "prim": "False" } ] } ] },
-    { "prim": "Pair", "args": [ { "string": "Contract_7" }, { "prim": "Pair", "args": [ { "string": "Contract_12" }, { "int": "0" } ] } ] }
-  ]
-}
