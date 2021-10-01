@@ -63,7 +63,7 @@ export async function generateMinterStorage(
       (Pair
         (nat %liquidationFeePercent) 
         (Pair 
-          (address $liquidityPoolAddress) 
+          (address %liquidityPoolAddress) 
           (address %ovenProxyAddress)
         )
       ) 
