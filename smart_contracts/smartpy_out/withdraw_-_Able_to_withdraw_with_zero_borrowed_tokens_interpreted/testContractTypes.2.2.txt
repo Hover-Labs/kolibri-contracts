@@ -1,4 +1,0 @@
-Storage: sp.TRecord(intValue = sp.TInt, natValue = sp.TNat).layout(("intValue", "natValue"))
-Params: sp.TVariant(default = sp.TUnit, intCallback = sp.TInt, natCallback = sp.TNat).layout(("default", ("intCallback", "natCallback")))
-Globals:
-Views:
