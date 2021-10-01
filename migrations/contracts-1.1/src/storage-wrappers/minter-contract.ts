@@ -63,7 +63,7 @@ export async function generateMinterStorage(
       (Pair
         (nat %liquidationFeePercent) 
         (Pair 
-          (address $liquidityPoolAddress) 
+          (address %liquidityPoolAddress) 
           (address %ovenProxyAddress)
         )
       ) 
@@ -89,7 +89,7 @@ export async function generateMinterStorage(
     "(nat %interestIndex)": interestIndex,
     "(timestamp %lastInterestIndexUpdateTime)": lastInterestIndexUpdateTime,
     "(nat %liquidationFeePercent)": liquidationFeePercent,
-    "(address $liquidityPoolAddress)": liquidityPoolContractAddress,
+    "(address %liquidityPoolAddress)": liquidityPoolContractAddress,
     "(address %ovenProxyAddress)": ovenProxyContractAddress,
     "(nat %privateOwnerLiquidationThreshold)": privateOwnerLiquidationThreshold,
     "(nat %stabilityFee)": stabilityFee,

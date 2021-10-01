@@ -4,14 +4,14 @@ import { compileLambda } from '../utils/compile-break-glass-lambda'
 
 const main = async () => {
     // Contracts
-    const ovenFactoryContract = config.coreContracts.OVEN_FACTORY
-    const ovenProxyContract = config.coreContracts.OVEN_PROXY
-    const tokenContract = config.coreContracts.TOKEN
+    const ovenFactoryContract = config.coreContracts.OVEN_FACTORY!
+    const ovenProxyContract = config.coreContracts.OVEN_PROXY!
+    const tokenContract = config.coreContracts.TOKEN!
 
     // Break Glasses
     const ovenFactoryBreakGlassContract = config.coreContracts.BREAK_GLASS_CONTRACTS.OVEN_FACTORY!
-    const ovenProxyBreakGlassContract = config.coreContracts.BREAK_GLASS_CONTRACTS.OVEN_PROXY
-    const tokenBreakGlassContract = config.coreContracts.BREAK_GLASS_CONTRACTS.TOKEN
+    const ovenProxyBreakGlassContract = config.coreContracts.BREAK_GLASS_CONTRACTS.OVEN_PROXY!
+    const tokenBreakGlassContract = config.coreContracts.BREAK_GLASS_CONTRACTS.TOKEN!
 
     // New minter contract
     const newMinterContract = (await fetchFromCache('new-minter')).contractAddress
