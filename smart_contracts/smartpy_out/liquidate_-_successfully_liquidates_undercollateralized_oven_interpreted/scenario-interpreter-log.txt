@@ -1,0 +1,85 @@
+Creating contract
+ -> (Pair (Pair (Pair (Pair (Pair 0 False) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0)) (Pair 0 (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")))) (Pair (Pair (Pair 0 0) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")) (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))))) (Pair (Pair (Pair (Pair 0 0) (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair 0 0)))) (Pair (Pair (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 False))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))))))
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractStorage.0.0.tz 1
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractStorage.0.0.tz.json 97
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractTypes.0.0.txt 5
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractCode.0.0.tz 1432
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractCode.0.0.tz.json 1968
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testPrettyPrint.0.0.py 73
+Creating contract
+ -> (Pair (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" {}) (Pair 1000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 0)))
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractStorage.1.1.tz 1
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractStorage.1.1.tz.json 65
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractTypes.1.1.txt 5
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractCode.1.1.tz 1125
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractCode.1.1.tz.json 1187
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testPrettyPrint.1.1.py 104
+Creating contract
+ -> (Pair 0 0)
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractStorage.2.2.tz 1
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractStorage.2.2.tz.json 1
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractTypes.2.2.txt 5
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractCode.2.2.tz 34
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractCode.2.2.tz.json 40
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testPrettyPrint.2.2.py 17
+Creating contract
+ -> (Pair 0 0)
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractStorage.3.3.tz 1
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractStorage.3.3.tz.json 1
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractTypes.3.3.txt 5
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractCode.3.3.tz 34
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractCode.3.3.tz.json 40
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testPrettyPrint.3.3.py 17
+Creating contract
+ -> (Pair 0 0)
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractStorage.4.4.tz 1
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractStorage.4.4.tz.json 1
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractTypes.4.4.txt 5
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractCode.4.4.tz 34
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractCode.4.4.tz.json 40
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testPrettyPrint.4.4.py 17
+Creating contract
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "Contract_3")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1601871456"))) (Pair (Pair 80000000000000000 (Pair "Contract_4" "Contract_0")) (Pair (Pair 20000000000000000000 0) (Pair "Contract_2" "Contract_1"))))
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractStorage.5.5.tz 1
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractStorage.5.5.tz.json 28
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractTypes.5.5.txt 8
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractCode.5.5.tz 4554
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testContractCode.5.5.tz.json 4624
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testPrettyPrint.5.5.py 291
+Executing setAdministrator(sp.contract_address(Contract5))...
+ -> (Pair (Pair (Pair "Contract_5" {}) (Pair 1000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 0)))
+Executing mint(sp.record(address = sp.contract_address(Contract4), value = 1000 * 1000000000000000000))...
+ -> (Pair (Pair (Pair "Contract_5" {Elt "Contract_4" (Pair {} 1000000000000000000000)}) (Pair 1000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 1000000000000000000000)))
+Executing liquidate((1000000000000000000, (sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), (sp.address('tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2'), (1000000000000000000, (2 * 1000000000000000000, (False, (sp.to_int(1000000000000000000), (sp.to_int(1000000000000000000), sp.contract_address(Contract4))))))))))...
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "Contract_3")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1632866676"))) (Pair (Pair 80000000000000000 (Pair "Contract_4" "Contract_0")) (Pair (Pair 20000000000000000000 0) (Pair "Contract_2" "Contract_1"))))
+Executing burn(sp.record(address = sp.contract_address(Contract4), value = 3240000000000000000))...
+ -> (Pair (Pair (Pair "Contract_5" {Elt "Contract_4" (Pair {} 996760000000000000000)}) (Pair 1000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 996760000000000000000)))
+Executing mint(sp.record(address = sp.contract_address(Contract3), value = 124000000000000000))...
+ -> (Pair (Pair (Pair "Contract_5" {Elt "Contract_3" (Pair {} 124000000000000000); Elt "Contract_4" (Pair {} 996760000000000000000)}) (Pair 1000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 996884000000000000000)))
+Executing mint(sp.record(address = sp.contract_address(Contract2), value = 1116000000000000000))...
+ -> (Pair (Pair (Pair "Contract_5" {Elt "Contract_2" (Pair {} 1116000000000000000); Elt "Contract_3" (Pair {} 124000000000000000); Elt "Contract_4" (Pair {} 996760000000000000000)}) (Pair 1000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 998000000000000000000)))
+Executing default(sp.unit)...
+ -> (Pair 0 0)
+Executing updateState((sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), (0, (0, (1000000000000000000, True)))))...
+ -> (Pair (Pair (Pair (Pair (Pair 0 False) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0)) (Pair 0 (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")))) (Pair (Pair (Pair 0 0) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")) (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))))) (Pair (Pair (Pair (Pair 0 0) (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair 0 1000000000000000000)))) (Pair (Pair (Pair True "tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF") (Pair 0 (Pair 0 False))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))))))
+Verifying sp.contract_balance(4) == sp.tez(1)...
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testVerify.9.tz 23
+ OK
+Verifying sp.contract_data(1).balances[sp.contract_address(Contract4)].balance == sp.as_nat((1000 * 1000000000000000000) - ((sp.as_nat(sp.to_int(1000000000000000000)) + (2 * 1000000000000000000)) + (((sp.as_nat(sp.to_int(1000000000000000000)) + (2 * 1000000000000000000)) * 80000000000000000) // 1000000000000000000)))...
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testVerify.10.tz 84
+ OK
+Verifying sp.contract_data(0).updateState_ovenAddress == sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF')...
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testVerify.11.tz 23
+ OK
+Verifying sp.contract_data(0).updateState_borrowedTokens == 0...
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testVerify.12.tz 23
+ OK
+Verifying sp.contract_data(0).updateState_stabilityFeeTokens == 0...
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testVerify.13.tz 23
+ OK
+Verifying sp.contract_data(0).updateState_interestIndex == (sp.to_int(1000000000000000000))...
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testVerify.14.tz 25
+ OK
+Verifying sp.contract_data(0).updateState_isLiquidated == True...
+ => ./smartpy_out/liquidate_-_successfully_liquidates_undercollateralized_oven_interpreted/testVerify.15.tz 23
+ OK

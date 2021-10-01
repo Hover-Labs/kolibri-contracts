@@ -1,0 +1,10 @@
+Creating contract
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1601871456"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm")) (Pair (Pair 20000000000000000000 0) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))))
+ => ./smartpy_out/borrow_-_Fails_if_oven_is_undercollateralized_interpreted/testContractStorage.0.0.tz 1
+ => ./smartpy_out/borrow_-_Fails_if_oven_is_undercollateralized_interpreted/testContractStorage.0.0.tz.json 37
+ => ./smartpy_out/borrow_-_Fails_if_oven_is_undercollateralized_interpreted/testContractTypes.0.0.txt 8
+ => ./smartpy_out/borrow_-_Fails_if_oven_is_undercollateralized_interpreted/testContractCode.0.0.tz 4554
+ => ./smartpy_out/borrow_-_Fails_if_oven_is_undercollateralized_interpreted/testContractCode.0.0.tz.json 4624
+ => ./smartpy_out/borrow_-_Fails_if_oven_is_undercollateralized_interpreted/testPrettyPrint.0.0.py 291
+Executing borrow((1000000000000000000, (sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), (sp.address('tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2'), (2 * 1000000000000000000, (0, (False, (0, (sp.to_int(1000000000000000000), 2 * 1000000000000000000)))))))))...
+ -> --- Expected failure in transaction --- WrongCondition in line 135: self.computeCollateralizationPercentage((match_pair_95_fst, (match_pair_92_fst, (match_pair_96_fst + sp.snd(match_pair_98_snd)) + (sp.as_nat(match_pair_98_fst) + self.calculateNewAccruedInterest((sp.fst(match_pair_98_snd), (match_pair_96_fst, (sp.as_nat(match_pair_98_fst), self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime) // 60))))))))))) >= self.data.collateralizationPercentage [11]

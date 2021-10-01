@@ -19,7 +19,7 @@ class MinterContract(sp.Contract):
         developerFundContractAddress = Addresses.DEVELOPER_FUND_ADDRESS,
         liquidityPoolContractAddress = Addresses.LIQUIDITY_POOL_ADDRESS,
         collateralizationPercentage = sp.nat(200000000000000000000), # 200%
-        privateOwnerLiquidationThreshold = sp.nat(175000000000000000000), # 175%
+        privateOwnerLiquidationThreshold = sp.nat(20000000000000000000), # 20%
         stabilityFee = sp.nat(0),
         lastInterestIndexUpdateTime = sp.timestamp(1601871456),
         interestIndex = 1000000000000000000,
@@ -365,10 +365,11 @@ class MinterContract(sp.Contract):
         # Verify liquidation is allowed.
         # Undercollateralization is performed as a check above.
         # Liquidity Pool and Stability Fund can always liquidate, others must be below privateLiquidationFeePercentage
+        privateLiquidationRequirement = sp.as_nat(self.data.collateralizationPercentage - self.data.privateOwnerLiquidationThreshold)
         sp.verify(
             (liquidatorAddress == self.data.liquidityPoolContractAddress) | # sender is liquidity pool
             (liquidatorAddress == self.data.stabilityFundContractAddress) | # sender is stability fund
-            (collateralizationPercentage < self.data.privateOwnerLiquidationThreshold), # sender is private and collateralization is below privateLiquidationFeePercentage
+            (collateralizationPercentage < privateLiquidationRequirement), # sender is private and collateralization is below privateLiquidationFeePercentage
             Errors.NOT_ALLOWED_TO_LIQUIDATE
         )
 
@@ -960,7 +961,7 @@ if __name__ == "__main__":
         liquidationFeePercent = sp.nat(80000000000000000) # 8%
         devFundSplit = sp.nat(100000000000000000) # 10%
         collateralizationPercentage = sp.nat(200000000000000000000) # 200%
-        privateOwnerLiquidationThreshold = sp.nat(175000000000000000000) # 175%
+        privateOwnerLiquidationThreshold = sp.nat(25000000000000000000) # 25%
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
@@ -1045,7 +1046,7 @@ if __name__ == "__main__":
         liquidationFeePercent = sp.nat(80000000000000000) # 8%
         devFundSplit = sp.nat(100000000000000000) # 10%
         collateralizationPercentage = sp.nat(200000000000000000000) # 200%
-        privateOwnerLiquidationThreshold = sp.nat(175000000000000000000) # 175%        
+        privateOwnerLiquidationThreshold = sp.nat(25000000000000000000) # 25%        
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
@@ -1134,7 +1135,7 @@ if __name__ == "__main__":
         liquidationFeePercent = sp.nat(80000000000000000) # 8%
         devFundSplit = sp.nat(100000000000000000) # 10%
         collateralizationPercentage = sp.nat(200000000000000000000) # 200%
-        privateOwnerLiquidationThreshold = sp.nat(175000000000000000000) # 175%        
+        privateOwnerLiquidationThreshold = sp.nat(25000000000000000000) # 25%        
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
@@ -1223,7 +1224,7 @@ if __name__ == "__main__":
         liquidationFeePercent = sp.nat(80000000000000000) # 8%
         devFundSplit = sp.nat(100000000000000000) # 10%
         collateralizationPercentage = sp.nat(200000000000000000000) # 200%
-        privateOwnerLiquidationThreshold = sp.nat(175000000000000000000) # 175%        
+        privateOwnerLiquidationThreshold = sp.nat(25000000000000000000) # 25%        
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
@@ -1317,7 +1318,7 @@ if __name__ == "__main__":
         liquidationFeePercent = sp.nat(80000000000000000) # 8%
         devFundSplit = sp.nat(100000000000000000) # 10%
         collateralizationPercentage = sp.nat(200000000000000000000) # 200%
-        privateOwnerLiquidationThreshold = sp.nat(175000000000000000000) # 175%        
+        privateOwnerLiquidationThreshold = sp.nat(25000000000000000000) # 25%        
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
@@ -1411,7 +1412,7 @@ if __name__ == "__main__":
         liquidationFeePercent = sp.nat(80000000000000000) # 8%
         devFundSplit = sp.nat(100000000000000000) # 10%
         collateralizationPercentage = sp.nat(200000000000000000000) # 200%
-        privateOwnerLiquidationThreshold = sp.nat(175000000000000000000) # 175%        
+        privateOwnerLiquidationThreshold = sp.nat(25000000000000000000) # 25%        
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,

@@ -37,7 +37,7 @@ ts-node src/flows/migrate.ts
 
 **Validate Results**
 
-Note: This action is destructive and the contract should not be used.
+Note: This action is destructive and the contract should not be used in production.
 
 ```
 ts-node src/verifications/verify-storage.ts
