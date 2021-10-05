@@ -55,3 +55,9 @@ NULL_ADDRESS = sp.address("tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")
 
 # The address which acts as the liquidity pool
 LIQUIDITY_POOL_ADDRESS = sp.address("tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D")
+
+# The address of the savings account.
+SAVINGS_ACCOUNT_ADDRESS = sp.address("tz1gfArv665EUkSg2ojMBzcbfwuPxAvqPvjo")
+
+# The address which acts as the Token Admin
+TOKEN_ADMIN_ADDRESS = sp.address("tz1eEnQhbwf6trb8Q8mPb2RaPkNk2rN7BKi8")
