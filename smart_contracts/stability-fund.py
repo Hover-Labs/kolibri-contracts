@@ -18,6 +18,7 @@ class StabilityFundContract(DevFund.DevFundContract):
         administratorContractAddress = Addresses.FUND_ADMINISTRATOR_ADDRESS,
         ovenRegistryContractAddress = Addresses.OVEN_REGISTRY_ADDRESS,
         tokenContractAddress = Addresses.TOKEN_ADDRESS,
+        savingsAccountContractAddress = Addresses.SAVINGS_ACCOUNT_ADDRESS,
     ):
         self.exception_optimization_level = "DefaultUnit"
 
@@ -25,8 +26,33 @@ class StabilityFundContract(DevFund.DevFundContract):
             governorContractAddress = governorContractAddress,
             administratorContractAddress = administratorContractAddress,
             tokenContractAddress = tokenContractAddress,
-            ovenRegistryContractAddress = ovenRegistryContractAddress
+            ovenRegistryContractAddress = ovenRegistryContractAddress,
+            savingsAccountContractAddress = savingsAccountContractAddress
         )
+
+    ################################################################
+    # Savings Account API
+    ################################################################
+
+    @sp.entry_point
+    def accrueInterest(self, tokensAccrued):
+        sp.set_type(tokensAccrued, sp.TNat)
+
+        # Verify the caller is the savings account.
+        sp.verify(sp.sender == self.data.savingsAccountContractAddress, message = Errors.NOT_SAVINGS_ACCOUNT)
+
+        # Transfer the accrued tokens.
+        tokenTransferParam = sp.record(
+            from_ = sp.self_address,
+            to_ = self.data.savingsAccountContractAddress, 
+            value = tokensAccrued
+        )
+        transferHandle = sp.contract(
+            sp.TRecord(from_ = sp.TAddress, to_ = sp.TAddress, value = sp.TNat).layout(("from_ as from", ("to_ as to", "value"))),
+          self.data.tokenContractAddress,
+          "transfer"
+        ).open_some()
+        sp.transfer(tokenTransferParam, sp.mutez(0), transferHandle)
 
     ################################################################
     # Administrator API
@@ -67,6 +93,14 @@ class StabilityFundContract(DevFund.DevFundContract):
         sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
         self.data.ovenRegistryContractAddress = newOvenRegistryContractAddress        
 
+    # Update the savings account contract.
+    @sp.entry_point
+    def setSavingsAccountContract(self, newSavingsAccountContractAddress):
+        sp.set_type(newSavingsAccountContractAddress, sp.TAddress)
+
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.savingsAccountContractAddress = newSavingsAccountContractAddress                
+
 # Only run tests if this file is main.
 if __name__ == "__main__":
 
@@ -81,6 +115,84 @@ if __name__ == "__main__":
     Oven = sp.import_script_from_url("file:oven.py")
     OvenRegistry = sp.import_script_from_url("file:oven-registry.py")
     Token = sp.import_script_from_url("file:token.py")
+
+    ################################################################
+    # accrueInterest
+    ################################################################
+
+    @sp.add_test(name="accrueInterest - can accrue interest")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a token contract.
+        token = Token.FA12(
+            admin = Addresses.TOKEN_ADMIN_ADDRESS
+        )
+        scenario += token
+        
+        # AND a StabilityFund contract
+        savingsAccountContractAddress = Addresses.SAVINGS_ACCOUNT_ADDRESS
+        fund = StabilityFundContract(
+            savingsAccountContractAddress = savingsAccountContractAddress,
+            tokenContractAddress = token.address
+        )
+        scenario += fund
+
+        # AND the fund owns some tokens.
+        scenario += token.mint(
+            sp.record(
+                address = fund.address,
+                value = sp.nat(1000)
+            )
+        ).run(
+            sender = Addresses.TOKEN_ADMIN_ADDRESS
+        )
+
+        # WHEN accrueInterest is called
+        interestAccrued = sp.nat(123)
+        scenario += fund.accrueInterest(interestAccrued).run(
+            sender = Addresses.SAVINGS_ACCOUNT_ADDRESS
+        )
+
+        # THEN the savings account receives the tokens accrues.
+        scenario.verify(token.data.balances[Addresses.SAVINGS_ACCOUNT_ADDRESS].balance == interestAccrued)
+
+    @sp.add_test(name="accrueInterest - fails if not called by savings account")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a token contract.
+        token = Token.FA12(
+            admin = Addresses.TOKEN_ADMIN_ADDRESS
+        )
+        scenario += token
+        
+        # AND a StabilityFund contract
+        savingsAccountContractAddress = Addresses.SAVINGS_ACCOUNT_ADDRESS
+        fund = StabilityFundContract(
+            savingsAccountContractAddress = savingsAccountContractAddress,
+            tokenContractAddress = token.address
+        )
+        scenario += fund
+
+        # AND the fund owns some tokens.
+        scenario += token.mint(
+            sp.record(
+                address = fund.address,
+                value = sp.nat(1000)
+            )
+        ).run(
+            sender = Addresses.TOKEN_ADMIN_ADDRESS
+        )
+
+        # WHEN accrueInterest is called by someone other than the savings accounts
+        # THEN the call fails
+        notSavingsAccount = Addresses.NULL_ADDRESS
+        interestAccrued = sp.nat(123)
+        scenario += fund.accrueInterest(interestAccrued).run(
+            sender = notSavingsAccount,
+            valid = False
+        )
 
     ################################################################
     # liquidate
@@ -237,3 +349,46 @@ if __name__ == "__main__":
             sender = Addresses.NULL_ADDRESS,
             valid = False
         )    
+
+    ################################################################
+    # setSavingsAccountContract
+    ################################################################
+
+    @sp.add_test(name="setSavingsAccountContract - succeeds when called by governor")
+    def test():
+        # GIVEN an DevFund contract
+        scenario = sp.test_scenario()
+
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        fund = StabilityFundContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += fund
+
+        # WHEN the setSavingsAccountContract is called with a new contract
+        rotatedAddress = Addresses.ROTATED_ADDRESS
+        scenario += fund.setSavingsAccountContract(rotatedAddress).run(
+            sender = governorContractAddress,
+        )
+
+        # THEN the contract is updated.
+        scenario.verify(fund.data.savingsAccountContractAddress == rotatedAddress)
+
+    @sp.add_test(name="setSavingsAccountContract - fails when not called by governor")
+    def test():
+        # GIVEN a DevFund contract
+        scenario = sp.test_scenario()
+
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        fund = StabilityFundContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += fund
+
+        # WHEN the setSavingsAccountContract is called by someone who isn't the governor THEN the call fails
+        rotatedAddress = Addresses.ROTATED_ADDRESS
+        scenario += fund.setSavingsAccountContract(rotatedAddress).run(
+            sender = Addresses.NULL_ADDRESS,
+            valid = False
+        )        
+        
