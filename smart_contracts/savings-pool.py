@@ -21,19 +21,20 @@ WAITING_DEPOSIT = 3
 ################################################################
 
 Addresses = sp.import_script_from_url("file:./test-helpers/addresses.py")
+FA12 = sp.import_script_from_url("file:./fa12.py")
 
-class PoolContract(Token.FA12):
+class SavingsPoolContract(FA12.FA12):
   def __init__(
     self,
     
     # The address of the token contract which will be deposited.
-    tokenAddress = Addresses.TOKEN_ADDRESS,
+    tokenContractAddress = Addresses.TOKEN_ADDRESS,
 
     # The governor of the pool.
-    governorAddress = Addresses.GOVERNOR_ADDRESS,
+    governorContractAddress = Addresses.GOVERNOR_ADDRESS,
 
     # The address of the stability fund.
-    stabilityFundAddress = Addresses.STABILITY_FUND_ADDRESS,
+    stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
 
     # The interest rate.
     interestRate = sp.nat(0),
@@ -84,7 +85,7 @@ class PoolContract(Token.FA12):
       tvalue = sp.TBytes            
     )
 
-    self.exception_optimization_level = "debug-message"
+    self.exception_optimization_level = "DefaultUnit"
 
     self.init(
       # Parent class fields
@@ -96,9 +97,9 @@ class PoolContract(Token.FA12):
       token_metadata = token_metadata,
 
       # Addresses
-      governorAddress = governorAddress,
-      stabilityFundAddress = stabilityFundAddress,
-      tokenAddress = tokenAddress,
+      governorContractAddress = governorContractAddress,
+      stabilityFundContractAddress = stabilityFundContractAddress,
+      tokenContractAddress = tokenContractAddress,
 
       # Configuration
       interestRate = interestRate,
@@ -136,7 +137,7 @@ class PoolContract(Token.FA12):
     param = (sp.self_address, sp.self_entry_point(entry_point = 'deposit_callback'))
     contractHandle = sp.contract(
       sp.TPair(sp.TAddress, sp.TContract(sp.TNat)),
-      self.data.tokenAddress,
+      self.data.tokenContractAddress,
       "getBalance",      
     ).open_some()
     sp.transfer(param, sp.mutez(0), contractHandle)
@@ -147,7 +148,7 @@ class PoolContract(Token.FA12):
     sp.set_type(updatedBalance, sp.TNat)
 
     # Validate sender
-    sp.verify(sp.sender == self.data.tokenAddress, "bad sender")
+    sp.verify(sp.sender == self.data.tokenContractAddress, "bad sender")
 
     # Validate state
     sp.verify(self.data.state == WAITING_DEPOSIT, "bad state")
@@ -175,7 +176,7 @@ class PoolContract(Token.FA12):
     )
     transferHandle = sp.contract(
       sp.TRecord(from_ = sp.TAddress, to_ = sp.TAddress, value = sp.TNat).layout(("from_ as from", ("to_ as to", "value"))),
-      self.data.tokenAddress,
+      self.data.tokenContractAddress,
       "transfer"
     ).open_some()
     sp.transfer(tokenTransferParam, sp.mutez(0), transferHandle)
@@ -214,7 +215,7 @@ class PoolContract(Token.FA12):
     param = (sp.self_address, sp.self_entry_point(entry_point = 'redeem_callback'))
     contractHandle = sp.contract(
       sp.TPair(sp.TAddress, sp.TContract(sp.TNat)),
-      self.data.tokenAddress,
+      self.data.tokenContractAddress,
       "getBalance",      
     ).open_some()
     sp.transfer(param, sp.mutez(0), contractHandle)
@@ -225,7 +226,7 @@ class PoolContract(Token.FA12):
     sp.set_type(updatedBalance, sp.TNat)
 
     # Validate sender
-    sp.verify(sp.sender == self.data.tokenAddress, "bad sender")
+    sp.verify(sp.sender == self.data.tokenContractAddress, "bad sender")
 
     # Validate state
     sp.verify(self.data.state == WAITING_REDEEM, "bad state")
@@ -263,7 +264,7 @@ class PoolContract(Token.FA12):
     )
     transferHandle = sp.contract(
       sp.TRecord(from_ = sp.TAddress, to_ = sp.TAddress, value = sp.TNat).layout(("from_ as from", ("to_ as to", "value"))),
-      self.data.tokenAddress,
+      self.data.tokenContractAddress,
       "transfer"
     ).open_some()
     sp.transfer(tokenTransferParam, sp.mutez(0), transferHandle)
@@ -314,7 +315,7 @@ class PoolContract(Token.FA12):
     )
     transferHandle = sp.contract(
       sp.TRecord(from_ = sp.TAddress, to_ = sp.TAddress, value = sp.TNat).layout(("from_ as from", ("to_ as to", "value"))),
-      self.data.tokenAddress,
+      self.data.tokenContractAddress,
       "transfer"
     ).open_some()
     sp.transfer(tokenTransferParam, sp.mutez(0), transferHandle)
@@ -348,26 +349,26 @@ class PoolContract(Token.FA12):
 
   # Update the governor address.
   @sp.entry_point
-  def updateGovernorAddress(self, newGovernorAddress):
-    sp.set_type(newGovernorAddress, sp.TAddress)
+  def updategovernorContractAddress(self, newgovernorContractAddress):
+    sp.set_type(newgovernorContractAddress, sp.TAddress)
 
-    sp.verify(sp.sender == self.data.governorAddress, "not governor")
-    self.data.governorAddress = newGovernorAddress
+    sp.verify(sp.sender == self.data.governorContractAddress, "not governor")
+    self.data.governorContractAddress = newgovernorContractAddress
 
   # Update the stability fund address.
   @sp.entry_point
-  def updateStabilityFundAddress(self, newStabilityFundAddress):
-    sp.set_type(newStabilityFundAddress, sp.TAddress)
+  def updatestabilityFundContractAddress(self, newstabilityFundContractAddress):
+    sp.set_type(newstabilityFundContractAddress, sp.TAddress)
 
-    sp.verify(sp.sender == self.data.governorAddress, "not governor")
-    self.data.stabilityFundAddress = newStabilityFundAddress   
+    sp.verify(sp.sender == self.data.governorContractAddress, "not governor")
+    self.data.stabilityFundContractAddress = newstabilityFundContractAddress   
 
   # Update the interest rate.
   @sp.entry_point
   def updateInterestRate(self, newInterestRate):
     sp.set_type(newInterestRate, sp.TNat)
 
-    sp.verify(sp.sender == self.data.governorAddress, "not governor")
+    sp.verify(sp.sender == self.data.governorContractAddress, "not governor")
 
     # Accrue interest.
     accruedInterest = self.accrueInterest(sp.unit) 
@@ -381,7 +382,7 @@ class PoolContract(Token.FA12):
   def updateContractMetadata(self, params):	
     sp.set_type(params, sp.TPair(sp.TString, sp.TBytes))	
 
-    sp.verify(sp.sender == self.data.governorAddress, "not governor")
+    sp.verify(sp.sender == self.data.governorContractAddress, "not governor")
 
     key = sp.fst(params)
     value = sp.snd(params)	
@@ -392,7 +393,7 @@ class PoolContract(Token.FA12):
   def updateTokenMetadata(self, params):	
     sp.set_type(params, sp.TPair(sp.TNat, sp.TMap(sp.TString, sp.TBytes)))	
 
-    sp.verify(sp.sender == self.data.governorAddress, "not governor")
+    sp.verify(sp.sender == self.data.governorContractAddress, "not governor")
     self.data.token_metadata[0] = params
 
   # Rescue any XTZ that may have been sent to the contract.
@@ -401,7 +402,7 @@ class PoolContract(Token.FA12):
     sp.set_type(params, sp.TRecord(destinationAddress = sp.TAddress).layout("destinationAddress"))
 
     # Verify the requester is the governor.
-    sp.verify(sp.sender == self.data.governorAddress, "NOT_GOVERNOR")
+    sp.verify(sp.sender == self.data.governorContractAddress, "NOT_GOVERNOR")
 
     sp.send(params.destinationAddress, sp.balance)    
 
@@ -439,7 +440,7 @@ class PoolContract(Token.FA12):
     # Transfer in accrued tokens
     stabilityFundHandle = sp.contract(
       sp.TNat,
-      self.data.stabilityFundAddress,
+      self.data.stabilityFundContractAddress,
       'accrueInterest'
     ).open_some()
     sp.transfer(accruedInterest.value, sp.mutez(0), stabilityFundHandle)
@@ -473,7 +474,7 @@ if __name__ == "__main__":
       contractEntrypoint,
       interestRate,
       lastInterestCompoundTime,
-      stabilityFundAddress,
+      stabilityFundContractAddress,
       underlyingBalance
     ):
       self.contractEntrypoint = contractEntrypoint
@@ -481,7 +482,7 @@ if __name__ == "__main__":
         result = sp.none, 
         interestRate = interestRate,
         lastInterestCompoundTime = lastInterestCompoundTime,
-        stabilityFundAddress = stabilityFundAddress,
+        stabilityFundContractAddress = stabilityFundContractAddress,
         underlyingBalance = underlyingBalance,
       )
         
@@ -500,7 +501,7 @@ if __name__ == "__main__":
 
     interestRate = sp.nat(0)
     lastInterestCompoundTime = sp.timestamp(0)
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime
     )
@@ -511,7 +512,7 @@ if __name__ == "__main__":
       pool.accrueInterest,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      stabilityFundAddress = Addresses.STABILITY_FUND_ADDRESS,
+      stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
       underlyingBalance = sp.nat(0)
     )
     scenario += tester
@@ -531,7 +532,7 @@ if __name__ == "__main__":
 
     interestRate = sp.nat(0)
     lastInterestCompoundTime = sp.timestamp(0)
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime
     )
@@ -542,7 +543,7 @@ if __name__ == "__main__":
       pool.accrueInterest,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      stabilityFundAddress = Addresses.STABILITY_FUND_ADDRESS,
+      stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
       underlyingBalance = sp.nat(0)
     )
     scenario += tester
@@ -562,7 +563,7 @@ if __name__ == "__main__":
 
     interestRate = sp.nat(0)
     lastInterestCompoundTime = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime
     )
@@ -573,7 +574,7 @@ if __name__ == "__main__":
       pool.accrueInterest,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      stabilityFundAddress = Addresses.STABILITY_FUND_ADDRESS,
+      stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
       underlyingBalance = sp.nat(0)
     )
     scenario += tester
@@ -593,7 +594,7 @@ if __name__ == "__main__":
 
     interestRate = sp.nat(0)
     lastInterestCompoundTime = sp.timestamp(0)
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime
     )
@@ -604,7 +605,7 @@ if __name__ == "__main__":
       pool.accrueInterest,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      stabilityFundAddress = Addresses.STABILITY_FUND_ADDRESS,
+      stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
       underlyingBalance = sp.nat(0)
     )
     scenario += tester
@@ -625,7 +626,7 @@ if __name__ == "__main__":
     interestRate = sp.nat(100000000000000000)
     initialValue = Constants.PRECISION
     lastInterestCompoundTime = sp.timestamp(0)
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = interestRate,
       underlyingBalance = initialValue,
       lastInterestCompoundTime = lastInterestCompoundTime
@@ -637,7 +638,7 @@ if __name__ == "__main__":
       pool.accrueInterest,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      stabilityFundAddress = Addresses.STABILITY_FUND_ADDRESS,
+      stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
       underlyingBalance = initialValue
     )
     scenario += tester
@@ -658,7 +659,7 @@ if __name__ == "__main__":
     interestRate = sp.nat(100000000000000000)
     initialValue = Constants.PRECISION
     lastInterestCompoundTime = sp.timestamp(0)
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = interestRate,
       underlyingBalance = initialValue,
       lastInterestCompoundTime = lastInterestCompoundTime
@@ -670,7 +671,7 @@ if __name__ == "__main__":
       pool.accrueInterest,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      stabilityFundAddress = Addresses.STABILITY_FUND_ADDRESS,
+      stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
       underlyingBalance = initialValue
     )
     scenario += tester
@@ -691,7 +692,7 @@ if __name__ == "__main__":
     interestRate = sp.nat(100000000000000000)
     initialValue = 1100000000000000000
     lastInterestCompoundTime = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = interestRate,
       underlyingBalance = initialValue,
       lastInterestCompoundTime = lastInterestCompoundTime
@@ -703,7 +704,7 @@ if __name__ == "__main__":
       pool.accrueInterest,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      stabilityFundAddress = Addresses.STABILITY_FUND_ADDRESS,
+      stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
       underlyingBalance = initialValue
     )
     scenario += tester
@@ -724,7 +725,7 @@ if __name__ == "__main__":
     interestRate = sp.nat(100000000000000000)
     initialValue = Constants.PRECISION
     lastInterestCompoundTime = sp.timestamp(0)
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = interestRate,
       underlyingBalance = initialValue,
       lastInterestCompoundTime = lastInterestCompoundTime
@@ -736,7 +737,7 @@ if __name__ == "__main__":
       pool.accrueInterest,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      stabilityFundAddress = Addresses.STABILITY_FUND_ADDRESS,
+      stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
       underlyingBalance = initialValue
     )
     scenario += tester
@@ -763,7 +764,7 @@ if __name__ == "__main__":
     interestRate = sp.nat(100000000000000000)
     initialValue = Constants.PRECISION
     lastInterestCompoundTime = sp.timestamp(0)
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = interestRate,
       underlyingBalance = initialValue,
       lastInterestCompoundTime = lastInterestCompoundTime
@@ -792,7 +793,7 @@ if __name__ == "__main__":
       pool.accrueInterest,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      stabilityFundAddress = stabilityFund.address,
+      stabilityFundContractAddress = stabilityFund.address,
       underlyingBalance = initialValue
     )
     scenario += tester
@@ -836,7 +837,7 @@ if __name__ == "__main__":
     interestRate = sp.nat(100000000000000000)
     initialValue = Constants.PRECISION
     lastInterestCompoundTime = sp.timestamp(0)
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = interestRate,
       underlyingBalance = initialValue,
       lastInterestCompoundTime = lastInterestCompoundTime
@@ -865,7 +866,7 @@ if __name__ == "__main__":
       pool.accrueInterest,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      stabilityFundAddress = stabilityFund.address,
+      stabilityFundContractAddress = stabilityFund.address,
       underlyingBalance = initialValue
     )
     scenario += tester
@@ -909,7 +910,7 @@ if __name__ == "__main__":
     interestRate = sp.nat(100000000000000000)    
     initialValue = sp.nat(1100000000000000000)
     lastInterestCompoundTime = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = interestRate,
       underlyingBalance = initialValue,
       lastInterestCompoundTime = lastInterestCompoundTime
@@ -938,7 +939,7 @@ if __name__ == "__main__":
       pool.accrueInterest,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      stabilityFundAddress = stabilityFund.address,
+      stabilityFundContractAddress = stabilityFund.address,
       underlyingBalance = initialValue
     )
     scenario += tester
@@ -982,7 +983,7 @@ if __name__ == "__main__":
     interestRate = sp.nat(100000000000000000)
     initialValue = Constants.PRECISION
     lastInterestCompoundTime = sp.timestamp(0)    
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = interestRate,
       underlyingBalance = initialValue,
       lastInterestCompoundTime = lastInterestCompoundTime
@@ -1011,7 +1012,7 @@ if __name__ == "__main__":
       pool.accrueInterest,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      stabilityFundAddress = stabilityFund.address,
+      stabilityFundContractAddress = stabilityFund.address,
       underlyingBalance = initialValue
     )
     scenario += tester
@@ -1059,11 +1060,11 @@ if __name__ == "__main__":
     interestRate = sp.nat(100000000000000000)
     lastInterestCompoundTime = sp.timestamp(0)
     initialBalance = Constants.PRECISION
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       underlyingBalance = initialBalance,
-      tokenAddress = token.address
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -1095,7 +1096,7 @@ if __name__ == "__main__":
     )
 
     # AND the pool is wired to the stabiility fund.
-    scenario += pool.updateStabilityFundAddress(stabilityFund.address).run(
+    scenario += pool.updatestabilityFundContractAddress(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -1122,7 +1123,7 @@ if __name__ == "__main__":
     scenario = sp.test_scenario()
 
     # GIVEN a pool contract
-    pool = PoolContract()
+    pool = SavingsPoolContract()
 
     # AND the contract has some XTZ
     xtzAmount = sp.tez(10)
@@ -1146,8 +1147,8 @@ if __name__ == "__main__":
     scenario = sp.test_scenario()
 
     # GIVEN a pool contract
-    pool = PoolContract(
-      governorAddress = Addresses.GOVERNOR_ADDRESS,
+    pool = SavingsPoolContract(
+      governorContractAddress = Addresses.GOVERNOR_ADDRESS,
     )
     xtzAmount = sp.tez(10)
     pool.set_initial_balance(xtzAmount)
@@ -1179,8 +1180,8 @@ if __name__ == "__main__":
     # GIVEN a Pool contract
     scenario = sp.test_scenario()
 
-    pool = PoolContract(
-      governorAddress = Addresses.GOVERNOR_ADDRESS,
+    pool = SavingsPoolContract(
+      governorContractAddress = Addresses.GOVERNOR_ADDRESS,
     )
     scenario += pool
 
@@ -1199,8 +1200,8 @@ if __name__ == "__main__":
     # GIVEN a Pool contract
     scenario = sp.test_scenario()
 
-    pool = PoolContract(
-      governorAddress = Addresses.GOVERNOR_ADDRESS,
+    pool = SavingsPoolContract(
+      governorContractAddress = Addresses.GOVERNOR_ADDRESS,
     )
     scenario += pool
 
@@ -1221,8 +1222,8 @@ if __name__ == "__main__":
     # GIVEN a pool contract
     scenario = sp.test_scenario()
 
-    pool = PoolContract(
-      governorAddress = Addresses.GOVERNOR_ADDRESS,
+    pool = SavingsPoolContract(
+      governorContractAddress = Addresses.GOVERNOR_ADDRESS,
     )
     scenario += pool
 
@@ -1255,8 +1256,8 @@ if __name__ == "__main__":
     # GIVEN a Pool contract
     scenario = sp.test_scenario()
 
-    pool = PoolContract(
-      governorAddress = Addresses.GOVERNOR_ADDRESS,
+    pool = SavingsPoolContract(
+      governorContractAddress = Addresses.GOVERNOR_ADDRESS,
     )
     scenario += pool
 
@@ -1275,76 +1276,76 @@ if __name__ == "__main__":
     )            
 
   ################################################################
-  # updateGovernorAddress
+  # updategovernorContractAddress
   ################################################################
 
-  @sp.add_test(name="updateGovernorAddress - fails if sender is not governor")
+  @sp.add_test(name="updategovernorContractAddress - fails if sender is not governor")
   def test():
     scenario = sp.test_scenario()
 
     # GIVEN a pool contract
-    pool = PoolContract()
+    pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updateGovernorAddress is called by someone other than the governor
+    # WHEN updategovernorContractAddress is called by someone other than the governor
     # THEN the call will fail
     notGovernor = Addresses.NULL_ADDRESS
-    scenario += pool.updateGovernorAddress(Addresses.ROTATED_ADDRESS).run(
+    scenario += pool.updategovernorContractAddress(Addresses.ROTATED_ADDRESS).run(
       sender = notGovernor,
       valid = False
     )
 
-  @sp.add_test(name="updateGovernorAddress - can rotate governor")
+  @sp.add_test(name="updategovernorContractAddress - can rotate governor")
   def test():
     scenario = sp.test_scenario()
 
     # GIVEN a pool contract
-    pool = PoolContract()
+    pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updateGovernorAddress is called
-    scenario += pool.updateGovernorAddress(Addresses.ROTATED_ADDRESS).run(
+    # WHEN updategovernorContractAddress is called
+    scenario += pool.updategovernorContractAddress(Addresses.ROTATED_ADDRESS).run(
       sender = Addresses.GOVERNOR_ADDRESS,
     )    
 
     # THEN the governor is rotated.
-    scenario.verify(pool.data.governorAddress == Addresses.ROTATED_ADDRESS)
+    scenario.verify(pool.data.governorContractAddress == Addresses.ROTATED_ADDRESS)
 
   ################################################################
-  # updateStabilityFundAddress
+  # updatestabilityFundContractAddress
   ################################################################
 
-  @sp.add_test(name="updateStabilityFundAddress - fails if sender is not governor")
+  @sp.add_test(name="updatestabilityFundContractAddress - fails if sender is not governor")
   def test():
     scenario = sp.test_scenario()
 
     # GIVEN a pool contract
-    pool = PoolContract()
+    pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updateStabilityFundAddress is called by someone other than the governor
+    # WHEN updatestabilityFundContractAddress is called by someone other than the governor
     # THEN the call will fail
     notGovernor = Addresses.NULL_ADDRESS
-    scenario += pool.updateStabilityFundAddress(Addresses.ROTATED_ADDRESS).run(
+    scenario += pool.updatestabilityFundContractAddress(Addresses.ROTATED_ADDRESS).run(
       sender = notGovernor,
       valid = False
     )
 
-  @sp.add_test(name="updateStabilityFundAddress - can rotate governor")
+  @sp.add_test(name="updatestabilityFundContractAddress - can rotate governor")
   def test():
     scenario = sp.test_scenario()
 
     # GIVEN a pool contract
-    pool = PoolContract()
+    pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updateStabilityFundAddress is called
-    scenario += pool.updateStabilityFundAddress(Addresses.ROTATED_ADDRESS).run(
+    # WHEN updatestabilityFundContractAddress is called
+    scenario += pool.updatestabilityFundContractAddress(Addresses.ROTATED_ADDRESS).run(
       sender = Addresses.GOVERNOR_ADDRESS,
     )    
 
     # THEN the governor is rotated.
-    scenario.verify(pool.data.stabilityFundAddress == Addresses.ROTATED_ADDRESS)
+    scenario.verify(pool.data.stabilityFundContractAddress == Addresses.ROTATED_ADDRESS)
 
   ################################################################
   # updateInterestRate
@@ -1355,7 +1356,7 @@ if __name__ == "__main__":
     scenario = sp.test_scenario()
 
     # GIVEN a pool contract
-    pool = PoolContract()
+    pool = SavingsPoolContract()
     scenario += pool
 
     # WHEN updateInterestRate is called by someone other than the governor
@@ -1379,7 +1380,7 @@ if __name__ == "__main__":
 
     # AND a Pool contract
     initialValue = Constants.PRECISION
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = sp.nat(100000000000000000),
       underlyingBalance = initialValue,
       lastInterestCompoundTime = sp.timestamp(0)
@@ -1394,7 +1395,7 @@ if __name__ == "__main__":
     scenario += stabilityFund
 
     # AND the pool contract is wired to the stability fund.
-    scenario += pool.updateStabilityFundAddress(stabilityFund.address).run(
+    scenario += pool.updatestabilityFundContractAddress(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -1436,7 +1437,7 @@ if __name__ == "__main__":
     scenario = sp.test_scenario()
 
     # GIVEN a pool contract
-    pool = PoolContract()
+    pool = SavingsPoolContract()
     scenario += pool
 
     # WHEN updateInterestRate is called
@@ -1463,8 +1464,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract in the WAITING_DEPOSIT state
-    pool = PoolContract(
-      tokenAddress = token.address,
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address,
       state = WAITING_DEPOSIT
     )
     scenario += pool
@@ -1510,8 +1511,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -1559,8 +1560,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -1615,11 +1616,11 @@ if __name__ == "__main__":
 
     # AND a pool contract with an interest rate.
     initialBalance = Constants.PRECISION
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = sp.nat(100000000000000000),
       lastInterestCompoundTime = sp.timestamp(0),
       underlyingBalance = initialBalance,
-      tokenAddress = token.address
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -1651,7 +1652,7 @@ if __name__ == "__main__":
     )
 
     # AND the pool is wired to the stability fund.
-    scenario += pool.updateStabilityFundAddress(stabilityFund.address).run(
+    scenario += pool.updatestabilityFundContractAddress(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -1758,8 +1759,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -1844,8 +1845,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -1930,8 +1931,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -2050,8 +2051,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -2185,12 +2186,12 @@ if __name__ == "__main__":
     )
 
     # AND a pool contract in the WAITING_DEPOSIT state
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       state = WAITING_DEPOSIT,
       savedState_depositor = sp.some(Addresses.ALICE_ADDRESS),
       savedState_tokensToDeposit = sp.some(aliceTokens),
 
-      tokenAddress = token.address
+      tokenContractAddress = token.address
     )
     scenario += pool
     
@@ -2249,12 +2250,12 @@ if __name__ == "__main__":
     )
 
     # AND a pool contract in the IDLE state
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       state = IDLE,
       savedState_depositor = sp.none,
       savedState_tokensToDeposit = sp.none,
 
-      tokenAddress = token.address
+      tokenContractAddress = token.address
     )
     scenario += pool
     
@@ -2310,12 +2311,12 @@ if __name__ == "__main__":
     )
 
     # AND a pool contract in the WAITING_DEPOSIT state
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       state = WAITING_DEPOSIT,
       savedState_depositor = sp.some(Addresses.ALICE_ADDRESS),
       savedState_tokensToDeposit = sp.some(aliceTokens),
 
-      tokenAddress = token.address
+      tokenContractAddress = token.address
     )
     scenario += pool
     
@@ -2364,9 +2365,9 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract not in the IDLE state
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       state = WAITING_REDEEM,
-      tokenAddress = token.address
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -2411,8 +2412,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -2467,11 +2468,11 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract with an interest rate.
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = sp.nat(100000000000000000),
       lastInterestCompoundTime = sp.timestamp(0),
       underlyingBalance = sp.nat(0),
-      tokenAddress = token.address
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -2493,7 +2494,7 @@ if __name__ == "__main__":
     )
 
     # AND the pool is wired to the stability fund.
-    scenario += pool.updateStabilityFundAddress(stabilityFund.address).run(
+    scenario += pool.updatestabilityFundContractAddress(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -2605,11 +2606,11 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract with an interest rate.
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       interestRate = sp.nat(100000000000000000),
       lastInterestCompoundTime = sp.timestamp(0),
       underlyingBalance = sp.nat(0),
-      tokenAddress = token.address
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -2631,7 +2632,7 @@ if __name__ == "__main__":
     )
 
     # AND the pool is wired to the stability fund.
-    scenario += pool.updateStabilityFundAddress(stabilityFund.address).run(
+    scenario += pool.updatestabilityFundContractAddress(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -2708,8 +2709,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -2770,8 +2771,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -2885,8 +2886,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -3000,8 +3001,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -3119,8 +3120,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -3250,8 +3251,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -3395,8 +3396,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -3555,12 +3556,12 @@ if __name__ == "__main__":
     )
 
     # AND a pool contract in the WAITING_REDEEM state
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       state = WAITING_REDEEM,
       savedState_redeemer = sp.some(Addresses.ALICE_ADDRESS),
       savedState_tokensToRedeem = sp.some(aliceTokens * Constants.PRECISION),
 
-      tokenAddress = token.address
+      tokenContractAddress = token.address
     )
     scenario += pool
     
@@ -3619,12 +3620,12 @@ if __name__ == "__main__":
     )
 
     # AND a pool contract in the IDLE state
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       state = IDLE,
       savedState_redeemer = sp.none,
       savedState_tokensToRedeem = sp.none,
 
-      tokenAddress = token.address
+      tokenContractAddress = token.address
     )
     scenario += pool
     
@@ -3680,12 +3681,12 @@ if __name__ == "__main__":
     )
 
     # AND a pool contract in the WAITING_REDEEM state
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       state = WAITING_REDEEM,
       savedState_redeemer = sp.some(Addresses.ALICE_ADDRESS),
       savedState_tokensToRedeem = sp.some(aliceTokens * Constants.PRECISION),
 
-      tokenAddress = token.address
+      tokenContractAddress = token.address
     )
     scenario += pool
     
@@ -3734,9 +3735,9 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract not in the IDLE state
-    pool = PoolContract(
+    pool = SavingsPoolContract(
       state = WAITING_REDEEM,
-      tokenAddress = token.address
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -3781,8 +3782,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -3843,8 +3844,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -3958,8 +3959,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -4073,8 +4074,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
@@ -4192,8 +4193,8 @@ if __name__ == "__main__":
     scenario += token
 
     # AND a pool contract
-    pool = PoolContract(
-      tokenAddress = token.address
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
     )
     scenario += pool
 
