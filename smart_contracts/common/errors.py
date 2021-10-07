@@ -87,3 +87,6 @@ NOT_ALLOWED_TO_LIQUIDATE = 26
 
 # The caller was not the savings account.
 NOT_SAVINGS_ACCOUNT = 27
+
+# The sender was not the expected conttract
+BAD_SENDER = 28

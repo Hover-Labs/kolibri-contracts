@@ -21,6 +21,7 @@ WAITING_DEPOSIT = 3
 ################################################################
 
 Addresses = sp.import_script_from_url("file:./test-helpers/addresses.py")
+Errors = sp.import_script_from_url("file:./common/errors.py")
 FA12 = sp.import_script_from_url("file:./fa12.py")
 
 class SavingsPoolContract(FA12.FA12):
@@ -126,7 +127,7 @@ class SavingsPoolContract(FA12.FA12):
     sp.set_type(tokensToDeposit, sp.TNat)
 
     # Validate state
-    sp.verify(self.data.state == IDLE, "bad state")
+    sp.verify(self.data.state == IDLE, Errors.BAD_STATE)
 
     # Save state
     self.data.state = WAITING_DEPOSIT
@@ -148,10 +149,10 @@ class SavingsPoolContract(FA12.FA12):
     sp.set_type(updatedBalance, sp.TNat)
 
     # Validate sender
-    sp.verify(sp.sender == self.data.tokenContractAddress, "bad sender")
+    sp.verify(sp.sender == self.data.tokenContractAddress, Errors.BAD_SENDER)
 
     # Validate state
-    sp.verify(self.data.state == WAITING_DEPOSIT, "bad state")
+    sp.verify(self.data.state == WAITING_DEPOSIT, Errors.BAD_STATE)
 
     # Calculate the newly accrued interest.
     accruedInterest = self.accrueInterest(sp.unit)
@@ -204,7 +205,7 @@ class SavingsPoolContract(FA12.FA12):
     sp.set_type(tokensToRedeem, sp.TNat)
 
     # Validate state
-    sp.verify(self.data.state == IDLE, "bad state")
+    sp.verify(self.data.state == IDLE, Errors.BAD_STATE)
 
     # Save state
     self.data.state = WAITING_REDEEM
@@ -226,10 +227,10 @@ class SavingsPoolContract(FA12.FA12):
     sp.set_type(updatedBalance, sp.TNat)
 
     # Validate sender
-    sp.verify(sp.sender == self.data.tokenContractAddress, "bad sender")
+    sp.verify(sp.sender == self.data.tokenContractAddress, Errors.BAD_SENDER)
 
     # Validate state
-    sp.verify(self.data.state == WAITING_REDEEM, "bad state")
+    sp.verify(self.data.state == WAITING_REDEEM, Errors.BAD_STATE)
 
     # Calculate the newly accrued interest.
     accruedInterest = self.accrueInterest(sp.unit)
@@ -286,7 +287,7 @@ class SavingsPoolContract(FA12.FA12):
     sp.set_type(tokensToRedeem, sp.TNat)
 
     # Validate state
-    sp.verify(self.data.state == IDLE, "bad state")
+    sp.verify(self.data.state == IDLE, Errors.BAD_STATE)
 
     # Calculate tokens to receive.
     fractionOfPoolOwnership = sp.local('fractionOfPoolOwnership', (tokensToRedeem * Constants.PRECISION) / self.data.totalSupply)
@@ -352,7 +353,7 @@ class SavingsPoolContract(FA12.FA12):
   def updateGovernorContractAddress(self, newGovernorContractAddress):
     sp.set_type(newGovernorContractAddress, sp.TAddress)
 
-    sp.verify(sp.sender == self.data.governorContractAddress, "not governor")
+    sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
     self.data.governorContractAddress = newGovernorContractAddress
 
   # Update the stability fund address.
@@ -360,7 +361,7 @@ class SavingsPoolContract(FA12.FA12):
   def updateStabilityFundContractAddress(self, newStabilityFundContractAddress):
     sp.set_type(newStabilityFundContractAddress, sp.TAddress)
 
-    sp.verify(sp.sender == self.data.governorContractAddress, "not governor")
+    sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
     self.data.stabilityFundContractAddress = newStabilityFundContractAddress   
 
   # Update the interest rate.
@@ -368,7 +369,7 @@ class SavingsPoolContract(FA12.FA12):
   def updateInterestRate(self, newInterestRate):
     sp.set_type(newInterestRate, sp.TNat)
 
-    sp.verify(sp.sender == self.data.governorContractAddress, "not governor")
+    sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
 
     # Accrue interest.
     accruedInterest = self.accrueInterest(sp.unit) 
@@ -382,7 +383,7 @@ class SavingsPoolContract(FA12.FA12):
   def updateContractMetadata(self, params):	
     sp.set_type(params, sp.TPair(sp.TString, sp.TBytes))	
 
-    sp.verify(sp.sender == self.data.governorContractAddress, "not governor")
+    sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
 
     key = sp.fst(params)
     value = sp.snd(params)	
@@ -393,7 +394,7 @@ class SavingsPoolContract(FA12.FA12):
   def updateTokenMetadata(self, params):	
     sp.set_type(params, sp.TPair(sp.TNat, sp.TMap(sp.TString, sp.TBytes)))	
 
-    sp.verify(sp.sender == self.data.governorContractAddress, "not governor")
+    sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
     self.data.token_metadata[0] = params
 
   # Rescue any XTZ that may have been sent to the contract.
@@ -402,14 +403,9 @@ class SavingsPoolContract(FA12.FA12):
     sp.set_type(params, sp.TRecord(destinationAddress = sp.TAddress).layout("destinationAddress"))
 
     # Verify the requester is the governor.
-    sp.verify(sp.sender == self.data.governorContractAddress, "NOT_GOVERNOR")
-
-    sp.trace('sending')
-    sp.trace(params.destinationAddress)
-    sp.trace(sp.balance)
+    sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
 
     sp.send(params.destinationAddress, sp.tez(10))    
-    sp.trace('done!')
 
   ################################################################
   # Helpers
