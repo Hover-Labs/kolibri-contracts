@@ -166,7 +166,7 @@ class FA12(FA12_mint_burn, FA12_administrator, FA12_pause, FA12_core):
         governorContractAddress = Addresses.GOVERNOR_ADDRESS,
 
         # CHANGED: Add a debt ceiling
-        debtCeiling = sp.nat(1000000000000000000000) # $1000
+        debtCeiling = sp.nat(1000000000000000000000000000000000000000000000000000000000000000000000000)
     ):
         FA12_core.__init__(
             self, 

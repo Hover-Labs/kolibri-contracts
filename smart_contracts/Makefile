@@ -6,6 +6,11 @@ test-minter:
 	$(SMART_PY_CLI) test minter.py $(OUT_DIR)
 	rm -rf $(OUT_DIR)
 
+# Run tests for the Savings Pool contract
+test-savings-pool:
+	$(SMART_PY_CLI) test savings-pool.py $(OUT_DIR)
+	rm -rf $(OUT_DIR)	
+
 # Run tests for the Stability Fund contract
 test-stability-fund:
 	$(SMART_PY_CLI) test stability-fund.py $(OUT_DIR)
@@ -15,6 +20,12 @@ test-stability-fund:
 compile-minter:
 	$(SMART_PY_CLI) compile minter.py MinterContract\(\) $(OUT_DIR)
 	cp $(OUT_DIR)/minter_compiled.tz minter.tz
+	rm -rf $(OUT_DIR)
+
+# Compile the Savings Pool
+compile-savings-pool:
+	$(SMART_PY_CLI) compile savings-pool.py SavingsPoolContract\(\) $(OUT_DIR)
+	cp $(OUT_DIR)/savings-pool_compiled.tz savings-pool.tz
 	rm -rf $(OUT_DIR)
 
 # Compile the Stability Fund

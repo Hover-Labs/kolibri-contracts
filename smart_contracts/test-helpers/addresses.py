@@ -61,3 +61,9 @@ SAVINGS_ACCOUNT_ADDRESS = sp.address("tz1gfArv665EUkSg2ojMBzcbfwuPxAvqPvjo")
 
 # The address which acts as the Token Admin
 TOKEN_ADMIN_ADDRESS = sp.address("tz1eEnQhbwf6trb8Q8mPb2RaPkNk2rN7BKi8")
+
+# An series of named addresses with no particular role.
+# These are used for token transfer tests.
+ALICE_ADDRESS = sp.address("tz1VQnqCCqX4K5sP3FNkVSNKTdCAMJDd3E1n")
+BOB_ADDRESS = sp.address("tz2FCNBrERXtaTtNX6iimR1UJ5JSDxvdHM93")
+CHARLIE_ADDRESS = sp.address("tz3S6BBeKgJGXxvLyZ1xzXzMPn11nnFtq5L9")
