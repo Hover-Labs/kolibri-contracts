@@ -1694,7 +1694,7 @@ code
                             PUSH string "NOT_GOVERNOR"; # string : @parameter%rescueXTZ : @storage : lambda (pair (unit %in_param) (pair %in_storage (pair (pair (big_map %balances address (pair (map %approvals address nat) (nat %balance))) (pair (address %governorContractAddress) (nat %interestRate))) (pair (pair (timestamp %lastInterestCompoundTime) (big_map %metadata string bytes)) (pair (option %savedState_depositor address) (option %savedState_redeemer address)))) (pair (pair (pair (option %savedState_tokensToDeposit nat) (option %savedState_tokensToRedeem nat)) (pair (address %stabilityFundContractAddress) (int %state))) (pair (pair (address %tokenContractAddress) (big_map %token_metadata nat (pair nat (map string bytes)))) (pair (nat %totalSupply) (nat %underlyingBalance)))))) (pair (list %operations operation) (pair (nat %result) (pair %storage (pair (pair (big_map %balances address (pair (map %approvals address nat) (nat %balance))) (pair (address %governorContractAddress) (nat %interestRate))) (pair (pair (timestamp %lastInterestCompoundTime) (big_map %metadata string bytes)) (pair (option %savedState_depositor address) (option %savedState_redeemer address)))) (pair (pair (pair (option %savedState_tokensToDeposit nat) (option %savedState_tokensToRedeem nat)) (pair (address %stabilityFundContractAddress) (int %state))) (pair (pair (address %tokenContractAddress) (big_map %token_metadata nat (pair nat (map string bytes)))) (pair (nat %totalSupply) (nat %underlyingBalance)))))))
                             FAILWITH;   # FAILED
                           }; # @parameter%rescueXTZ : @storage
-                        # sp.send(params.destinationAddress, sp.balance) # @parameter%rescueXTZ : @storage
+                        # sp.send(params.destinationAddress, sp.tez(10)) # @parameter%rescueXTZ : @storage
                         CONTRACT unit; # option (contract unit) : @storage
                         IF_SOME
                           {}
@@ -1704,7 +1704,7 @@ code
                           }; # @some : @storage
                         NIL operation; # list operation : @some : @storage
                         SWAP;       # @some : list operation : @storage
-                        BALANCE;    # mutez : @some : list operation : @storage
+                        PUSH mutez 10000000; # mutez : @some : list operation : @storage
                         UNIT;       # unit : mutez : @some : list operation : @storage
                         TRANSFER_TOKENS; # operation : list operation : @storage
                         CONS;       # list operation : @storage
