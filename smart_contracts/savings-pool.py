@@ -350,7 +350,7 @@ class SavingsPoolContract(FA12.FA12):
 
   # Update the governor address.
   @sp.entry_point
-  def updateGovernorContractAddress(self, newGovernorContractAddress):
+  def setGovernorContract(self, newGovernorContractAddress):
     sp.set_type(newGovernorContractAddress, sp.TAddress)
 
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
@@ -358,7 +358,7 @@ class SavingsPoolContract(FA12.FA12):
 
   # Update the stability fund address.
   @sp.entry_point
-  def updateStabilityFundContractAddress(self, newStabilityFundContractAddress):
+  def setStabilityFundContract(self, newStabilityFundContractAddress):
     sp.set_type(newStabilityFundContractAddress, sp.TAddress)
 
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
@@ -366,7 +366,7 @@ class SavingsPoolContract(FA12.FA12):
 
   # Update the interest rate.
   @sp.entry_point
-  def updateInterestRate(self, newInterestRate):
+  def setInterestRate(self, newInterestRate):
     sp.set_type(newInterestRate, sp.TNat)
 
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
@@ -380,7 +380,7 @@ class SavingsPoolContract(FA12.FA12):
 
   # Update contract metadata
   @sp.entry_point	
-  def updateContractMetadata(self, params):	
+  def setContractMetadata(self, params):	
     sp.set_type(params, sp.TPair(sp.TString, sp.TBytes))	
 
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
@@ -391,7 +391,7 @@ class SavingsPoolContract(FA12.FA12):
 
   # Update token metadata
   @sp.entry_point	
-  def updateTokenMetadata(self, params):	
+  def setTokenMetadata(self, params):	
     sp.set_type(params, sp.TPair(sp.TNat, sp.TMap(sp.TString, sp.TBytes)))	
 
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
@@ -1097,7 +1097,7 @@ if __name__ == "__main__":
     )
 
     # AND the pool is wired to the stabiility fund.
-    scenario += pool.updateStabilityFundContractAddress(stabilityFund.address).run(
+    scenario += pool.setStabilityFundContract(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -1176,10 +1176,10 @@ if __name__ == "__main__":
   #   scenario.verify(dummy.balance == xtzAmount)
 
   ################################################################
-  # updateContractMetadata
+  # setContractMetadata
   ################################################################
 
-  @sp.add_test(name="updateContractMetadata - succeeds when called by governor")
+  @sp.add_test(name="setContractMetadata - succeeds when called by governor")
   def test():
     # GIVEN a Pool contract
     scenario = sp.test_scenario()
@@ -1189,17 +1189,17 @@ if __name__ == "__main__":
     )
     scenario += pool
 
-    # WHEN the updateContractMetadata is called with a new locator
+    # WHEN the setContractMetadata is called with a new locator
     locatorKey = ""
     newLocator = sp.bytes('0x1234567890')
-    scenario += pool.updateContractMetadata((locatorKey, newLocator)).run(
+    scenario += pool.setContractMetadata((locatorKey, newLocator)).run(
       sender = Addresses.GOVERNOR_ADDRESS,
     )
 
     # THEN the contract is updated.
     scenario.verify(pool.data.metadata[locatorKey] == newLocator)
 
-  @sp.add_test(name="updateContractMetadata - fails when not called by governor")
+  @sp.add_test(name="setContractMetadata - fails when not called by governor")
   def test():
     # GIVEN a Pool contract
     scenario = sp.test_scenario()
@@ -1209,19 +1209,19 @@ if __name__ == "__main__":
     )
     scenario += pool
 
-    # WHEN the updateContractMetadata is called by someone who isn't the governor THEN the call fails
+    # WHEN the setContractMetadata is called by someone who isn't the governor THEN the call fails
     locatorKey = ""
     newLocator = sp.bytes('0x1234567890')
-    scenario += pool.updateContractMetadata((locatorKey, newLocator)).run(
+    scenario += pool.setContractMetadata((locatorKey, newLocator)).run(
       sender = Addresses.NULL_ADDRESS,
       valid = False
     )            
 
   ################################################################
-  # updateTokenMetadata
+  # setTokenMetadata
   ################################################################
 
-  @sp.add_test(name="updateTokenMetadata - succeeds when called by governor")
+  @sp.add_test(name="setTokenMetadata - succeeds when called by governor")
   def test():
     # GIVEN a pool contract
     scenario = sp.test_scenario()
@@ -1231,7 +1231,7 @@ if __name__ == "__main__":
     )
     scenario += pool
 
-    # WHEN the updateTokenMetadata is called with a new data set.
+    # WHEN the setTokenMetadata is called with a new data set.
     newKey = "new"
     newValue = sp.bytes('0x123456')
     newMap = sp.map(
@@ -1243,7 +1243,7 @@ if __name__ == "__main__":
     )
     newData = (sp.nat(0), newMap)
 
-    scenario += pool.updateTokenMetadata(newData).run(
+    scenario += pool.setTokenMetadata(newData).run(
       sender = Addresses.GOVERNOR_ADDRESS,
     )
 
@@ -1255,7 +1255,7 @@ if __name__ == "__main__":
     scenario.verify(tokenId == sp.nat(0))
     scenario.verify(tokenMetadataMap[newKey] == newValue)
 
-  @sp.add_test(name="updateTokenMetadata - fails when not called by governor")
+  @sp.add_test(name="setTokenMetadata - fails when not called by governor")
   def test():
     # GIVEN a Pool contract
     scenario = sp.test_scenario()
@@ -1265,7 +1265,7 @@ if __name__ == "__main__":
     )
     scenario += pool
 
-    # WHEN the updateTokenMetadata is called by someone who isn't the governor THEN the call fails
+    # WHEN the setTokenMetadata is called by someone who isn't the governor THEN the call fails
     newMap = sp.map(
       l = {
         "new": sp.bytes('0x123456')
@@ -1274,16 +1274,16 @@ if __name__ == "__main__":
       tvalue = sp.TBytes
     )
     newData = (sp.nat(0), newMap)
-    scenario += pool.updateTokenMetadata(newData).run(
+    scenario += pool.setTokenMetadata(newData).run(
       sender = Addresses.NULL_ADDRESS,
       valid = False
     )            
 
   ################################################################
-  # updateGovernorContractAddress
+  # setGovernorContract
   ################################################################
 
-  @sp.add_test(name="updateGovernorContractAddress - fails if sender is not governor")
+  @sp.add_test(name="setGovernorContract - fails if sender is not governor")
   def test():
     scenario = sp.test_scenario()
 
@@ -1291,15 +1291,15 @@ if __name__ == "__main__":
     pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updateGovernorContractAddress is called by someone other than the governor
+    # WHEN setGovernorContract is called by someone other than the governor
     # THEN the call will fail
     notGovernor = Addresses.NULL_ADDRESS
-    scenario += pool.updateGovernorContractAddress(Addresses.ROTATED_ADDRESS).run(
+    scenario += pool.setGovernorContract(Addresses.ROTATED_ADDRESS).run(
       sender = notGovernor,
       valid = False
     )
 
-  @sp.add_test(name="updateGovernorContractAddress - can rotate governor")
+  @sp.add_test(name="setGovernorContract - can rotate governor")
   def test():
     scenario = sp.test_scenario()
 
@@ -1307,8 +1307,8 @@ if __name__ == "__main__":
     pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updateGovernorContractAddress is called
-    scenario += pool.updateGovernorContractAddress(Addresses.ROTATED_ADDRESS).run(
+    # WHEN setGovernorContract is called
+    scenario += pool.setGovernorContract(Addresses.ROTATED_ADDRESS).run(
       sender = Addresses.GOVERNOR_ADDRESS,
     )    
 
@@ -1316,10 +1316,10 @@ if __name__ == "__main__":
     scenario.verify(pool.data.governorContractAddress == Addresses.ROTATED_ADDRESS)
 
   ################################################################
-  # updateStabilityFundContractAddress
+  # setStabilityFundContract
   ################################################################
 
-  @sp.add_test(name="updateStabilityFundContractAddress - fails if sender is not governor")
+  @sp.add_test(name="setStabilityFundContract - fails if sender is not governor")
   def test():
     scenario = sp.test_scenario()
 
@@ -1327,15 +1327,15 @@ if __name__ == "__main__":
     pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updateStabilityFundContractAddress is called by someone other than the governor
+    # WHEN setStabilityFundContract is called by someone other than the governor
     # THEN the call will fail
     notGovernor = Addresses.NULL_ADDRESS
-    scenario += pool.updateStabilityFundContractAddress(Addresses.ROTATED_ADDRESS).run(
+    scenario += pool.setStabilityFundContract(Addresses.ROTATED_ADDRESS).run(
       sender = notGovernor,
       valid = False
     )
 
-  @sp.add_test(name="updateStabilityFundContractAddress - can rotate governor")
+  @sp.add_test(name="setStabilityFundContract - can rotate governor")
   def test():
     scenario = sp.test_scenario()
 
@@ -1343,8 +1343,8 @@ if __name__ == "__main__":
     pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updateStabilityFundContractAddress is called
-    scenario += pool.updateStabilityFundContractAddress(Addresses.ROTATED_ADDRESS).run(
+    # WHEN setStabilityFundContract is called
+    scenario += pool.setStabilityFundContract(Addresses.ROTATED_ADDRESS).run(
       sender = Addresses.GOVERNOR_ADDRESS,
     )    
 
@@ -1352,10 +1352,10 @@ if __name__ == "__main__":
     scenario.verify(pool.data.stabilityFundContractAddress == Addresses.ROTATED_ADDRESS)
 
   ################################################################
-  # updateInterestRate
+  # setInterestRate
   ################################################################
 
-  @sp.add_test(name="updateInterestRate - fails if sender is not governor")
+  @sp.add_test(name="setInterestRate - fails if sender is not governor")
   def test():
     scenario = sp.test_scenario()
 
@@ -1363,16 +1363,16 @@ if __name__ == "__main__":
     pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updateInterestRate is called by someone other than the governor
+    # WHEN setInterestRate is called by someone other than the governor
     # THEN the call will fail
     notGovernor = Addresses.NULL_ADDRESS
     newInterestRate = sp.nat(123)
-    scenario += pool.updateInterestRate(newInterestRate).run(
+    scenario += pool.setInterestRate(newInterestRate).run(
       sender = notGovernor,
       valid = False
     )
 
-  @sp.add_test(name="updateInterestRate - accrues interest on update")
+  @sp.add_test(name="setInterestRate - accrues interest on update")
   def test():
     scenario = sp.test_scenario()
 
@@ -1399,7 +1399,7 @@ if __name__ == "__main__":
     scenario += stabilityFund
 
     # AND the pool contract is wired to the stability fund.
-    scenario += pool.updateStabilityFundContractAddress(stabilityFund.address).run(
+    scenario += pool.setStabilityFundContract(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -1425,7 +1425,7 @@ if __name__ == "__main__":
 
     # WHEN the interest rate is adjusted after one period
     newInterestRate = sp.nat(123)
-    scenario += pool.updateInterestRate(newInterestRate).run(
+    scenario += pool.setInterestRate(newInterestRate).run(
       sender = Addresses.GOVERNOR_ADDRESS,
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
     )
@@ -1436,7 +1436,7 @@ if __name__ == "__main__":
     # AND the underlying balance was updated correctly.
     scenario.verify(pool.data.underlyingBalance == 1100000000000000000)
 
-  @sp.add_test(name="updateInterestRate - updates rate")
+  @sp.add_test(name="setInterestRate - updates rate")
   def test():
     scenario = sp.test_scenario()
 
@@ -1444,9 +1444,9 @@ if __name__ == "__main__":
     pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updateInterestRate is called
+    # WHEN setInterestRate is called
     newInterestRate = sp.nat(123)
-    scenario += pool.updateInterestRate(newInterestRate).run(
+    scenario += pool.setInterestRate(newInterestRate).run(
       sender = Addresses.GOVERNOR_ADDRESS,
     )    
 
@@ -1680,7 +1680,7 @@ if __name__ == "__main__":
     )
 
     # AND the pool is wired to the stability fund.
-    scenario += pool.updateStabilityFundContractAddress(stabilityFund.address).run(
+    scenario += pool.setStabilityFundContract(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -2582,7 +2582,7 @@ if __name__ == "__main__":
     )
 
     # AND the pool is wired to the stability fund.
-    scenario += pool.updateStabilityFundContractAddress(stabilityFund.address).run(
+    scenario += pool.setStabilityFundContract(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -2732,7 +2732,7 @@ if __name__ == "__main__":
     )
 
     # AND the pool is wired to the stability fund.
-    scenario += pool.updateStabilityFundContractAddress(stabilityFund.address).run(
+    scenario += pool.setStabilityFundContract(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
