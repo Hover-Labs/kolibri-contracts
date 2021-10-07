@@ -57,7 +57,7 @@ class SavingsPoolContract(FA12.FA12):
   ):
     token_id = sp.nat(0)
 
-    token_metadata = sp.map(
+    token_entry = sp.map(
       l = {
         "name": sp.bytes('0x496e7465726573742042656172696e67206b555344'), # Interest Bearing kUSD
         "decimals": sp.bytes('0x3138'), # 18
@@ -67,13 +67,12 @@ class SavingsPoolContract(FA12.FA12):
       tkey = sp.TString,
       tvalue = sp.TBytes
     )
-    token_entry = (token_id, token_metadata)
     token_metadata = sp.big_map(
       l = {
-        token_id: token_entry,
+        token_id: sp.record(token_id = 0, token_info = token_entry)
       },
       tkey = sp.TNat,
-      tvalue = sp.TPair(sp.TNat, sp.TMap(sp.TString, sp.TBytes))
+      tvalue = sp.TRecord(token_id = sp.TNat, token_info = sp.TMap(sp.TString, sp.TBytes))
     )
 
     metadata_data = sp.bytes_of_string('{ "name": "Interest Bearing kUSD",  "description": "Interest Bearing kUSD",  "authors": ["Hover Labs <hello@hover.engineering>"],  "homepage":  "https://kolibri.finance", "interfaces": [ "TZIP-007-2021-01-29"] }')
@@ -392,9 +391,10 @@ class SavingsPoolContract(FA12.FA12):
   # Update token metadata
   @sp.entry_point	
   def setTokenMetadata(self, params):	
-    sp.set_type(params, sp.TPair(sp.TNat, sp.TMap(sp.TString, sp.TBytes)))	
+    sp.set_type(params, sp.TRecord(token_id = sp.TNat, token_info = sp.TMap(sp.TString, sp.TBytes)))	
 
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
+
     self.data.token_metadata[0] = params
 
   # Rescue any XTZ that may have been sent to the contract.
@@ -1241,16 +1241,18 @@ if __name__ == "__main__":
       tkey = sp.TString,
       tvalue = sp.TBytes
     )
-    newData = (sp.nat(0), newMap)
-
+    newData = sp.record(
+      token_id = sp.nat(0),
+      token_info = newMap
+    )
     scenario += pool.setTokenMetadata(newData).run(
       sender = Addresses.GOVERNOR_ADDRESS,
     )
 
     # THEN the contract is updated.
     tokenMetadata = pool.data.token_metadata[0]
-    tokenId = sp.fst(tokenMetadata)
-    tokenMetadataMap = sp.snd(tokenMetadata)
+    tokenId = tokenMetadata.token_id
+    tokenMetadataMap = tokenMetadata.token_info
             
     scenario.verify(tokenId == sp.nat(0))
     scenario.verify(tokenMetadataMap[newKey] == newValue)
@@ -1273,7 +1275,10 @@ if __name__ == "__main__":
       tkey = sp.TString,
       tvalue = sp.TBytes
     )
-    newData = (sp.nat(0), newMap)
+    newData = sp.record(
+      token_id = sp.nat(0),
+      token_info = newMap
+    )
     scenario += pool.setTokenMetadata(newData).run(
       sender = Addresses.NULL_ADDRESS,
       valid = False
