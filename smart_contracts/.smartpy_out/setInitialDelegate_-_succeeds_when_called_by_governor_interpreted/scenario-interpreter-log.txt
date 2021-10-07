@@ -1,0 +1,13 @@
+Creating contract
+ -> (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair None None)) (Pair (Pair "tz1UUgPwikRHW1mEyVZfGYy6QaxrY6Y7WaG5" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm") (Pair "tz1hAYfexyzPGG6RhZZMpDvAHifubsbb6kgn" 0)))
+ => ./.smartpy_out/setInitialDelegate_-_succeeds_when_called_by_governor_interpreted/testContractStorage.1.0.tz 1
+ => ./.smartpy_out/setInitialDelegate_-_succeeds_when_called_by_governor_interpreted/testContractStorage.1.0.tz.json 13
+ => ./.smartpy_out/setInitialDelegate_-_succeeds_when_called_by_governor_interpreted/testContractTypes.1.0.txt 5
+ => ./.smartpy_out/setInitialDelegate_-_succeeds_when_called_by_governor_interpreted/testContractCode.1.0.tz 946
+ => ./.smartpy_out/setInitialDelegate_-_succeeds_when_called_by_governor_interpreted/testContractCode.1.0.tz.json 1239
+ => ./.smartpy_out/setInitialDelegate_-_succeeds_when_called_by_governor_interpreted/testPrettyPrint.1.0.py 60
+Executing setInitialDelegate(sp.some(sp.key_hash('tz1NRTQeqcuwybgrZfJavBY3of83u8uLpFBj')))...
+ -> (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair (Some "tz1NRTQeqcuwybgrZfJavBY3of83u8uLpFBj") None)) (Pair (Pair "tz1UUgPwikRHW1mEyVZfGYy6QaxrY6Y7WaG5" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm") (Pair "tz1hAYfexyzPGG6RhZZMpDvAHifubsbb6kgn" 0)))
+Verifying sp.contract_data(1).initialDelegate.open_some() == sp.some(sp.key_hash('tz1NRTQeqcuwybgrZfJavBY3of83u8uLpFBj')).open_some()...
+ => ./.smartpy_out/setInitialDelegate_-_succeeds_when_called_by_governor_interpreted/testVerify.2.tz 36
+ OK

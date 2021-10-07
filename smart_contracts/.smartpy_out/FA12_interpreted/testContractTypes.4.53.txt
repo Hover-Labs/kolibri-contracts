@@ -1,0 +1,4 @@
+Storage: sp.TRecord(last = sp.TOption(sp.TNat)).layout("last")
+Params: sp.TVariant(target = sp.TNat).layout("target")
+Globals:
+Views:

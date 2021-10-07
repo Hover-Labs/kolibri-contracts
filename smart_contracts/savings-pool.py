@@ -349,19 +349,19 @@ class SavingsPoolContract(FA12.FA12):
 
   # Update the governor address.
   @sp.entry_point
-  def updategovernorContractAddress(self, newgovernorContractAddress):
-    sp.set_type(newgovernorContractAddress, sp.TAddress)
+  def updateGovernorContractAddress(self, newGovernorContractAddress):
+    sp.set_type(newGovernorContractAddress, sp.TAddress)
 
     sp.verify(sp.sender == self.data.governorContractAddress, "not governor")
-    self.data.governorContractAddress = newgovernorContractAddress
+    self.data.governorContractAddress = newGovernorContractAddress
 
   # Update the stability fund address.
   @sp.entry_point
-  def updatestabilityFundContractAddress(self, newstabilityFundContractAddress):
-    sp.set_type(newstabilityFundContractAddress, sp.TAddress)
+  def updateStabilityFundContractAddress(self, newStabilityFundContractAddress):
+    sp.set_type(newStabilityFundContractAddress, sp.TAddress)
 
     sp.verify(sp.sender == self.data.governorContractAddress, "not governor")
-    self.data.stabilityFundContractAddress = newstabilityFundContractAddress   
+    self.data.stabilityFundContractAddress = newStabilityFundContractAddress   
 
   # Update the interest rate.
   @sp.entry_point
@@ -404,7 +404,12 @@ class SavingsPoolContract(FA12.FA12):
     # Verify the requester is the governor.
     sp.verify(sp.sender == self.data.governorContractAddress, "NOT_GOVERNOR")
 
-    sp.send(params.destinationAddress, sp.balance)    
+    sp.trace('sending')
+    sp.trace(params.destinationAddress)
+    sp.trace(sp.balance)
+
+    sp.send(params.destinationAddress, sp.tez(10))    
+    sp.trace('done!')
 
   ################################################################
   # Helpers
@@ -1096,7 +1101,7 @@ if __name__ == "__main__":
     )
 
     # AND the pool is wired to the stabiility fund.
-    scenario += pool.updatestabilityFundContractAddress(stabilityFund.address).run(
+    scenario += pool.updateStabilityFundContractAddress(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -1142,34 +1147,37 @@ if __name__ == "__main__":
       valid = False
     )
 
-  @sp.add_test(name="rescueXTZ - rescues XTZ")
-  def test():
-    scenario = sp.test_scenario()
+  # TODO(keefertaylor): Enable this when upgrading SmartPy, see: https://gitlab.com/SmartPy/smartpy-private/-/merge_requests/541/diffs
+  # @sp.add_test(name="rescueXTZ - rescues XTZ")
+  # def test():
+  #   scenario = sp.test_scenario()
 
-    # GIVEN a pool contract
-    pool = SavingsPoolContract(
-      governorContractAddress = Addresses.GOVERNOR_ADDRESS,
-    )
-    xtzAmount = sp.tez(10)
-    pool.set_initial_balance(xtzAmount)
-    scenario += pool
+  #   # GIVEN a pool contract
+  #   pool = SavingsPoolContract(
+  #     governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+  #   )
+  #   xtzAmount = sp.mutez(10)
+  #   pool.set_initial_balance(xtzAmount)
+  #   scenario += pool
 
-    # AND a dummy contract that will receive the XTZ
-    dummy = Dummy.DummyContract()
-    scenario += dummy
+  #   scenario.verify(pool.balance == xtzAmount)
 
-    # WHEN rescue XTZ is called
-    scenario += pool.rescueXTZ(
-      sp.record(
-        destinationAddress = dummy.address
-      )
-    ).run(
-      sender = Addresses.GOVERNOR_ADDRESS,
-    )
+  #   # AND a dummy contract that will receive the XTZ
+  #   dummy = Dummy.DummyContract()
+  #   scenario += dummy
 
-    # THEN XTZ is transferred.
-    scenario.verify(pool.balance == sp.tez(0))
-    scenario.verify(dummy.balance == xtzAmount)
+  #   # WHEN rescue XTZ is called
+  #   scenario += pool.rescueXTZ(
+  #     sp.record(
+  #       destinationAddress = dummy.address
+  #     )
+  #   ).run(
+  #     sender = Addresses.GOVERNOR_ADDRESS,
+  #   )
+
+  #   # THEN XTZ is transferred.
+  #   scenario.verify(pool.balance == sp.tez(0))
+  #   scenario.verify(dummy.balance == xtzAmount)
 
   ################################################################
   # updateContractMetadata
@@ -1276,10 +1284,10 @@ if __name__ == "__main__":
     )            
 
   ################################################################
-  # updategovernorContractAddress
+  # updateGovernorContractAddress
   ################################################################
 
-  @sp.add_test(name="updategovernorContractAddress - fails if sender is not governor")
+  @sp.add_test(name="updateGovernorContractAddress - fails if sender is not governor")
   def test():
     scenario = sp.test_scenario()
 
@@ -1287,15 +1295,15 @@ if __name__ == "__main__":
     pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updategovernorContractAddress is called by someone other than the governor
+    # WHEN updateGovernorContractAddress is called by someone other than the governor
     # THEN the call will fail
     notGovernor = Addresses.NULL_ADDRESS
-    scenario += pool.updategovernorContractAddress(Addresses.ROTATED_ADDRESS).run(
+    scenario += pool.updateGovernorContractAddress(Addresses.ROTATED_ADDRESS).run(
       sender = notGovernor,
       valid = False
     )
 
-  @sp.add_test(name="updategovernorContractAddress - can rotate governor")
+  @sp.add_test(name="updateGovernorContractAddress - can rotate governor")
   def test():
     scenario = sp.test_scenario()
 
@@ -1303,8 +1311,8 @@ if __name__ == "__main__":
     pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updategovernorContractAddress is called
-    scenario += pool.updategovernorContractAddress(Addresses.ROTATED_ADDRESS).run(
+    # WHEN updateGovernorContractAddress is called
+    scenario += pool.updateGovernorContractAddress(Addresses.ROTATED_ADDRESS).run(
       sender = Addresses.GOVERNOR_ADDRESS,
     )    
 
@@ -1312,10 +1320,10 @@ if __name__ == "__main__":
     scenario.verify(pool.data.governorContractAddress == Addresses.ROTATED_ADDRESS)
 
   ################################################################
-  # updatestabilityFundContractAddress
+  # updateStabilityFundContractAddress
   ################################################################
 
-  @sp.add_test(name="updatestabilityFundContractAddress - fails if sender is not governor")
+  @sp.add_test(name="updateStabilityFundContractAddress - fails if sender is not governor")
   def test():
     scenario = sp.test_scenario()
 
@@ -1323,15 +1331,15 @@ if __name__ == "__main__":
     pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updatestabilityFundContractAddress is called by someone other than the governor
+    # WHEN updateStabilityFundContractAddress is called by someone other than the governor
     # THEN the call will fail
     notGovernor = Addresses.NULL_ADDRESS
-    scenario += pool.updatestabilityFundContractAddress(Addresses.ROTATED_ADDRESS).run(
+    scenario += pool.updateStabilityFundContractAddress(Addresses.ROTATED_ADDRESS).run(
       sender = notGovernor,
       valid = False
     )
 
-  @sp.add_test(name="updatestabilityFundContractAddress - can rotate governor")
+  @sp.add_test(name="updateStabilityFundContractAddress - can rotate governor")
   def test():
     scenario = sp.test_scenario()
 
@@ -1339,8 +1347,8 @@ if __name__ == "__main__":
     pool = SavingsPoolContract()
     scenario += pool
 
-    # WHEN updatestabilityFundContractAddress is called
-    scenario += pool.updatestabilityFundContractAddress(Addresses.ROTATED_ADDRESS).run(
+    # WHEN updateStabilityFundContractAddress is called
+    scenario += pool.updateStabilityFundContractAddress(Addresses.ROTATED_ADDRESS).run(
       sender = Addresses.GOVERNOR_ADDRESS,
     )    
 
@@ -1395,7 +1403,7 @@ if __name__ == "__main__":
     scenario += stabilityFund
 
     # AND the pool contract is wired to the stability fund.
-    scenario += pool.updatestabilityFundContractAddress(stabilityFund.address).run(
+    scenario += pool.updateStabilityFundContractAddress(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -1537,6 +1545,18 @@ if __name__ == "__main__":
       sender = Addresses.ALICE_ADDRESS
     )
 
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
     # WHEN Alice deposits tokens in the contract.
     scenario += pool.deposit(
       aliceTokens
@@ -1584,6 +1604,18 @@ if __name__ == "__main__":
       )
     ).run(
       sender = Addresses.ALICE_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
     )
 
     # WHEN Alice deposits tokens in the contract.
@@ -1652,7 +1684,7 @@ if __name__ == "__main__":
     )
 
     # AND the pool is wired to the stability fund.
-    scenario += pool.updatestabilityFundContractAddress(stabilityFund.address).run(
+    scenario += pool.updateStabilityFundContractAddress(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -1805,6 +1837,18 @@ if __name__ == "__main__":
     ).run(
       sender = Addresses.BOB_ADDRESS
     )
+    
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
 
     # WHEN Alice and Bob deposit tokens in the contract.
     scenario += pool.deposit(
@@ -1890,6 +1934,18 @@ if __name__ == "__main__":
       )
     ).run(
       sender = Addresses.BOB_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
     )
 
     # WHEN Alice and Bob deposit tokens in the contract.
@@ -1997,6 +2053,18 @@ if __name__ == "__main__":
       )
     ).run(
       sender = Addresses.CHARLIE_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
     )
 
     # AND Alice and Bob deposit tokens in the contract.
@@ -2117,6 +2185,18 @@ if __name__ == "__main__":
       )
     ).run(
       sender = Addresses.CHARLIE_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
     )
 
     # AND Alice and Bob deposit tokens in the contract.
@@ -2438,6 +2518,18 @@ if __name__ == "__main__":
       sender = Addresses.ALICE_ADDRESS
     )
 
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )    
+
     # AND Alice deposits tokens in the contract.
     scenario += pool.deposit(
       aliceTokens
@@ -2494,7 +2586,7 @@ if __name__ == "__main__":
     )
 
     # AND the pool is wired to the stability fund.
-    scenario += pool.updatestabilityFundContractAddress(stabilityFund.address).run(
+    scenario += pool.updateStabilityFundContractAddress(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -2538,6 +2630,18 @@ if __name__ == "__main__":
       )
     ).run(
       sender = Addresses.BOB_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
     )
 
     # AND Alice and Bob deposit tokens into the pool
@@ -2595,7 +2699,7 @@ if __name__ == "__main__":
     scenario.verify(pool.data.underlyingBalance == sp.nat(0))
     scenario.verify(token.data.balances[pool.address].balance == sp.nat(0))
 
-  @sp.add_test(name="redeem - can empty on when accruing")
+  @sp.add_test(name="redeem - can empty when accruing")
   def test():
     scenario = sp.test_scenario()
 
@@ -2632,7 +2736,7 @@ if __name__ == "__main__":
     )
 
     # AND the pool is wired to the stability fund.
-    scenario += pool.updatestabilityFundContractAddress(stabilityFund.address).run(
+    scenario += pool.updateStabilityFundContractAddress(stabilityFund.address).run(
       sender = Addresses.GOVERNOR_ADDRESS
     )
 
@@ -2657,6 +2761,18 @@ if __name__ == "__main__":
       sender = Addresses.ALICE_ADDRESS
     )
 
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )    
+
     # AND Alice tokens into the pool
     scenario += pool.deposit(
       aliceTokens
@@ -2665,19 +2781,9 @@ if __name__ == "__main__":
       sender = Addresses.ALICE_ADDRESS
     )
 
-    # WHEN Alice withdraws her tokens after one compound period
-    # THEN it will fail due to call ordering.
-    now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
-    scenario += pool.redeem(
-      pool.data.balances[Addresses.ALICE_ADDRESS].balance 
-    ).run(
-      now = now,
-      sender = Addresses.ALICE_ADDRESS,
-      valid = False
-    )
-
-    # WHEN alice calls accrue interest nad then withdraw
+    # WHEN alice calls accrue interest and then withdraw
     # THEN it will succeed.
+    now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
     scenario += pool.manuallyAccrueInterest(sp.unit).run(
       now = now,
       sender = Addresses.ALICE_ADDRESS,      
@@ -2733,6 +2839,18 @@ if __name__ == "__main__":
       )
     ).run(
       sender = Addresses.ALICE_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
     )
 
     # AND Alice deposits tokens in the contract.
@@ -2816,6 +2934,18 @@ if __name__ == "__main__":
       )
     ).run(
       sender = Addresses.BOB_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
     )
 
     # AND Alice and Bob deposit tokens in the contract.
@@ -2933,6 +3063,18 @@ if __name__ == "__main__":
       sender = Addresses.BOB_ADDRESS
     )
 
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
     # AND Alice and Bob deposit tokens in the contract.
     scenario += pool.deposit(
       aliceTokens
@@ -3046,6 +3188,18 @@ if __name__ == "__main__":
       )
     ).run(
       sender = Addresses.BOB_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
     )
 
     # AND Alice and Bob deposit tokens in the contract.
@@ -3166,6 +3320,18 @@ if __name__ == "__main__":
     ).run(
       sender = Addresses.BOB_ADDRESS
     )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )    
 
     # AND Alice and Bob deposit tokens in the contract.
     scenario += pool.deposit(
@@ -3319,6 +3485,18 @@ if __name__ == "__main__":
       sender = Addresses.CHARLIE_ADDRESS
     )
 
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
     # AND Alice and Bob deposit tokens in the contract.
     scenario += pool.deposit(
       aliceTokens
@@ -3462,6 +3640,18 @@ if __name__ == "__main__":
       )
     ).run(
       sender = Addresses.CHARLIE_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
     )
 
     # AND Alice and Bob deposit tokens in the contract.
@@ -3808,6 +3998,18 @@ if __name__ == "__main__":
       sender = Addresses.ALICE_ADDRESS
     )
 
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
     # AND Alice deposits tokens in the contract.
     scenario += pool.deposit(
       aliceTokens
@@ -3889,6 +4091,18 @@ if __name__ == "__main__":
       )
     ).run(
       sender = Addresses.BOB_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
     )
 
     # AND Alice and Bob deposit tokens in the contract.
@@ -4006,6 +4220,18 @@ if __name__ == "__main__":
       sender = Addresses.BOB_ADDRESS
     )
 
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
     # AND Alice and Bob deposit tokens in the contract.
     scenario += pool.deposit(
       aliceTokens
@@ -4119,6 +4345,18 @@ if __name__ == "__main__":
       )
     ).run(
       sender = Addresses.BOB_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
     )
 
     # AND Alice and Bob deposit tokens in the contract.
@@ -4240,6 +4478,18 @@ if __name__ == "__main__":
       sender = Addresses.BOB_ADDRESS
     )
 
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
     # AND Alice and Bob deposit tokens in the contract.
     scenario += pool.deposit(
       aliceTokens
@@ -4311,4 +4561,3 @@ if __name__ == "__main__":
 
     # AND the pool thinks it has 0 tokens
     scenario.verify(pool.data.underlyingBalance == sp.nat(0))
-
