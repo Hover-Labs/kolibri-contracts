@@ -1,0 +1,6 @@
+[submodule "multisig-timelock"]
+	path = multisig-timelock
+	url = https://github.com/hover-labs/multisig-timelock
+[submodule "break-glass-contracts"]
+	path = break-glass-contracts
+	url = https://github.com/hover-labs/break-glass-contracts

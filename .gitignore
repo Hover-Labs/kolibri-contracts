@@ -1,0 +1,4 @@
+migrations/*/src/config.ts
+migrations/*/deploy-data.json
+node_modules/
+smart_contracts/smartpy_out

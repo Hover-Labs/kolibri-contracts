@@ -17,27 +17,34 @@ class MinterContract(sp.Contract):
         ovenProxyContractAddress = Addresses.OVEN_PROXY_ADDRESS,
         stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
         developerFundContractAddress = Addresses.DEVELOPER_FUND_ADDRESS,
+        liquidityPoolContractAddress = Addresses.LIQUIDITY_POOL_ADDRESS,
         collateralizationPercentage = sp.nat(200000000000000000000), # 200%
+        privateOwnerLiquidationThreshold = sp.nat(20000000000000000000), # 20%
         stabilityFee = sp.nat(0),
         lastInterestIndexUpdateTime = sp.timestamp(1601871456),
         interestIndex = 1000000000000000000,
-        stabilityDevFundSplit = sp.nat(100000000000000000), # 10%
+        # The amount of interest given to the dev fund.
+        # Implicitly (1 - <dev fund split>) is given to the stability fund.
+        devFundSplit = sp.nat(100000000000000000), # 10%
         liquidationFeePercent = sp.nat(80000000000000000),  # 8%
-        ovenMax = sp.some(sp.tez(100))
     ):
         self.exception_optimization_level = "DefaultUnit"
         self.add_flag("no_comment")
 
         self.init(
+            # Contract Addresses
             governorContractAddress = governorContractAddress,
             tokenContractAddress = tokenContractAddress,
             ovenProxyContractAddress = ovenProxyContractAddress,
             collateralizationPercentage = collateralizationPercentage,
             developerFundContractAddress = developerFundContractAddress,
             stabilityFundContractAddress = stabilityFundContractAddress,
+            liquidityPoolContractAddress = liquidityPoolContractAddress,
+
+            # Configuration Parameters
             liquidationFeePercent = liquidationFeePercent,
-            stabilityDevFundSplit = stabilityDevFundSplit,
-            ovenMax = ovenMax,
+            privateOwnerLiquidationThreshold = privateOwnerLiquidationThreshold,
+            devFundSplit = devFundSplit,
  
             # Interest Calculations
             interestIndex = interestIndex,
@@ -211,10 +218,6 @@ class MinterContract(sp.Contract):
         # Verify the sender is a oven.
         sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
 
-        # Verify the balance did not exceed the threshold.
-        sp.if self.data.ovenMax.is_some():
-            sp.verify(sp.balance <= self.data.ovenMax.open_some(), Errors.OVEN_MAXIMUM_EXCEEDED)
-
         # Destructure input params.        
         ovenAddress,           pair1 = sp.match_pair(param)
         ownerAddress,          pair2 = sp.match_pair(pair1)
@@ -354,10 +357,21 @@ class MinterContract(sp.Contract):
         accruedStabilityFeeTokens = self.calculateNewAccruedInterest((interestIndex, (borrowedTokens, (stabilityFeeTokens, (newMinterInterestIndex)))))
         newStabilityFeeTokens = stabilityFeeTokens + accruedStabilityFeeTokens
 
-        # Verify collateral percentage.
+        # Verify oven is under collateralized
         totalOutstandingTokens = borrowedTokens + newStabilityFeeTokens
         collateralizationPercentage = self.computeCollateralizationPercentage((ovenBalance, (oraclePrice, totalOutstandingTokens)))
         sp.verify(collateralizationPercentage < self.data.collateralizationPercentage, message = Errors.NOT_UNDER_COLLATERALIZED)
+
+        # Verify liquidation is allowed.
+        # Undercollateralization is performed as a check above.
+        # Liquidity Pool and Stability Fund can always liquidate, others must be below privateLiquidationFeePercentage
+        privateLiquidationRequirement = sp.as_nat(self.data.collateralizationPercentage - self.data.privateOwnerLiquidationThreshold)
+        sp.verify(
+            (liquidatorAddress == self.data.liquidityPoolContractAddress) | # sender is liquidity pool
+            (liquidatorAddress == self.data.stabilityFundContractAddress) | # sender is stability fund
+            (collateralizationPercentage < privateLiquidationRequirement), # sender is private and collateralization is below privateLiquidationFeePercentage
+            Errors.NOT_ALLOWED_TO_LIQUIDATE
+        )
 
         # Calculate a liquidation fee.
         liquidationFee = (totalOutstandingTokens * self.data.liquidationFeePercent) // Constants.PRECISION
@@ -385,6 +399,8 @@ class MinterContract(sp.Contract):
     # size.
     ################################################################
 
+    # DEPRECATED: Please use setXXXContract entrypoints instead. This entrypoint will be removed in a future update.
+    # DEPRECATED: `ovenMax` is deprecated and has no effect. This parameter will be removed in a future update.
     # Params: (stabilityFee, (liquidationFeePercent, (collateralizationPercentage, ovenMax)))
     @sp.entry_point
     def updateParams(self, newParams):
@@ -402,13 +418,36 @@ class MinterContract(sp.Contract):
         # Update to new parameters.
         newStabilityFee, pair1                     = sp.match_pair(newParams)
         newLiquidationFeePercent, pair2            = sp.match_pair(pair1)
-        newCollateralizationPercentage, newOvenMax = sp.match_pair(pair2)
+        newCollateralizationPercentage             = sp.fst(pair2)
 
         self.data.stabilityFee                = newStabilityFee
         self.data.liquidationFeePercent       = newLiquidationFeePercent
         self.data.collateralizationPercentage = newCollateralizationPercentage
-        self.data.ovenMax                     = newOvenMax
 
+    @sp.entry_point
+    def setStabilityFee(self, newStabilityFee):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+
+        # Compound interest and update internal state.
+        timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
+        numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
+        newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+
+        self.data.stabilityFee = newStabilityFee
+
+    @sp.entry_point
+    def setLiquidationFeePercent(self, newLiquidationFeePercent):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.liquidationFeePercent = newLiquidationFeePercent
+
+    @sp.entry_point
+    def setCollateralizationPercentage(self, newCollateralizationPercentage):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.collateralizationPercentage = newCollateralizationPercentage
+
+    # DEPRECATED: Please use setXXXContract entrypoints instead. This entrypoint will be removed in a future update.
     # Params: (governor (token, (ovenProxy, (stabilityFund, devFund))))
     @sp.entry_point
     def updateContracts(self, newParams):
@@ -427,6 +466,57 @@ class MinterContract(sp.Contract):
         self.data.stabilityFundContractAddress = newStabilityFundContractAddress
         self.data.developerFundContractAddress = newDeveloperFundContractAddress
 
+    @sp.entry_point
+    def setLiquidityPoolContract(self, newLiquidityPoolContract):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.liquidityPoolContractAddress = newLiquidityPoolContract
+
+    @sp.entry_point
+    def setPrivateLiquidationThreshold(self, newValue):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.privateOwnerLiquidationThreshold = newValue
+
+    @sp.entry_point   
+    def setGovernorContract(self, newGovernorContract):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.governorContractAddress = newGovernorContract
+
+    @sp.entry_point
+    def setTokenContract(self, newTokenContract):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.tokenContractAddress = newTokenContract
+
+    @sp.entry_point
+    def setOvenProxyContract(self, newOvenProxyContract):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.ovenProxyContractAddress = newOvenProxyContract       
+
+    @sp.entry_point
+    def setStabilityFundContract(self, newStabilityFund):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.stabilityFundContractAddress = newStabilityFund
+        
+    @sp.entry_point
+    def setDeveloperFundContract(self, newDeveloperFund):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.developerFundContractAddress = newDeveloperFund        
+
+    # Update the splits between the funds
+    @sp.entry_point
+    def updateFundSplits(self, newSplits):
+        sp.set_type(newSplits, sp.TRecord(
+            developerFundSplit = sp.TNat,
+            stabilityFundSplit = sp.TNat,
+        ).layout(("developerFundSplit", "stabilityFundSplit")))
+
+        # Verify splits sum to 1.0
+        sp.verify((newSplits.developerFundSplit + newSplits.stabilityFundSplit) == Constants.PRECISION, Errors.BAD_SPLITS)
+
+        # Verify sender is the governor
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+
+        self.data.devFundSplit = newSplits.developerFundSplit
+     
     ################################################################
     # Helpers
     ################################################################
@@ -439,7 +529,7 @@ class MinterContract(sp.Contract):
         sp.set_type(tokensToMint, sp.TNat)
 
         # Determine proportion of tokens minted to dev fund.
-        tokensForDevFund = (tokensToMint * self.data.stabilityDevFundSplit) // Constants.PRECISION
+        tokensForDevFund = (tokensToMint * self.data.devFundSplit) // Constants.PRECISION
         tokensForStabilityFund = sp.as_nat(tokensToMint - tokensForDevFund)
 
         # Mint tokens
@@ -659,9 +749,13 @@ if __name__ == "__main__":
         scenario += stabilityFund
         scenario += devFund
 
+        # AND a dummy contract that acts as the liquidity pool.
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+
         # AND a Minter contract
         liquidationFeePercent = sp.nat(80000000000000000) # 8%
-        stabilityDevFundSplit = sp.nat(100000000000000000) # 10%
+        devFundSplit = sp.nat(100000000000000000) # 10%
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
@@ -671,21 +765,18 @@ if __name__ == "__main__":
             stabilityFee = 100000000000000000,
             lastInterestIndexUpdateTime = sp.timestamp(0),
             interestIndex = Constants.PRECISION,
+            liquidityPoolContractAddress = liquidityPool.address
         )
         scenario += minter
 
         # AND the Minter is the Token administrator
         scenario += token.setAdministrator(minter.address).run(
             sender = governorAddress
-        )    
-
-        # AND a dummy contract that acts as the liquidator.
-        liquidator = DummyContract.DummyContract()
-        scenario += liquidator
+        )
 
         # AND the liquidator has $1000 of tokens.
         ovenOwnerTokens = 1000 * Constants.PRECISION 
-        mintForOvenOwnerParam = sp.record(address = liquidator.address, value = ovenOwnerTokens)
+        mintForOvenOwnerParam = sp.record(address = liquidityPool.address, value = ovenOwnerTokens)
         scenario += token.mint(mintForOvenOwnerParam).run(
             sender = minter.address
         )
@@ -705,9 +796,7 @@ if __name__ == "__main__":
 
         interestIndex = sp.to_int(Constants.PRECISION)
 
-        liquidatorAddress = liquidator.address
-
-        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
+        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidityPool.address))))))))
 
         # AND one period has elapsed
         now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
@@ -728,18 +817,18 @@ if __name__ == "__main__":
         scenario.verify(minter.data.lastInterestIndexUpdateTime == now)
 
         # AND the liquidator received the collateral in the oven.
-        scenario.verify(liquidator.balance == ovenBalanceMutez)
+        scenario.verify(liquidityPool.balance == ovenBalanceMutez)
 
         # AND the liquidator is debited the correct number of tokens.
         expectedNewlyAccruedStabilityFees = 10 * Constants.PRECISION
         outstandingTokens = sp.as_nat(stabilityFeeTokens) + ovenBorrowedTokens + expectedNewlyAccruedStabilityFees
         liquidationFee = (outstandingTokens * liquidationFeePercent) // Constants.PRECISION
         totalTokensPaid = outstandingTokens + liquidationFee
-        scenario.verify(token.data.balances[liquidator.address].balance == sp.as_nat(ovenOwnerTokens - totalTokensPaid))
+        scenario.verify(token.data.balances[liquidityPool.address].balance == sp.as_nat(ovenOwnerTokens - totalTokensPaid))
 
         # AND the stability and dev funds receive a split of the liquidation fee and stability tokens
         tokensReclaimedForFunds = liquidationFee + stabilityFeeTokens + expectedNewlyAccruedStabilityFees
-        expectedDevFundTokens = (tokensReclaimedForFunds * stabilityDevFundSplit) // Constants.PRECISION
+        expectedDevFundTokens = (tokensReclaimedForFunds * devFundSplit) // Constants.PRECISION
         expectedStabilityFundTokens = sp.as_nat(tokensReclaimedForFunds - expectedDevFundTokens)
 
         # AND the oven is marked as liquidated with values cleared correctly.
@@ -768,15 +857,20 @@ if __name__ == "__main__":
         scenario += stabilityFund
         scenario += devFund
 
+        # AND a dummy contract that acts as the liquidity pool.
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+
         # AND a Minter contract
         liquidationFeePercent = sp.nat(80000000000000000) # 8%
-        stabilityDevFundSplit = sp.nat(100000000000000000) # 10%
+        devFundSplit = sp.nat(100000000000000000) # 10%
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
             stabilityFundContractAddress = stabilityFund.address,
             developerFundContractAddress = devFund.address,
-            tokenContractAddress = token.address
+            tokenContractAddress = token.address,
+            liquidityPoolContractAddress = liquidityPool.address
         )
         scenario += minter
 
@@ -785,13 +879,9 @@ if __name__ == "__main__":
             sender = governorAddress
         )    
 
-        # AND a dummy contract that acts as the liquidator.
-        liquidator = DummyContract.DummyContract()
-        scenario += liquidator
-
         # AND the liquidator has $1000 of tokens.
         ovenOwnerTokens = 1000 * Constants.PRECISION
-        mintForOvenOwnerParam = sp.record(address = liquidator.address, value = ovenOwnerTokens)
+        mintForOvenOwnerParam = sp.record(address = liquidityPool.address, value = ovenOwnerTokens)
         scenario += token.mint(mintForOvenOwnerParam).run(
             sender = minter.address
         )
@@ -811,7 +901,7 @@ if __name__ == "__main__":
         stabilityFeeTokens = sp.to_int(Constants.PRECISION)
         interestIndex = sp.to_int(Constants.PRECISION)
 
-        liquidatorAddress = liquidator.address
+        liquidatorAddress = liquidityPool.address
 
         param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
         scenario += minter.liquidate(param).run(
@@ -821,17 +911,17 @@ if __name__ == "__main__":
         )
 
         # THEN the liquidator received the collateral in the oven.
-        scenario.verify(liquidator.balance == ovenBalanceMutez)
+        scenario.verify(liquidityPool.balance == ovenBalanceMutez)
 
         # AND the liquidator is debited the correct number of tokens.
         outstandingTokens = sp.as_nat(stabilityFeeTokens) + ovenBorrowedTokens
         liquidationFee = (outstandingTokens * liquidationFeePercent) // Constants.PRECISION
         totalTokensPaid = outstandingTokens + liquidationFee
-        scenario.verify(token.data.balances[liquidator.address].balance == sp.as_nat(ovenOwnerTokens - totalTokensPaid))
+        scenario.verify(token.data.balances[liquidityPool.address].balance == sp.as_nat(ovenOwnerTokens - totalTokensPaid))
 
         # AND the stability and dev funds receive a split of the liquidation fee and stability tokens
         tokensReclaimedForFunds = liquidationFee + stabilityFeeTokens
-        expectedDevFundTokens = (tokensReclaimedForFunds * stabilityDevFundSplit) // Constants.PRECISION
+        expectedDevFundTokens = (tokensReclaimedForFunds * devFundSplit) // Constants.PRECISION
         expectedStabilityFundTokens = sp.as_nat(tokensReclaimedForFunds - expectedDevFundTokens)
 
         # AND the oven is marked as liquidated with values cleared correctly.
@@ -840,6 +930,543 @@ if __name__ == "__main__":
         scenario.verify(ovenProxy.data.updateState_stabilityFeeTokens == 0)
         scenario.verify(ovenProxy.data.updateState_interestIndex == interestIndex)
         scenario.verify(ovenProxy.data.updateState_isLiquidated == True)
+
+    @sp.add_test(name="liquidate - liquidity pool can always liquidate")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an OvenProxy contract
+        ovenProxy = MockOvenProxy.MockOvenProxyContract()
+        scenario += ovenProxy
+
+        # AND a Token contract.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
+
+        # AND dummy contracts to act as the dev and stability funds.
+        stabilityFund = DummyContract.DummyContract()
+        devFund = DummyContract.DummyContract()
+        scenario += stabilityFund
+        scenario += devFund
+
+        # AND a dummy contract that acts as the liquidity pool.
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+
+        # AND a Minter contract
+        stabilityFee = sp.nat(0)
+        liquidationFeePercent = sp.nat(80000000000000000) # 8%
+        devFundSplit = sp.nat(100000000000000000) # 10%
+        collateralizationPercentage = sp.nat(200000000000000000000) # 200%
+        privateOwnerLiquidationThreshold = sp.nat(25000000000000000000) # 25%
+        minter = MinterContract(
+            liquidationFeePercent = liquidationFeePercent,
+            ovenProxyContractAddress = ovenProxy.address,
+            stabilityFundContractAddress = stabilityFund.address,
+            developerFundContractAddress = devFund.address,
+            tokenContractAddress = token.address,
+            liquidityPoolContractAddress = liquidityPool.address,
+            collateralizationPercentage = collateralizationPercentage,
+            privateOwnerLiquidationThreshold = privateOwnerLiquidationThreshold,
+            stabilityFee = stabilityFee
+        )
+        scenario += minter
+
+        # AND the Minter is the Token administrator
+        scenario += token.setAdministrator(minter.address).run(
+            sender = governorAddress
+        )
+
+        # AND the liquidator has $1000 of tokens.
+        ovenOwnerTokens = 1000 * Constants.PRECISION
+        mintForOvenOwnerParam = sp.record(address = liquidityPool.address, value = ovenOwnerTokens)
+        scenario += token.mint(mintForOvenOwnerParam).run(
+            sender = minter.address
+        )
+
+        # WHEN liquidate is called on an undercollateralized oven.
+        ovenBalance = Constants.PRECISION * 20 # 20 XTZ
+        ovenBalanceMutez = sp.mutez(20 * 1000000) # 20 XTZ
+
+        xtzPrice = Constants.PRECISION # 1 XTZ / $1
+
+        # Borrow Limit: 20 XTZ * 1 USD/XTZ / 200% collateralization = $10
+        # Collateralization = (20 XTZ * $1 / XTZ USD) / $11 borrowed = ~181% collateralized
+        ovenBorrowedTokens = 11 * Constants.PRECISION # $19 kUSD
+
+        ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
+        ovenAddress = Addresses.OVEN_ADDRESS
+        isLiquidated = False
+
+        stabilityFeeTokens = sp.to_int(0)
+        interestIndex = sp.to_int(Constants.PRECISION)
+
+        liquidatorAddress = liquidityPool.address
+
+        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
+        scenario += minter.liquidate(param).run(
+            sender = ovenProxy.address,
+            amount = ovenBalanceMutez,
+            now = sp.timestamp_from_utc_now(),
+        )
+
+        # THEN the liquidator received the collateral in the oven.
+        scenario.verify(liquidityPool.balance == ovenBalanceMutez)
+ 
+    @sp.add_test(name="liquidate - stability fund can always liquidate")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an OvenProxy contract
+        ovenProxy = MockOvenProxy.MockOvenProxyContract()
+        scenario += ovenProxy
+        
+        # AND a Token contract.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
+
+        # AND dummy contracts to act as the dev and stability funds.
+        stabilityFund = DummyContract.DummyContract()
+        devFund = DummyContract.DummyContract()
+        scenario += stabilityFund
+        scenario += devFund
+
+        # AND a dummy contract that acts as the liquidity pool.
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+
+        # AND a Minter contract
+        stabilityFee = sp.nat(0)
+        liquidationFeePercent = sp.nat(80000000000000000) # 8%
+        devFundSplit = sp.nat(100000000000000000) # 10%
+        collateralizationPercentage = sp.nat(200000000000000000000) # 200%
+        privateOwnerLiquidationThreshold = sp.nat(25000000000000000000) # 25%        
+        minter = MinterContract(
+            liquidationFeePercent = liquidationFeePercent,
+            ovenProxyContractAddress = ovenProxy.address,
+            stabilityFundContractAddress = stabilityFund.address,
+            developerFundContractAddress = devFund.address,
+            tokenContractAddress = token.address,
+            liquidityPoolContractAddress = liquidityPool.address,
+            collateralizationPercentage = collateralizationPercentage,
+            privateOwnerLiquidationThreshold = privateOwnerLiquidationThreshold,
+            stabilityFee = stabilityFee
+        )
+        scenario += minter
+
+        # AND the Minter is the Token administrator
+        scenario += token.setAdministrator(minter.address).run(
+            sender = governorAddress
+        )    
+
+        # AND the liquidator has $1000 of tokens.
+        ovenOwnerTokens = 1000 * Constants.PRECISION
+        mintForOvenOwnerParam = sp.record(address = stabilityFund.address, value = ovenOwnerTokens)
+        scenario += token.mint(mintForOvenOwnerParam).run(
+            sender = minter.address
+        )
+
+        # WHEN liquidate is called on an undercollateralized oven.
+        ovenBalance = Constants.PRECISION * 20 # 20 XTZ
+        ovenBalanceMutez = sp.mutez(20 * 1000000) # 20 XTZ
+
+        xtzPrice = Constants.PRECISION # 1 XTZ / $1
+
+        # Borrow Limit: 20 XTZ * 1 USD/XTZ / 200% collateralization = $10
+        # Collateralization = (20 XTZ * $1 / XTZ USD) / $11 borrowed = ~181% collateralized
+        ovenBorrowedTokens = 11 * Constants.PRECISION # $19 kUSD
+
+        ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
+        ovenAddress = Addresses.OVEN_ADDRESS
+        isLiquidated = False
+
+        stabilityFeeTokens = sp.to_int(0)
+        interestIndex = sp.to_int(Constants.PRECISION)
+
+        liquidatorAddress = stabilityFund.address
+
+        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
+        scenario += minter.liquidate(param).run(
+            sender = ovenProxy.address,
+            amount = ovenBalanceMutez,
+            now = sp.timestamp_from_utc_now(),
+        )
+
+        # THEN the liquidator received the collateral in the oven.
+        scenario.verify(stabilityFund.balance == ovenBalanceMutez)
+
+    @sp.add_test(name="liquidate - private owner cannot liquidate above private owner liquidation fee percent")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an OvenProxy contract
+        ovenProxy = MockOvenProxy.MockOvenProxyContract()
+        scenario += ovenProxy
+        
+        # AND a Token contract.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
+
+        # AND dummy contracts to act as the dev and stability funds.
+        stabilityFund = DummyContract.DummyContract()
+        devFund = DummyContract.DummyContract()
+        scenario += stabilityFund
+        scenario += devFund
+
+        # AND a dummy contract that acts as the liquidity pool.
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+
+        # AND a dummy contract that acts as a private liquidator
+        privateLiquidator = DummyContract.DummyContract()
+        scenario += privateLiquidator
+
+        # AND a Minter contract
+        stabilityFee = sp.nat(0)
+        liquidationFeePercent = sp.nat(80000000000000000) # 8%
+        devFundSplit = sp.nat(100000000000000000) # 10%
+        collateralizationPercentage = sp.nat(200000000000000000000) # 200%
+        privateOwnerLiquidationThreshold = sp.nat(25000000000000000000) # 25%        
+        minter = MinterContract(
+            liquidationFeePercent = liquidationFeePercent,
+            ovenProxyContractAddress = ovenProxy.address,
+            stabilityFundContractAddress = stabilityFund.address,
+            developerFundContractAddress = devFund.address,
+            tokenContractAddress = token.address,
+            liquidityPoolContractAddress = liquidityPool.address,
+            collateralizationPercentage = collateralizationPercentage,
+            privateOwnerLiquidationThreshold = privateOwnerLiquidationThreshold,
+            stabilityFee = stabilityFee,
+        )
+        scenario += minter
+
+        # AND the Minter is the Token administrator
+        scenario += token.setAdministrator(minter.address).run(
+            sender = governorAddress
+        )    
+
+        # AND the liquidator has $1000 of tokens.
+        ovenOwnerTokens = 1000 * Constants.PRECISION
+        mintForOvenOwnerParam = sp.record(address = privateLiquidator.address, value = ovenOwnerTokens)
+        scenario += token.mint(mintForOvenOwnerParam).run(
+            sender = minter.address
+        )
+
+        # WHEN liquidate is called on an undercollateralized oven.
+        ovenBalance = Constants.PRECISION * 20 # 20 XTZ
+        ovenBalanceMutez = sp.mutez(20 * 1000000) # 20 XTZ
+
+        xtzPrice = Constants.PRECISION # 1 XTZ / $1
+
+        # Borrow Limit: 20 XTZ * 1 USD/XTZ / 200% collateralization = $10
+        # Collateralization = (20 XTZ * $1 / XTZ USD) / $11 borrowed = ~181% collateralized
+        ovenBorrowedTokens = 11 * Constants.PRECISION # $19 kUSD
+
+        ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
+        ovenAddress = Addresses.OVEN_ADDRESS
+        isLiquidated = False
+
+        stabilityFeeTokens = sp.to_int(0)
+        interestIndex = sp.to_int(Constants.PRECISION)
+
+        liquidatorAddress = privateLiquidator.address
+
+        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
+        
+        # THEN the call will fail.
+        scenario += minter.liquidate(param).run(
+            sender = ovenProxy.address,
+            amount = ovenBalanceMutez,
+            now = sp.timestamp_from_utc_now(),
+            valid = False,
+        )
+
+    @sp.add_test(name="liquidate - private owner can liquidate below private owner liquidation fee percent")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an OvenProxy contract
+        ovenProxy = MockOvenProxy.MockOvenProxyContract()
+        scenario += ovenProxy
+        
+        # AND a Token contract.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
+
+        # AND dummy contracts to act as the dev and stability funds.
+        stabilityFund = DummyContract.DummyContract()
+        devFund = DummyContract.DummyContract()
+        scenario += stabilityFund
+        scenario += devFund
+
+        # AND a dummy contract that acts as the liquidity pool.
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+
+        # AND a dummy contract that acts as a private liquidator
+        privateLiquidator = DummyContract.DummyContract()
+        scenario += privateLiquidator
+
+        # AND a Minter contract
+        stabilityFee = sp.nat(0)
+        liquidationFeePercent = sp.nat(80000000000000000) # 8%
+        devFundSplit = sp.nat(100000000000000000) # 10%
+        collateralizationPercentage = sp.nat(200000000000000000000) # 200%
+        privateOwnerLiquidationThreshold = sp.nat(25000000000000000000) # 25%        
+        minter = MinterContract(
+            liquidationFeePercent = liquidationFeePercent,
+            ovenProxyContractAddress = ovenProxy.address,
+            stabilityFundContractAddress = stabilityFund.address,
+            developerFundContractAddress = devFund.address,
+            tokenContractAddress = token.address,
+            liquidityPoolContractAddress = liquidityPool.address,
+            collateralizationPercentage = collateralizationPercentage,
+            privateOwnerLiquidationThreshold = privateOwnerLiquidationThreshold,
+            stabilityFee = stabilityFee
+        )
+        scenario += minter
+
+        # AND the Minter is the Token administrator
+        scenario += token.setAdministrator(minter.address).run(
+            sender = governorAddress
+        )    
+
+        # AND the liquidator has $1000 of tokens.
+        ovenOwnerTokens = 1000 * Constants.PRECISION
+        mintForOvenOwnerParam = sp.record(address = privateLiquidator.address, value = ovenOwnerTokens)
+        scenario += token.mint(mintForOvenOwnerParam).run(
+            sender = minter.address
+        )
+
+        # WHEN liquidate is called on an undercollateralized oven.
+        ovenBalance = Constants.PRECISION * 20 # 20 XTZ
+        ovenBalanceMutez = sp.mutez(20 * 1000000) # 20 XTZ
+
+        xtzPrice = Constants.PRECISION # 1 XTZ / $1
+
+        # Borrow Limit: 20 XTZ * 1 USD/XTZ / 200% collateralization = $10
+        # Collateralization = (20 XTZ * $1 / XTZ USD) / $11 borrowed = ~166% collateralized
+        ovenBorrowedTokens = 12 * Constants.PRECISION # $19 kUSD
+
+        ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
+        ovenAddress = Addresses.OVEN_ADDRESS
+        isLiquidated = False
+
+        stabilityFeeTokens = sp.to_int(0)
+        interestIndex = sp.to_int(Constants.PRECISION)
+
+        liquidatorAddress = privateLiquidator.address
+
+        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
+        
+        scenario += minter.liquidate(param).run(
+            sender = ovenProxy.address,
+            amount = ovenBalanceMutez,
+            now = sp.timestamp_from_utc_now(),
+        )
+
+        # THEN the liquidator received the collateral in the oven.
+        scenario.verify(privateLiquidator.balance == ovenBalanceMutez)
+
+    @sp.add_test(name="liquidate - liquidity pool can liquidate below private owner liquidation fee percent")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an OvenProxy contract
+        ovenProxy = MockOvenProxy.MockOvenProxyContract()
+        scenario += ovenProxy
+
+        # AND a liquidity pool contract
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+        
+        # AND a Token contract.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress,
+        )
+        scenario += token
+
+        # AND dummy contracts to act as the dev and stability funds.
+        stabilityFund = DummyContract.DummyContract()
+        devFund = DummyContract.DummyContract()
+        scenario += stabilityFund
+        scenario += devFund
+
+        # AND a dummy contract that acts as the liquidity pool.
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+
+        # AND a dummy contract that acts as a private liquidator
+        privateLiquidator = DummyContract.DummyContract()
+        scenario += privateLiquidator
+
+        # AND a Minter contract
+        stabilityFee = sp.nat(0)
+        liquidationFeePercent = sp.nat(80000000000000000) # 8%
+        devFundSplit = sp.nat(100000000000000000) # 10%
+        collateralizationPercentage = sp.nat(200000000000000000000) # 200%
+        privateOwnerLiquidationThreshold = sp.nat(25000000000000000000) # 25%        
+        minter = MinterContract(
+            liquidationFeePercent = liquidationFeePercent,
+            ovenProxyContractAddress = ovenProxy.address,
+            stabilityFundContractAddress = stabilityFund.address,
+            developerFundContractAddress = devFund.address,
+            tokenContractAddress = token.address,
+            liquidityPoolContractAddress = liquidityPool.address,
+            collateralizationPercentage = collateralizationPercentage,
+            privateOwnerLiquidationThreshold = privateOwnerLiquidationThreshold,
+            stabilityFee = stabilityFee
+        )
+        scenario += minter
+
+        # AND the Minter is the Token administrator
+        scenario += token.setAdministrator(minter.address).run(
+            sender = governorAddress
+        )    
+
+        # AND the liquidator has $1000 of tokens.
+        ovenOwnerTokens = 1000 * Constants.PRECISION
+        mintForOvenOwnerParam = sp.record(address = liquidityPool.address, value = ovenOwnerTokens)
+        scenario += token.mint(mintForOvenOwnerParam).run(
+            sender = minter.address
+        )
+
+        # WHEN liquidate is called on an undercollateralized oven by the liquidity pool
+        ovenBalance = Constants.PRECISION * 20 # 20 XTZ
+        ovenBalanceMutez = sp.mutez(20 * 1000000) # 20 XTZ
+
+        xtzPrice = Constants.PRECISION # 1 XTZ / $1
+
+        # Borrow Limit: 20 XTZ * 1 USD/XTZ / 200% collateralization = $10
+        # Collateralization = (20 XTZ * $1 / XTZ USD) / $11 borrowed = ~166% collateralized
+        ovenBorrowedTokens = 12 * Constants.PRECISION # $19 kUSD
+
+        ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
+        ovenAddress = Addresses.OVEN_ADDRESS
+        isLiquidated = False
+
+        stabilityFeeTokens = sp.to_int(0)
+        interestIndex = sp.to_int(Constants.PRECISION)
+
+        liquidatorAddress = liquidityPool.address
+
+        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
+        
+        scenario += minter.liquidate(param).run(
+            sender = ovenProxy.address,
+            amount = ovenBalanceMutez,
+            now = sp.timestamp_from_utc_now(),
+        )
+
+        # THEN the liquidator received the collateral in the oven.
+        scenario.verify(liquidityPool.balance == ovenBalanceMutez)
+
+    @sp.add_test(name="liquidate - stability fund can liquidate below private owner liquidation fee percent")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an OvenProxy contract
+        ovenProxy = MockOvenProxy.MockOvenProxyContract()
+        scenario += ovenProxy
+
+        # AND a liquidity pool contract
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+        
+        # AND a Token contract.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress,
+        )
+        scenario += token
+
+        # AND dummy contracts to act as the dev and stability funds.
+        stabilityFund = DummyContract.DummyContract()
+        devFund = DummyContract.DummyContract()
+        scenario += stabilityFund
+        scenario += devFund
+
+        # AND a dummy contract that acts as the liquidity pool.
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+
+        # AND a dummy contract that acts as a private liquidator
+        privateLiquidator = DummyContract.DummyContract()
+        scenario += privateLiquidator
+
+        # AND a Minter contract
+        stabilityFee = sp.nat(0)
+        liquidationFeePercent = sp.nat(80000000000000000) # 8%
+        devFundSplit = sp.nat(100000000000000000) # 10%
+        collateralizationPercentage = sp.nat(200000000000000000000) # 200%
+        privateOwnerLiquidationThreshold = sp.nat(25000000000000000000) # 25%        
+        minter = MinterContract(
+            liquidationFeePercent = liquidationFeePercent,
+            ovenProxyContractAddress = ovenProxy.address,
+            stabilityFundContractAddress = stabilityFund.address,
+            developerFundContractAddress = devFund.address,
+            tokenContractAddress = token.address,
+            liquidityPoolContractAddress = liquidityPool.address,
+            collateralizationPercentage = collateralizationPercentage,
+            privateOwnerLiquidationThreshold = privateOwnerLiquidationThreshold,
+            stabilityFee = stabilityFee
+        )
+        scenario += minter
+
+        # AND the Minter is the Token administrator
+        scenario += token.setAdministrator(minter.address).run(
+            sender = governorAddress
+        )    
+
+        # AND the stability fund has $1000 of tokens.
+        ovenOwnerTokens = 1000 * Constants.PRECISION
+        mintForOvenOwnerParam = sp.record(address = stabilityFund.address, value = ovenOwnerTokens)
+        scenario += token.mint(mintForOvenOwnerParam).run(
+            sender = minter.address
+        )
+
+        # WHEN liquidate is called on an undercollateralized oven by the liquidity pool
+        ovenBalance = Constants.PRECISION * 20 # 20 XTZ
+        ovenBalanceMutez = sp.mutez(20 * 1000000) # 20 XTZ
+
+        xtzPrice = Constants.PRECISION # 1 XTZ / $1
+
+        # Borrow Limit: 20 XTZ * 1 USD/XTZ / 200% collateralization = $10
+        # Collateralization = (20 XTZ * $1 / XTZ USD) / $11 borrowed = ~166% collateralized
+        ovenBorrowedTokens = 12 * Constants.PRECISION # $19 kUSD
+
+        ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
+        ovenAddress = Addresses.OVEN_ADDRESS
+        isLiquidated = False
+
+        stabilityFeeTokens = sp.to_int(0)
+        interestIndex = sp.to_int(Constants.PRECISION)
+
+        liquidatorAddress = stabilityFund.address
+
+        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
+        
+        scenario += minter.liquidate(param).run(
+            sender = ovenProxy.address,
+            amount = ovenBalanceMutez,
+            now = sp.timestamp_from_utc_now(),
+        )
+
+        # THEN the liquidator received the collateral in the oven.
+        scenario.verify(stabilityFund.balance == ovenBalanceMutez)                
 
     # TODO(keefertaylor): Enable when SmartPy supports handling `failwith` in other contracts with `valid = False`
     # SEE: https://t.me/SmartPy_io/6538
@@ -911,10 +1538,15 @@ if __name__ == "__main__":
     def test():
         scenario = sp.test_scenario()
 
-        # GIVEN an Minter contract
+        # GIVEN dummy contract that acts as the liquidity pool.
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+
+        # AND an Minter contract
         ovenProxyAddress = Addresses.OVEN_PROXY_ADDRESS
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxyAddress,
+            liquidityPoolContractAddress = liquidityPool.address
         )
         scenario += minter
 
@@ -926,7 +1558,7 @@ if __name__ == "__main__":
 
         ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
         ovenAddress = Addresses.OVEN_ADDRESS
-        liquidatorAddress = Addresses.LIQUIDATOR_ADDRESS
+        liquidatorAddress = liquidityPool.address
 
         stabilityFeeTokens = sp.to_int(0)
         interestIndex = sp.to_int(Constants.PRECISION)
@@ -947,10 +1579,15 @@ if __name__ == "__main__":
     def test():
         scenario = sp.test_scenario()
 
-        # GIVEN an Minter contract
+        # GIVEN dummy contract that acts as the liquidity pool.
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+
+        # AND an Minter contract
         ovenProxyAddress = Addresses.OVEN_PROXY_ADDRESS
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxyAddress,
+            liquidityPoolContractAddress = liquidityPool.address
         )
         scenario += minter
 
@@ -964,7 +1601,7 @@ if __name__ == "__main__":
 
         ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
         ovenAddress = Addresses.OVEN_ADDRESS
-        liquidatorAddress = Addresses.LIQUIDATOR_ADDRESS
+        liquidatorAddress = liquidityPool.address
 
         stabilityFeeTokens = sp.to_int(Constants.PRECISION)
         interestIndex = sp.to_int(Constants.PRECISION)
@@ -985,10 +1622,15 @@ if __name__ == "__main__":
     def test():
         scenario = sp.test_scenario()
 
-        # GIVEN an Minter contract
+        # GIVEN dummy contract that acts as the liquidity pool.
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+
+        # AND an Minter contract
         ovenProxyAddress = Addresses.OVEN_PROXY_ADDRESS
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxyAddress,
+            liquidityPoolContractAddress = liquidityPool.address
         )
         scenario += minter
 
@@ -1002,7 +1644,7 @@ if __name__ == "__main__":
 
         ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
         ovenAddress = Addresses.OVEN_ADDRESS
-        liquidatorAddress = Addresses.LIQUIDATOR_ADDRESS
+        liquidatorAddress = liquidityPool.address
 
         stabilityFeeTokens = sp.to_int(Constants.PRECISION)
         interestIndex = sp.to_int(Constants.PRECISION)
@@ -1101,7 +1743,7 @@ if __name__ == "__main__":
         scenario += stabilityFund
 
         # AND a Minter contract
-        stabilityDevFundSplit = sp.nat(250000000000000000) # 25%
+        devFundSplit = sp.nat(250000000000000000) # 25%
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxy.address,
             governorContractAddress = governorAddress,
@@ -1109,7 +1751,7 @@ if __name__ == "__main__":
             stabilityFundContractAddress = stabilityFund.address,
             developerFundContractAddress = developerFund.address,
             stabilityFee = sp.nat(0),
-            stabilityDevFundSplit = stabilityDevFundSplit
+            devFundSplit = devFundSplit
         )
         scenario += minter
 
@@ -1152,7 +1794,7 @@ if __name__ == "__main__":
         scenario.verify(token.data.balances[ovenOwner].balance == sp.as_nat(ovenOwnerTokens - tokensToRepay))
 
         # AND the stability fund and dev fund received the proportion of tokens from the stability fees paid.
-        expectedDeveloperFundBalance = (sp.as_nat(stabilityFeeTokens) * stabilityDevFundSplit) // Constants.PRECISION    
+        expectedDeveloperFundBalance = (sp.as_nat(stabilityFeeTokens) * devFundSplit) // Constants.PRECISION    
         scenario.verify(token.data.balances[developerFund.address].balance == expectedDeveloperFundBalance)
         scenario.verify(token.data.balances[stabilityFund.address].balance == sp.as_nat(sp.as_nat(stabilityFeeTokens) - expectedDeveloperFundBalance))
 
@@ -1198,7 +1840,7 @@ if __name__ == "__main__":
         scenario += stabilityFund
 
         # AND a Minter contract
-        stabilityDevFundSplit = sp.nat(250000000000000000) # 25%
+        devFundSplit = sp.nat(250000000000000000) # 25%
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxy.address,
             governorContractAddress = governorAddress,
@@ -1206,7 +1848,7 @@ if __name__ == "__main__":
             stabilityFundContractAddress = stabilityFund.address,
             developerFundContractAddress = developerFund.address,
             stabilityFee = sp.nat(0),
-            stabilityDevFundSplit = stabilityDevFundSplit
+            devFundSplit = devFundSplit
         )
         scenario += minter
 
@@ -1247,7 +1889,7 @@ if __name__ == "__main__":
         scenario.verify(token.data.balances[ovenOwner].balance == sp.as_nat(ovenOwnerTokens - tokensToRepay))
 
         # AND the stability fund and dev fund received the proportion of tokens from the stability fees paid.
-        expectedDeveloperFundBalance = (tokensToRepay * stabilityDevFundSplit) // Constants.PRECISION    
+        expectedDeveloperFundBalance = (tokensToRepay * devFundSplit) // Constants.PRECISION    
         scenario.verify(token.data.balances[developerFund.address].balance == expectedDeveloperFundBalance)
         scenario.verify(token.data.balances[stabilityFund.address].balance == sp.as_nat(tokensToRepay - expectedDeveloperFundBalance))
 
@@ -2170,7 +2812,6 @@ if __name__ == "__main__":
         # AND an Minter contract with no oven max.
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxy.address,
-            ovenMax = sp.none
         )
         scenario += minter
 
@@ -2211,53 +2852,6 @@ if __name__ == "__main__":
 
         # AND the mutez balance is sent to the oven proxy
         scenario.verify(ovenProxy.balance == balance)
-
-    @sp.add_test(name="deposit - fails if over oven max")
-    def test():
-        scenario = sp.test_scenario()
-
-        # GIVEN an OvenProxy
-        ovenProxy = MockOvenProxy.MockOvenProxyContract()
-        scenario += ovenProxy
-
-        # AND an Minter contract with an oven maximum
-        ovenMax = sp.tez(100)
-        minter = MinterContract(
-            ovenProxyContractAddress = ovenProxy.address,
-            ovenMax = sp.some(ovenMax)
-        )
-        scenario += minter
-
-        # WHEN deposit is called with an amount greater than the maximum
-        ovenAddress = Addresses.OVEN_ADDRESS
-        ownerAddress = Addresses.OVEN_OWNER_ADDRESS
-        balance = ovenMax + sp.mutez(1) # 100.000001 XTZ
-        balanceNat = sp.nat(100000001000000000000) # 100.000001 XTZ
-        borrowedTokens = sp.nat(2)
-        stabilityFeeTokens = sp.int(0)
-        interestIndex = sp.int(1000000000000000000)
-        param = (
-            ovenAddress, (
-                ownerAddress, (
-                    balanceNat, (
-                        borrowedTokens, (
-                            False, (
-                                stabilityFeeTokens,
-                                interestIndex
-                            )
-                        )
-                    )
-                )
-            )
-        )
-
-        # THEN the call fails.
-        scenario += minter.deposit(param).run(
-            amount = balance,
-            sender = ovenProxy.address,
-            now = sp.timestamp_from_utc_now(),
-            valid = False
-        )
 
     @sp.add_test(name="deposit - fails when oven is liquidated")
     def test():
@@ -2415,6 +3009,234 @@ if __name__ == "__main__":
         )
 
     ################################################################
+    # setGovernorContract
+    ################################################################
+    
+    @sp.add_test(name="setGovernorContract - updates governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress
+        )
+        scenario += minter
+
+        # WHEN setGovernorContract is called by the governor
+        newGovernorContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setGovernorContract(newGovernorContractAddress).run(
+            sender = governorAddress,
+        )
+
+        # THEN the governor is updated.
+        scenario.verify(minter.data.governorContractAddress == newGovernorContractAddress)
+
+    @sp.add_test(name="setGovernorContract - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress
+        )
+        scenario += minter
+
+        # WHEN setGovernorContract is called by someone other than the governor
+        # THEN the request fails
+        newGovernorContractAddress = Addresses.ROTATED_ADDRESS
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += minter.setGovernorContract(newGovernorContractAddress).run(
+            sender = notGovernor,
+            valid = False
+        )
+
+    ################################################################
+    # setTokenContract
+    ################################################################
+    
+    @sp.add_test(name="setTokenContract - updates token")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        tokenContractAddress = Addresses.TOKEN_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+            tokenContractAddress = tokenContractAddress
+        )
+        scenario += minter
+
+        # WHEN setTokenContract is called by the governor
+        newTokenContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setTokenContract(newTokenContractAddress).run(
+            sender = Addresses.GOVERNOR_ADDRESS,
+        )
+
+        # THEN the token contract is updated.
+        scenario.verify(minter.data.tokenContractAddress == newTokenContractAddress)
+
+    @sp.add_test(name="setTokenContract - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        tokenContractAddress = Addresses.TOKEN_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+            tokenContractAddress = tokenContractAddress
+        )
+        scenario += minter
+
+        # WHEN setTokenContract is called by someone other than the governor
+        # THEN the request fails
+        newTokenContractAddress = Addresses.ROTATED_ADDRESS
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += minter.setTokenContract(newTokenContractAddress).run(
+            sender = notGovernor,
+            valid = False
+        )
+
+    ################################################################
+    # setOvenProxyContract
+    ################################################################
+    
+    @sp.add_test(name="setOvenProxyContract - updates oven proxy")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        ovenProxyAddress = Addresses.OVEN_PROXY_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+            ovenProxyContractAddress = ovenProxyAddress
+        )
+        scenario += minter
+
+        # WHEN setOvenProxyContract is called by the governor
+        newOvenProxyContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setOvenProxyContract(newOvenProxyContractAddress).run(
+            sender = Addresses.GOVERNOR_ADDRESS,
+        )
+
+        # THEN the oven proxy contract is updated.
+        scenario.verify(minter.data.ovenProxyContractAddress == newOvenProxyContractAddress)
+
+    @sp.add_test(name="setOvenProxyContract - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        ovenProxyAddress = Addresses.OVEN_PROXY_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+            ovenProxyContractAddress = ovenProxyAddress
+        )
+        scenario += minter
+
+        # WHEN setOvenProxyContract is called by someone other than the governor
+        # THEN the request fails
+        newOvenProxyContractAddress = Addresses.ROTATED_ADDRESS
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += minter.setOvenProxyContract(newOvenProxyContractAddress).run(
+            sender = notGovernor,
+            valid = False
+        )        
+
+    ################################################################
+    # setStabilityFundContract
+    ################################################################
+    
+    @sp.add_test(name="setStabilityFundContract - updates stability fund")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+            stabilityFundContractAddress = stabilityFundContractAddress
+        )
+        scenario += minter
+
+        # WHEN setStabilityFundContract is called by the governor
+        newStabilityFundAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setStabilityFundContract(newStabilityFundAddress).run(
+            sender = Addresses.GOVERNOR_ADDRESS,
+        )
+
+        # THEN the stability fund contract is updated.
+        scenario.verify(minter.data.stabilityFundContractAddress == newStabilityFundAddress)
+
+    @sp.add_test(name="setStabilityFundContract - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+            stabilityFundContractAddress = stabilityFundContractAddress
+        )
+        scenario += minter
+
+        # WHEN setStabilityFundContract is called by someone other than the governor
+        # THEN the request fails
+        newStabilityFundAddress = Addresses.ROTATED_ADDRESS
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += minter.setStabilityFundContract(newStabilityFundAddress).run(
+            sender = notGovernor,
+            valid = False
+        ) 
+
+    ################################################################
+    # setDeveloperFundContract
+    ################################################################
+    
+    @sp.add_test(name="setDeveloperFundContract - updates developer fund")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        developerFundContractAddress = Addresses.DEVELOPER_FUND_ADDRESS
+        minter = MinterContract(
+            developerFundContractAddress = developerFundContractAddress,
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        )
+        scenario += minter
+
+        # WHEN setDeveloperFundContract is called by the governor
+        newDeveloperFundAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setDeveloperFundContract(newDeveloperFundAddress).run(
+            sender = Addresses.GOVERNOR_ADDRESS,
+        )
+
+        # THEN the developer fund contract is updated.
+        scenario.verify(minter.data.developerFundContractAddress == newDeveloperFundAddress)
+
+    @sp.add_test(name="setDeveloperFundContract - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        developerFundContractAddress = Addresses.DEVELOPER_FUND_ADDRESS
+        minter = MinterContract(
+            developerFundContractAddress = developerFundContractAddress,
+            governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        )
+        scenario += minter
+
+        # WHEN setDeveloperFundContract is called by someone other than the governor
+        # THEN the request fails
+        newDeveloperFundAddress = Addresses.ROTATED_ADDRESS
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += minter.setDeveloperFundContract(newDeveloperFundAddress).run(
+            sender = notGovernor,
+            valid = False
+        )         
+   
+    ################################################################
     # updateParams
     ################################################################
 
@@ -2436,8 +3258,7 @@ if __name__ == "__main__":
         newStabilityFee = sp.nat(1)
         newLiquidationFeePercent = sp.nat(2)
         newCollateralizationPercentage = sp.nat(3)
-        newOvenMax = sp.some(sp.tez(4))
-        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, newOvenMax)))
+        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, sp.none)))
         now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)    
         scenario += minter.updateParams(newParams).run(
             sender = governorAddress,
@@ -2463,8 +3284,7 @@ if __name__ == "__main__":
         newStabilityFee = sp.nat(1)
         newLiquidationFeePercent = sp.nat(2)
         newCollateralizationPercentage = sp.nat(3)
-        newOvenMax = sp.some(sp.tez(123))
-        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, newOvenMax)))
+        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, sp.none)))
         scenario += minter.updateParams(newParams).run(
             sender = governorAddress,
             now = sp.timestamp_from_utc_now(),
@@ -2474,7 +3294,6 @@ if __name__ == "__main__":
         scenario.verify(minter.data.stabilityFee == newStabilityFee)
         scenario.verify(minter.data.liquidationFeePercent == newLiquidationFeePercent)
         scenario.verify(minter.data.collateralizationPercentage == newCollateralizationPercentage)
-        scenario.verify(minter.data.ovenMax.open_some() == newOvenMax.open_some())
 
     @sp.add_test(name="updateParams - fails if not called by governor")
     def test():
@@ -2491,11 +3310,339 @@ if __name__ == "__main__":
         newStabilityFee = sp.nat(1)
         newLiquidationFeePercent = sp.nat(2)
         newCollateralizationPercentage = sp.nat(3)
-        newOvenMax = sp.some(sp.tez(123))
-        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, newOvenMax)))
+        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, sp.none)))
         notGovernor = Addresses.NULL_ADDRESS
         scenario += minter.updateParams(newParams).run(
             sender = notGovernor,
             now = sp.timestamp_from_utc_now(),
             valid = False
         )
+
+    ################################################################
+    # setStabilityFee
+    ################################################################
+
+    @sp.add_test(name="setStabilityFee - compounds interest")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract with an interest index
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress,
+            stabilityFee = 100000000000000000,
+            lastInterestIndexUpdateTime = sp.timestamp(0),
+            interestIndex = 1100000000000000000,
+        )
+        scenario += minter
+
+        # WHEN setStabilityFee is called by the governor
+        newStabilityFee = sp.nat(1)
+        now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)    
+        scenario += minter.setStabilityFee(newStabilityFee).run(
+            sender = governorAddress,
+            now = now
+        )
+
+        # THEN the the interest is compounded.
+        scenario.verify(minter.data.lastInterestIndexUpdateTime == now)
+        scenario.verify(minter.data.interestIndex == 1210000000000000000)
+
+    @sp.add_test(name="setStabilityFee - updates value")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress,
+            stabilityFee = sp.nat(1)
+        )
+        scenario += minter
+
+        # WHEN setStabilityFee is called by the governor
+        newStabilityFee = sp.nat(2)
+        scenario += minter.setStabilityFee(newStabilityFee).run(
+            sender = governorAddress,
+            now = sp.timestamp_from_utc_now(),
+        )
+
+        # THEN the parameters are updated.
+        scenario.verify(minter.data.stabilityFee == newStabilityFee)
+
+    @sp.add_test(name="setStabilityFee - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress,
+            stabilityFee = sp.nat(1),
+        )
+        scenario += minter
+
+        # WHEN setStabilityFee is called by someone other than the governor THEN the request fails
+        newStabilityFee = sp.nat(2)
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += minter.setStabilityFee(newStabilityFee).run(
+            sender = notGovernor,
+            now = sp.timestamp_from_utc_now(),
+            valid = False,
+        )
+
+    ################################################################
+    # setLiquidationFeePercent
+    ################################################################
+
+    @sp.add_test(name="setLiquidationFeePercent - updates value")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress,
+            liquidationFeePercent = sp.nat(1)
+        )
+        scenario += minter
+
+        # WHEN setLiquidationFeePercent is called by the governor
+        newLiquidationFeePercent = sp.nat(2)
+        scenario += minter.setLiquidationFeePercent(newLiquidationFeePercent).run(
+            sender = governorAddress,
+        )
+
+        # THEN the parameters are updated.
+        scenario.verify(minter.data.liquidationFeePercent == newLiquidationFeePercent)
+
+    @sp.add_test(name="setLiquidationFeePercent - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress,
+            collateralizationPercentage = sp.nat(1)
+        )
+        scenario += minter
+
+        # WHEN setCollateralizationPercentage is called by someone other than the governor THEN the request fails
+        newLiquidationFeePercent = sp.nat(2)
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += minter.setLiquidationFeePercent(newLiquidationFeePercent).run(
+            sender = notGovernor,
+            valid = False
+        )        
+
+    ################################################################
+    # setCollateralizationPercentage
+    ################################################################
+
+    @sp.add_test(name="setCollateralizationPercentage - updates value")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress,
+            collateralizationPercentage = sp.nat(1)
+        )
+        scenario += minter
+
+        # WHEN setCollateralizationPercentage is called by the governor
+        newCollateralizationPercentage = sp.nat(2)
+        scenario += minter.setCollateralizationPercentage(newCollateralizationPercentage).run(
+            sender = governorAddress,
+        )
+
+        # THEN the parameters are updated.
+        scenario.verify(minter.data.collateralizationPercentage == newCollateralizationPercentage)
+
+    @sp.add_test(name="setCollateralizationPercentage - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress,
+            collateralizationPercentage = sp.nat(1)
+        )
+        scenario += minter
+
+        # WHEN setCollateralizationPercentage is called by someone other than the governor THEN the request fails
+        newCollateralizationPercentage = sp.nat(2)
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += minter.setCollateralizationPercentage(newCollateralizationPercentage).run(
+            sender = notGovernor,
+            valid = False
+        )        
+
+    ################################################################
+    # updateFundSplits
+    ################################################################
+
+    @sp.add_test(name="updateFundSplits - updates the fund splits")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract with a devFundSplit
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            devFundSplit = 100000000000000000,
+        )
+        scenario += minter
+
+        # WHEN updateFundSplits is called by the governor
+        newDevFundSplit = 200000000000000000
+        newStabilityFundSplit = sp.as_nat(Constants.PRECISION - newDevFundSplit)
+        newSplits = sp.record(
+            developerFundSplit = newDevFundSplit, 
+            stabilityFundSplit = newStabilityFundSplit
+        )
+        scenario += minter.updateFundSplits(newSplits).run(
+            sender = governorAddress,
+        )
+
+        # THEN the splits are updated
+        scenario.verify(minter.data.devFundSplit == newDevFundSplit)
+
+    @sp.add_test(name="updateFundSplits - fails if splits do not sum to one")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract with a devFundSplit
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            devFundSplit = 100000000000000000,
+        )
+        scenario += minter
+
+        # WHEN updateFundSplits is called by the governor with splits that do not add to 1.0
+        # THEN the update fails
+        newDevFundSplit = 200000000000000000
+        newStabilityFundSplit = sp.as_nat(Constants.PRECISION - newDevFundSplit - 1)
+        newSplits = sp.record(
+            developerFundSplit = newDevFundSplit, 
+            stabilityFundSplit = newStabilityFundSplit
+        )
+        scenario += minter.updateFundSplits(newSplits).run(
+            sender = governorAddress,
+            valid = False
+        )
+
+    @sp.add_test(name="updateFundSplits - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract with a devFundSplit
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            devFundSplit = 100000000000000000,
+        )
+        scenario += minter
+
+        # WHEN updateFundSplits is called by someone other than the governor
+        # THEN the call fails
+        newDevFundSplit = 200000000000000000
+        newStabilityFundSplit = sp.as_nat(Constants.PRECISION - newDevFundSplit)
+        newSplits = sp.record(
+            developerFundSplit = newDevFundSplit, 
+            stabilityFundSplit = newStabilityFundSplit
+        )
+        scenario += minter.updateFundSplits(newSplits).run(
+            sender = Addresses.NULL_ADDRESS,
+            valid = False
+        )
+
+    ################################################################
+    # setPrivateLiquidationThreshold
+    ################################################################
+
+    @sp.add_test(name="setPrivateLiquidationThreshold - updates the private liquidation fee percent")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract with a setPrivateLiquidationThreshold
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            privateOwnerLiquidationThreshold = 12345,
+        )
+        scenario += minter
+
+        # WHEN setPrivateLiquidationThreshold is called by the governor
+        newprivateOwnerLiquidationThreshold = 67890
+        scenario += minter.setPrivateLiquidationThreshold(newprivateOwnerLiquidationThreshold).run(
+            sender = governorAddress,
+        )
+
+        # THEN the percent is updated
+        scenario.verify(minter.data.privateOwnerLiquidationThreshold == newprivateOwnerLiquidationThreshold)
+
+    @sp.add_test(name="setPrivateLiquidationThreshold - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract with a devFundSplit
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            privateOwnerLiquidationThreshold = 12345,
+        )
+        scenario += minter
+
+        # WHEN setPrivateLiquidationThreshold is called by someone other than the governor
+        # THEN the call fails
+        newprivateOwnerLiquidationThreshold = 67890
+        scenario += minter.setPrivateLiquidationThreshold(newprivateOwnerLiquidationThreshold).run(
+            sender = Addresses.NULL_ADDRESS,
+            valid = False
+        )
+
+    ################################################################
+    # setLiquidityPoolContract
+    ################################################################
+
+    @sp.add_test(name="setLiquidityPoolContract - updates liquidity pool")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress,
+            liquidityPoolContractAddress = Addresses.LIQUIDITY_POOL_ADDRESS
+        )
+        scenario += minter
+
+        # WHEN setLiquidityPoolContract is called by the governor
+        newLiquidityPoolAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setLiquidityPoolContract(newLiquidityPoolAddress).run(
+            sender = governorAddress,
+        )
+
+        # THEN the governor is updated.
+        scenario.verify(minter.data.liquidityPoolContractAddress == newLiquidityPoolAddress)
+
+    @sp.add_test(name="setLiquidityPoolContract - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress,
+            liquidityPoolContractAddress = Addresses.LIQUIDITY_POOL_ADDRESS
+        )
+        scenario += minter
+
+        # WHEN setGovernorContract is called by someone other than the governor
+        # THEN the request fails
+        notGovernor = Addresses.NULL_ADDRESS
+        newLiquidityPoolAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setLiquidityPoolContract(newLiquidityPoolAddress).run(
+            sender = notGovernor,
+            valid = False
+        )        
