@@ -1,7 +1,0 @@
-{
-  "prim": "Pair",
-  "args": [
-    { "string": "tz1VmiY38m3y95HqQLjMwqnMS7sdMfGomzKi" },
-    { "prim": "Pair", "args": [ { "string": "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" }, { "string": "Contract_0" } ] }
-  ]
-}
