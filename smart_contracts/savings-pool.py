@@ -386,7 +386,7 @@ class SavingsPoolContract(FA12.FA12):
 
     key = sp.fst(params)
     value = sp.snd(params)	
-    self.data.metadata[key] = value
+    self.data.metadata[key] = valueb
 
   # Update token metadata
   @sp.entry_point	
