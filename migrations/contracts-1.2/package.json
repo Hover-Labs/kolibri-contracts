@@ -1,0 +1,19 @@
+{
+  "name": "contracts-1.2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "install-submodules": "cd ../../multisig-timelock/cli && rm -rf node_modules && npm i",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hover-labs/kolibri-js": "^1.14.2",
+    "@hover-labs/tezos-utils": "^0.0.4",
+    "@taquito/taquito": "^10.2.0",
+    "@types/node": "^16.10.3"
+  }
+}

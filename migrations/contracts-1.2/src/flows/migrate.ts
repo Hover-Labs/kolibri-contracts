@@ -1,0 +1,145 @@
+import { MIGRATION_CONFIG, NETWORK_CONFIG } from "../config"
+import { ContractOriginationResult, loadContract, printConfig, sendOperation, getTezos, fetchFromCacheOrRun, deployContract } from "@hover-labs/tezos-utils"
+import { generateBreakGlassStorage } from '../storage/break-glass-contract-storage'
+import { generateStabilityFundStorage } from '../storage/stability-fund-contract-storage'
+import { generateSavingsPoolStorage } from "../storage/savings-pool-contract-storage"
+
+const main = async () => {
+  // Debug Info
+  console.log("Migrating contracts to 1.2")
+  printConfig(NETWORK_CONFIG)
+  console.log('')
+
+  // Init Deployer
+  console.log("Initializing Deployer Account")
+  const tezos = await getTezos(NETWORK_CONFIG)
+  console.log("Deployer initialized!")
+  console.log('')
+
+  // Load Contract Soruces
+  console.log("Loading Contracts...")
+  const contractSources = {
+    stabilityFundContractSource: loadContract(`${__dirname}/../../../../smart_contracts/stability-fund.tz`),
+    savingsPoolContractSource: loadContract(`${__dirname}/../../../../smart_contracts/savings-pool.tz`),
+    breakGlassContractSource: loadContract(`${__dirname}/../../../../break-glass-contracts/smart_contracts/break-glass.tz`)
+  }
+  console.log("Done!")
+  console.log('')
+
+  // Deploy Pipeline
+
+  // Step 0: Deploy a new stability fund
+  console.log('Deploying a new Stability Fund')
+  const stabilityFundDeployResult: ContractOriginationResult = await fetchFromCacheOrRun('stability-fund-deploy', async () => {
+    const params = {
+      governorContractAddress: await tezos.signer.publicKeyHash(),
+      savingsAccountContractAddress: await tezos.signer.publicKeyHash()
+    }
+    const stabilityFundStorage = await generateStabilityFundStorage(params, NETWORK_CONFIG.contracts.STABILITY_FUND!, tezos)
+    return deployContract(NETWORK_CONFIG, tezos, contractSources.stabilityFundContractSource, stabilityFundStorage)
+  })
+  console.log('')
+
+  // Step 1: Deploy the stability fund break glass
+  console.log('Deploying a Break Glass for the new Stability Fund')
+  const stabilityFundBreakGlassDeployResult: ContractOriginationResult = await fetchFromCacheOrRun('stability-fund-break-glass-deploy', async () => {
+    const breakGlassStorage = generateBreakGlassStorage(
+      {
+        daoAddress: NETWORK_CONFIG.contracts.DAO!,
+        multisigAddress: NETWORK_CONFIG.contracts.BREAK_GLASS_MULTISIG!,
+        targetAddress: stabilityFundDeployResult.contractAddress
+
+      }
+    )
+    return deployContract(NETWORK_CONFIG, tezos, contractSources.breakGlassContractSource, breakGlassStorage)
+  })
+  console.log('')
+
+  // Step 3: Deploy the savings pool
+  console.log('Deploying Savings Pool')
+  const savingsPoolDeployResult: ContractOriginationResult = await fetchFromCacheOrRun('savings-pool-deploy', async () => {
+    const params = {
+      governorAddress: await tezos.signer.publicKeyHash(),
+      interestRate: MIGRATION_CONFIG.initialInterestRate.toNumber(),
+      stabilityFundAddress: NETWORK_CONFIG.contracts.STABILITY_FUND!,
+      tokenAddress: NETWORK_CONFIG.contracts.TOKEN!
+    }
+    const savingsPoolStorage = await generateSavingsPoolStorage(params)
+    return deployContract(NETWORK_CONFIG, tezos, contractSources.savingsPoolContractSource, savingsPoolStorage)
+  })
+  console.log('')
+
+  // Step 4: Deploy the stability fund break glass
+  console.log('Deploying a Break Glass for the Savings Pool')
+  const savingsPoolBreakGlassDeployResult: ContractOriginationResult = await fetchFromCacheOrRun('savings-pool-break-glass-deploy', async () => {
+    const breakGlassStorage = generateBreakGlassStorage(
+      {
+        daoAddress: NETWORK_CONFIG.contracts.DAO!,
+        multisigAddress: NETWORK_CONFIG.contracts.BREAK_GLASS_MULTISIG!,
+        targetAddress: savingsPoolDeployResult.contractAddress
+
+      }
+    )
+    return deployContract(NETWORK_CONFIG, tezos, contractSources.breakGlassContractSource, breakGlassStorage)
+  })
+  console.log('')
+
+  // Step 5: Wire the stability fund to use the savings pool
+  console.log('Wiring the Stability Fund to the Savings Pool')
+  const wireStabilityFundHash: string = await fetchFromCacheOrRun('wire-stability-fund-and-savings-pool', async () => {
+    return sendOperation(
+      NETWORK_CONFIG,
+      tezos,
+      stabilityFundDeployResult.contractAddress,
+      'setSavingsAccountContract',
+      savingsPoolDeployResult.contractAddress
+    )
+  })
+  console.log('')
+
+  // Step 6: Wire the stability fund to use the savings pool
+  console.log('Wiring the Stability Fund to use the Break Glass as the Governor')
+  const wireGovernorStabilityFundHash: string = await fetchFromCacheOrRun('wire-governor-stability-fund', async () => {
+    return sendOperation(
+      NETWORK_CONFIG,
+      tezos,
+      stabilityFundDeployResult.contractAddress,
+      'setGovernorContract',
+      stabilityFundBreakGlassDeployResult.contractAddress
+    )
+  })
+
+  // Step 7: Wire the stability fund to use the savings pool
+  console.log('Wiring the Savings Pool to use the Break Glass as the Governor')
+  const wireGovernorSavingsPoolHash: string = await fetchFromCacheOrRun('wire-governor-savings-pool', async () => {
+    return sendOperation(
+      NETWORK_CONFIG,
+      tezos,
+      savingsPoolDeployResult.contractAddress,
+      'setGovernorContract',
+      savingsPoolBreakGlassDeployResult.contractAddress
+    )
+  })
+
+  // Print Results
+  console.log("----------------------------------------------------------------------------")
+  console.log("Operation Results")
+  console.log("----------------------------------------------------------------------------")
+
+  console.log("Contracts:")
+  console.log(`New Stability Fund Contract:             ${stabilityFundDeployResult.contractAddress} / ${stabilityFundDeployResult.operationHash}`)
+  console.log(`New Stability Fund Break Glass Contract: ${stabilityFundBreakGlassDeployResult.contractAddress} / ${stabilityFundBreakGlassDeployResult.operationHash}`)
+  console.log(`New Savings Pool Contract:               ${savingsPoolDeployResult.contractAddress} / ${savingsPoolDeployResult.operationHash}`)
+  console.log(`New Savings Pool Break Glass Contract:   ${savingsPoolBreakGlassDeployResult.contractAddress} / ${savingsPoolBreakGlassDeployResult.operationHash}`)
+  console.log("")
+
+  console.log("Operations:")
+  console.log(`Wire Savings Pool To Stability Fund: ${wireStabilityFundHash}`)
+  console.log(`Wire Break Glass To Stability Pool: ${wireGovernorStabilityFundHash}`)
+  console.log(`Wire Break Glass To Savings Pool: ${wireGovernorSavingsPoolHash}`)
+
+  console.log("")
+
+}
+
+main()

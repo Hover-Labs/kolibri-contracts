@@ -38,7 +38,7 @@ class SavingsPoolContract(FA12.FA12):
     stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
 
     # The interest rate.
-    interestRate = sp.nat(0),
+    interestRate = sp.nat(123),
 
     # The last time the interest rate was updated.
     lastInterestCompoundTime = sp.timestamp(0),
