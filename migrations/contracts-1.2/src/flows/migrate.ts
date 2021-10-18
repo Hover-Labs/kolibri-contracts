@@ -3,6 +3,7 @@ import { ContractOriginationResult, loadContract, printConfig, sendOperation, ge
 import { generateBreakGlassStorage } from '../storage/break-glass-contract-storage'
 import { generateStabilityFundStorage } from '../storage/stability-fund-contract-storage'
 import { generateSavingsPoolStorage } from "../storage/savings-pool-contract-storage"
+import CACHE_KEYS from '../cache-keys'
 
 const main = async () => {
   // Debug Info
@@ -30,7 +31,7 @@ const main = async () => {
 
   // Step 0: Deploy a new stability fund
   console.log('Deploying a new Stability Fund')
-  const stabilityFundDeployResult: ContractOriginationResult = await fetchFromCacheOrRun('stability-fund-deploy', async () => {
+  const stabilityFundDeployResult: ContractOriginationResult = await fetchFromCacheOrRun(CACHE_KEYS.STABILITY_FUND_DEPLOY, async () => {
     const params = {
       governorContractAddress: await tezos.signer.publicKeyHash(),
       savingsAccountContractAddress: await tezos.signer.publicKeyHash()
@@ -42,7 +43,7 @@ const main = async () => {
 
   // Step 1: Deploy the stability fund break glass
   console.log('Deploying a Break Glass for the new Stability Fund')
-  const stabilityFundBreakGlassDeployResult: ContractOriginationResult = await fetchFromCacheOrRun('stability-fund-break-glass-deploy', async () => {
+  const stabilityFundBreakGlassDeployResult: ContractOriginationResult = await fetchFromCacheOrRun(CACHE_KEYS.STABILITY_FUND_BREAK_GLASS_DEPLOY, async () => {
     const breakGlassStorage = generateBreakGlassStorage(
       {
         daoAddress: NETWORK_CONFIG.contracts.DAO!,
@@ -57,11 +58,11 @@ const main = async () => {
 
   // Step 3: Deploy the savings pool
   console.log('Deploying Savings Pool')
-  const savingsPoolDeployResult: ContractOriginationResult = await fetchFromCacheOrRun('savings-pool-deploy', async () => {
+  const savingsPoolDeployResult: ContractOriginationResult = await fetchFromCacheOrRun(CACHE_KEYS.SAVINGS_POOL_DEPLOY, async () => {
     const params = {
       governorAddress: await tezos.signer.publicKeyHash(),
       interestRate: MIGRATION_CONFIG.initialInterestRate.toNumber(),
-      stabilityFundAddress: NETWORK_CONFIG.contracts.STABILITY_FUND!,
+      stabilityFundAddress: stabilityFundDeployResult.contractAddress,
       tokenAddress: NETWORK_CONFIG.contracts.TOKEN!
     }
     const savingsPoolStorage = await generateSavingsPoolStorage(params)
@@ -71,7 +72,7 @@ const main = async () => {
 
   // Step 4: Deploy the stability fund break glass
   console.log('Deploying a Break Glass for the Savings Pool')
-  const savingsPoolBreakGlassDeployResult: ContractOriginationResult = await fetchFromCacheOrRun('savings-pool-break-glass-deploy', async () => {
+  const savingsPoolBreakGlassDeployResult: ContractOriginationResult = await fetchFromCacheOrRun(CACHE_KEYS.SAVINGS_POOL_BREAK_GLASS_DEPLOY, async () => {
     const breakGlassStorage = generateBreakGlassStorage(
       {
         daoAddress: NETWORK_CONFIG.contracts.DAO!,
@@ -86,7 +87,7 @@ const main = async () => {
 
   // Step 5: Wire the stability fund to use the savings pool
   console.log('Wiring the Stability Fund to the Savings Pool')
-  const wireStabilityFundHash: string = await fetchFromCacheOrRun('wire-stability-fund-and-savings-pool', async () => {
+  const wireStabilityFundHash: string = await fetchFromCacheOrRun(CACHE_KEYS.WIRE_STABILITY_FUND_AND_SAVINGS_POOL, async () => {
     return sendOperation(
       NETWORK_CONFIG,
       tezos,
@@ -99,7 +100,7 @@ const main = async () => {
 
   // Step 6: Wire the stability fund to use the savings pool
   console.log('Wiring the Stability Fund to use the Break Glass as the Governor')
-  const wireGovernorStabilityFundHash: string = await fetchFromCacheOrRun('wire-governor-stability-fund', async () => {
+  const wireGovernorStabilityFundHash: string = await fetchFromCacheOrRun(CACHE_KEYS.WIRE_STABILITY_FUND_BREAK_GLASS, async () => {
     return sendOperation(
       NETWORK_CONFIG,
       tezos,
@@ -111,7 +112,7 @@ const main = async () => {
 
   // Step 7: Wire the stability fund to use the savings pool
   console.log('Wiring the Savings Pool to use the Break Glass as the Governor')
-  const wireGovernorSavingsPoolHash: string = await fetchFromCacheOrRun('wire-governor-savings-pool', async () => {
+  const wireGovernorSavingsPoolHash: string = await fetchFromCacheOrRun(CACHE_KEYS.WIRE_SAVINGS_POOL_BREAK_GLASS, async () => {
     return sendOperation(
       NETWORK_CONFIG,
       tezos,

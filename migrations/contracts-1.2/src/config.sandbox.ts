@@ -9,7 +9,11 @@ export const NETWORK_CONFIG: NetworkConfig = {
   requiredConfirmations: 2,
   maxConfirmationPollingRetries: 10,
   operationDelaySecs: 10,
-  contracts: CONTRACTS.SANDBOX
+  contracts: CONTRACTS.SANDBOX,
+
+  escrowAmount: 3000000000000000000000,
+  governanceVoteLength: 15,
+  governanceTimelockLength: 11,
 }
 
 export const MIGRATION_CONFIG = {

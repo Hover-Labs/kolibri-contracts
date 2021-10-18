@@ -36,9 +36,18 @@ ts-node src/flows/migrate.ts
 
 **Validate Results**
 
-TODO(keefertaylor): Validate contracts
-TODO(keefertaylor): Validate that glass can be broken
-TODO(keefertaylor): Validate that we can pass gov proposals through the break glass
+Validate storage:
+```
+ts-node src/verifications/verify-storage.ts
+```
+
+**Test Break Glass and DAO Integrations**
+
+Note that these interactions will break glass and thus make the contracts inoperable. 
+
+```
+ts-node src/verifications/verify-dao-and-break-glass.ts
+```
 
 **Generate Governance Lambda**
 
