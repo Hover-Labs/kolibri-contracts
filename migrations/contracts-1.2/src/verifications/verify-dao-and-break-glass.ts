@@ -21,39 +21,39 @@ const main = async () => {
   const stabilityFundBreakGlassAddress = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_BREAK_GLASS_DEPLOY) as ContractOriginationResult).contractAddress
   const savingsPoolBreakGlassAddress = (await fetchFromCache(CACHE_KEYS.SAVINGS_POOL_BREAK_GLASS_DEPLOY) as ContractOriginationResult).contractAddress
 
-  console.log("Testing a DAO proposal to set the savings account on the stability pool to signer.")
-  await verifyDAOIntegrationWithBreakGlass(
-    vestingVault,
-    stabilityFundBreakGlassAddress,
-    stabilityFundContractAddress,
-    'setSavingsAccountContract',
-    `sp.address('${await tezos.signer.publicKeyHash()}')`,
-    'sp.TAddress',
-    daoAddress,
-    'savingsAccountContractAddress',
-    await tezos.signer.publicKeyHash(),
-    tezos,
-    NETWORK_CONFIG
-  )
-  console.log("   / Passed")
-  console.log("")
+  // console.log("Testing a DAO proposal to set the savings account on the stability pool to signer.")
+  // await verifyDAOIntegrationWithBreakGlass(
+  //   vestingVault,
+  //   stabilityFundBreakGlassAddress,
+  //   stabilityFundContractAddress,
+  //   'setSavingsAccountContract',
+  //   `sp.address('${await tezos.signer.publicKeyHash()}')`,
+  //   'sp.TAddress',
+  //   daoAddress,
+  //   'savingsAccountContractAddress',
+  //   await tezos.signer.publicKeyHash(),
+  //   tezos,
+  //   NETWORK_CONFIG
+  // )
+  // console.log("   / Passed")
+  // console.log("")
 
-  console.log("Testing a DAO proposal to set the interest rate of stability pool to zero.")
-  await verifyDAOIntegrationWithBreakGlass(
-    vestingVault,
-    savingsPoolBreakGlassAddress,
-    savingsPoolContractAddress,
-    'setInterestRate',
-    'sp.nat(0)',
-    'sp.TNat',
-    daoAddress,
-    'interestRate',
-    0,
-    tezos,
-    NETWORK_CONFIG
-  )
-  console.log("   / Passed")
-  console.log("")
+  // console.log("Testing a DAO proposal to set the interest rate of stability pool to zero.")
+  // await verifyDAOIntegrationWithBreakGlass(
+  //   vestingVault,
+  //   savingsPoolBreakGlassAddress,
+  //   savingsPoolContractAddress,
+  //   'setInterestRate',
+  //   'sp.nat(0)',
+  //   'sp.TNat',
+  //   daoAddress,
+  //   'interestRate',
+  //   0,
+  //   tezos,
+  //   NETWORK_CONFIG
+  // )
+  // console.log("   / Passed")
+  // console.log("")
 
   console.log("Testing break glass can control Stability fund")
   await verifyBreakGlassIntegration(
