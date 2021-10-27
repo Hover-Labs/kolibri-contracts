@@ -11,8 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@hover-labs/kolibri-js": "^1.14.2",
-    "@hover-labs/tezos-utils": "^0.0.6",
+    "@hover-labs/kolibri-js": "^2.0.0",
+    "@hover-labs/tezos-utils": "^0.0.7",
     "@taquito/taquito": "^10.2.1",
     "@types/node": "^16.10.3"
   }
