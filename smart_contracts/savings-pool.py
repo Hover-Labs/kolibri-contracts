@@ -59,10 +59,10 @@ class SavingsPoolContract(FA12.FA12):
 
     token_entry = sp.map(
       l = {
-        "name": sp.bytes('0x496e7465726573742042656172696e67206b555344'), # Interest Bearing kUSD
-        "decimals": sp.bytes('0x3138'), # 18
-        "symbol": sp.bytes('0x69626b555344'), # ibkUSD
-        "icon": sp.bytes('0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67') # https://kolibri-data.s3.amazonaws.com/logo.png
+        "name": sp.bytes_of_string('Kolibri Savings'),
+        "decimals": sp.bytes_of_string('36'),
+        "symbol": sp.bytes_of_string('KSR'),
+        "icon": sp.bytes_of_string('https://kolibri-data.s3.amazonaws.com/logo.png')
       },
       tkey = sp.TString,
       tvalue = sp.TBytes
@@ -75,14 +75,14 @@ class SavingsPoolContract(FA12.FA12):
       tvalue = sp.TRecord(token_id = sp.TNat, token_info = sp.TMap(sp.TString, sp.TBytes))
     )
 
-    metadata_data = sp.bytes_of_string('{ "name": "Interest Bearing kUSD",  "description": "Interest Bearing kUSD",  "authors": ["Hover Labs <hello@hover.engineering>"],  "homepage":  "https://kolibri.finance", "interfaces": [ "TZIP-007-2021-01-29"] }')
+    metadata_data = sp.bytes_of_string('{ "name": "Kolibri Savings Rate LP",  "description": "Tracks shares in the Kolibri Savings Pool",  "authors": ["Hover Labs <hello@hover.engineering>"],  "homepage":  "https://kolibri.finance", "interfaces": [ "TZIP-007-2021-01-29"] }')
     metadata = sp.big_map(
       l = {
-        "": sp.bytes('0x74657a6f732d73746f726167653a64617461'), # "tezos-storage:data"
+        "": sp.bytes_of_string('tezos-storage:data'),
         "data": metadata_data
       },
       tkey = sp.TString,
-      tvalue = sp.TBytes            
+      tvalue = sp.TBytes
     )
 
     self.exception_optimization_level = "DefaultUnit"
