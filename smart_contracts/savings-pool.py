@@ -62,6 +62,7 @@ class SavingsPoolContract(FA12.FA12):
         "name": sp.bytes_of_string('Kolibri Savings'),
         "decimals": sp.bytes_of_string('36'),
         "symbol": sp.bytes_of_string('KSR'),
+        # TODO(fitblip): Update with a custom icon.
         "icon": sp.bytes_of_string('https://kolibri-data.s3.amazonaws.com/logo.png')
       },
       tkey = sp.TString,
