@@ -37,6 +37,9 @@ class SavingsPoolContract(FA12.FA12):
     # The address of the stability fund.
     stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
 
+    # The address of the pause guardian
+    pauseGuardianContractAddress = Addresses.PAUSE_GUARDIAN_ADDRESS,
+
     # The interest rate.
     interestRate = sp.nat(0),
 
@@ -100,6 +103,7 @@ class SavingsPoolContract(FA12.FA12):
       governorContractAddress = governorContractAddress,
       stabilityFundContractAddress = stabilityFundContractAddress,
       tokenContractAddress = tokenContractAddress,
+      pauseGuardianContractAddress = pauseGuardianContractAddress,
 
       # Configuration
       interestRate = interestRate,
@@ -362,6 +366,14 @@ class SavingsPoolContract(FA12.FA12):
 
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
     self.data.stabilityFundContractAddress = newStabilityFundContractAddress   
+
+  # Update the pause guardian address.
+  @sp.entry_point
+  def setPauseGuardianContract(self, newPauseGuardianContractAddress):
+    sp.set_type(newPauseGuardianContractAddress, sp.TAddress)
+
+    sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
+    self.data.pauseGuardianContractAddress = newPauseGuardianContractAddress
 
   # Update the interest rate.
   @sp.entry_point
@@ -1355,6 +1367,42 @@ if __name__ == "__main__":
 
     # THEN the governor is rotated.
     scenario.verify(pool.data.stabilityFundContractAddress == Addresses.ROTATED_ADDRESS)
+
+  ################################################################
+  # setPauseGuardianContract
+  ################################################################
+
+  @sp.add_test(name="setPauseGuardianContract - fails if sender is not governor")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a pool contract
+    pool = SavingsPoolContract()
+    scenario += pool
+
+    # WHEN setPauseGuardianContract is called by someone other than the governor
+    # THEN the call will fail
+    notGovernor = Addresses.NULL_ADDRESS
+    scenario += pool.setPauseGuardianContract(Addresses.ROTATED_ADDRESS).run(
+      sender = notGovernor,
+      valid = False,      
+    )
+
+  @sp.add_test(name="setPauseGuardianContract - can rotate pause guardian")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a pool contract
+    pool = SavingsPoolContract()
+    scenario += pool
+
+    # WHEN setPauseGuardianContract is called
+    scenario += pool.setPauseGuardianContract(Addresses.ROTATED_ADDRESS).run(
+      sender = Addresses.GOVERNOR_ADDRESS,
+    )    
+
+    # THEN the pause guardian is rotated.
+    scenario.verify(pool.data.pauseGuardianContractAddress == Addresses.ROTATED_ADDRESS)
 
   ################################################################
   # setInterestRate
