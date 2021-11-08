@@ -136,6 +136,9 @@ class SavingsPoolContract(FA12.FA12):
     # Validate state
     sp.verify(self.data.state == IDLE, Errors.BAD_STATE)
 
+    # Validate not paused
+    sp.verify(self.data.paused == False, Errors.PAUSED)
+
     # Save state
     self.data.state = WAITING_DEPOSIT
     self.data.savedState_tokensToDeposit = sp.some(tokensToDeposit)
@@ -214,6 +217,9 @@ class SavingsPoolContract(FA12.FA12):
     # Validate state
     sp.verify(self.data.state == IDLE, Errors.BAD_STATE)
 
+    # Validate not paused
+    sp.verify(self.data.paused == False, Errors.PAUSED)
+
     # Save state
     self.data.state = WAITING_REDEEM
     self.data.savedState_tokensToRedeem = sp.some(tokensToRedeem)
@@ -288,7 +294,8 @@ class SavingsPoolContract(FA12.FA12):
   #
   # This entry point does *not* accrue interest for the underlying balance. Using this entrypoint
   # means that the calling LP will forego some of their rewards. This entry point is useful in the 
-  # case that the stability fund will not or cannot pay rewards and LPs want to extract their collateral.
+  # case that the stability fund will not or cannot pay rewards and LPs want to extract their collateral. This entrypoint
+  # is also not subject to the pause guardian, ensuring that users can always retrieve assets without interest.
   @sp.entry_point
   def UNSAFE_redeem(self, tokensToRedeem):
     sp.set_type(tokensToRedeem, sp.TNat)
@@ -1716,6 +1723,65 @@ if __name__ == "__main__":
     scenario.verify(pool.data.savedState_tokensToDeposit.is_some() == False)
     scenario.verify(pool.data.savedState_depositor.is_some() == False)
 
+  @sp.add_test(name="deposit - fails when paused")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a token contract
+    token = Token.FA12(
+      admin = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+    scenario += token
+
+    # AND a pool contract that is paused
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address,
+      paused = True,
+    )
+    scenario += pool
+
+    # AND Alice has tokens
+    aliceTokens = sp.nat(10)
+    scenario += token.mint(
+      sp.record(
+        address = Addresses.ALICE_ADDRESS,
+        value = aliceTokens
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND Alice has given the pool an allowance
+    scenario += token.approve(
+      sp.record(
+        spender = pool.address,
+        value = aliceTokens
+      )
+    ).run(
+      sender = Addresses.ALICE_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # WHEN Alice deposits tokens in the contract
+    # THEN the call fails because the contract is paused.
+    scenario += pool.deposit(
+      aliceTokens
+    ).run(
+      sender = Addresses.ALICE_ADDRESS,
+      valid = False,
+    )
+
   @sp.add_test(name="deposit - can deposit from one account")
   def test():
     scenario = sp.test_scenario()
@@ -2695,6 +2761,136 @@ if __name__ == "__main__":
     scenario.verify(pool.data.state == IDLE)
     scenario.verify(pool.data.savedState_tokensToRedeem.is_some() == False)
     scenario.verify(pool.data.savedState_redeemer.is_some() == False)
+
+  @sp.add_test(name="redeem - fails when paused")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a token contract
+    token = Token.FA12(
+      admin = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+    scenario += token
+
+    # AND a pool contract
+    pool = SavingsPoolContract(
+      interestRate = sp.nat(100000000000000000),
+      lastInterestCompoundTime = sp.timestamp(0),
+      underlyingBalance = sp.nat(0),
+      tokenContractAddress = token.address,
+    )
+    scenario += pool
+
+    # AND a stability fund contract
+    stabilityFund = StabilityFund.StabilityFundContract(
+      savingsAccountContractAddress = pool.address,
+      tokenContractAddress = token.address,
+    )
+    scenario += stabilityFund
+
+    # AND the stability fund has many tokens
+    scenario += token.mint(
+      sp.record(
+        address = stabilityFund.address,
+        value = 1000000000000 * Constants.PRECISION
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND the pool is wired to the stability fund.
+    scenario += pool.setStabilityFundContract(stabilityFund.address).run(
+      sender = Addresses.GOVERNOR_ADDRESS
+    )
+
+    # AND Alice has tokens
+    aliceTokens = 10 * Constants.PRECISION  
+    scenario += token.mint(
+      sp.record(
+        address = Addresses.ALICE_ADDRESS,
+        value = aliceTokens
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND Alice has given the pool an allowance
+    scenario += token.approve(
+      sp.record(
+        spender = pool.address,
+        value = aliceTokens
+      )
+    ).run(
+      sender = Addresses.ALICE_ADDRESS
+    )
+
+    # AND BOB has tokens
+    bobTokens = 10 * Constants.PRECISION  
+    scenario += token.mint(
+      sp.record(
+        address = Addresses.BOB_ADDRESS,
+        value = bobTokens
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND Bob has given the pool an allowance
+    scenario += token.approve(
+      sp.record(
+        spender = pool.address,
+        value = bobTokens
+      )
+    ).run(
+      sender = Addresses.BOB_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND Alice and Bob deposit tokens into the pool
+    scenario += pool.deposit(
+      aliceTokens
+    ).run(
+      now = sp.timestamp(1),
+      sender = Addresses.ALICE_ADDRESS
+    )
+
+    scenario += pool.deposit(
+      bobTokens
+    ).run(
+      now = sp.timestamp(2),
+      sender = Addresses.BOB_ADDRESS
+    )
+
+    # Sanity check, both Bob and Alice own equal chunks of the pool and the
+    # pool is the sum of their tokens.
+    scenario.verify(pool.data.balances[Addresses.ALICE_ADDRESS].balance == pool.data.balances[Addresses.BOB_ADDRESS].balance)
+    scenario.verify(token.data.balances[pool.address].balance == aliceTokens + bobTokens)
+
+    # AND the pool is paused
+    scenario += pool.pause(sp.unit).run(
+      sender = Addresses.PAUSE_GUARDIAN_ADDRESS,
+    )
+    
+    # WHEN Alice withdraws her tokens after one compound period
+    # THEN the call fails because the pool is paused.
+    scenario += pool.redeem(
+      pool.data.balances[Addresses.ALICE_ADDRESS].balance 
+    ).run(
+      now = sp.timestamp(Constants.SECONDS_PER_COMPOUND),
+      sender = Addresses.ALICE_ADDRESS, 
+      valid = False,
+    )
 
   @sp.add_test(name="redeem - accrues interest on redeem")
   def test():
@@ -4107,6 +4303,85 @@ if __name__ == "__main__":
       sender = Addresses.ALICE_ADDRESS,
       valid = False
     )
+
+  @sp.add_test(name="UNSAFE_redeem - can deposit and withdraw from one account when paused")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a token contract
+    token = Token.FA12(
+      admin = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+    scenario += token
+
+    # AND a pool contract
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
+    )
+    scenario += pool
+
+    # AND Alice has tokens
+    aliceTokens = sp.nat(10)
+    scenario += token.mint(
+      sp.record(
+        address = Addresses.ALICE_ADDRESS,
+        value = aliceTokens
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND Alice has given the pool an allowance
+    scenario += token.approve(
+      sp.record(
+        spender = pool.address,
+        value = aliceTokens
+      )
+    ).run(
+      sender = Addresses.ALICE_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND Alice deposits tokens in the contract.
+    scenario += pool.deposit(
+      aliceTokens
+    ).run(
+      sender = Addresses.ALICE_ADDRESS
+    )
+
+    # AND the pool is paused
+    scenario += pool.pause(sp.unit).run(
+      sender = Addresses.PAUSE_GUARDIAN_ADDRESS,
+    )
+
+    # WHEN Alice withdraws from the contract.
+    scenario += pool.UNSAFE_redeem(
+      aliceTokens * Constants.PRECISION
+    ).run(
+      sender = Addresses.ALICE_ADDRESS
+    )
+
+    # THEN Alice trades her LP tokens for her original tokens
+    scenario.verify(token.data.balances[Addresses.ALICE_ADDRESS].balance == aliceTokens)
+    scenario.verify(pool.data.balances[Addresses.ALICE_ADDRESS].balance == sp.nat(0))
+
+    # AND the total supply of tokens is as expected
+    scenario.verify(pool.data.totalSupply == sp.nat(0))
+
+    # AND the pool has possession of the correct number of tokens.
+    scenario.verify(token.data.balances[pool.address].balance == sp.nat(0))
+    scenario.verify(pool.data.underlyingBalance == sp.nat(0))
 
   @sp.add_test(name="UNSAFE_redeem - can deposit and withdraw from one account")
   def test():
