@@ -336,29 +336,6 @@ class SavingsPoolContract(FA12.FA12):
     sp.transfer(tokenTransferParam, sp.mutez(0), transferHandle)
 
   ################################################################
-  # State Management
-  ################################################################
-
-  # Accrue interest.
-  # This entrypoint is only useful if you require interest to be pulled from
-  # the stability fund before you can redeem LP tokens.
-  #
-  # Because of BFS call ordering, when `redeem` is called, transaction will occur
-  # in the following order:
-  # 1) tokens that are redeemed for are transferred to redeemer
-  # 2) tokens accrued in interest are transferred to the pool from the stability fund
-  #
-  #
-  # If the tokens transferred to the redeemer are greater that the tokens currently in the pool, 
-  # the call will fail. Users should call `manuallyAccrueInterest` first, then `redeem` in this case.
-  #
-  # If / when DFS call orders are adopted, this method is no longer needed. 
-  @sp.entry_point
-  def manuallyAccrueInterest(self, unit):
-    sp.set_type(unit, sp.TUnit)
-    self.data.underlyingBalance = self.data.underlyingBalance + self.accrueInterest(sp.unit)
-
-  ################################################################
   # Pause Guardian
   ################################################################
 
@@ -1081,78 +1058,6 @@ if __name__ == "__main__":
 
     # THEN the contract has the right number of tokens.
     scenario.verify(token.data.balances[tester.address].balance == 1200000000000000000)    
-
-  ################################################################
-  # manuallyAccrueInterest
-  ################################################################
-
-  @sp.add_test(name="manuallyAccrueInterest - accrues interest for one period")
-  def test():
-    scenario = sp.test_scenario()
-    
-    # GIVEN a token contract.
-    token = Token.FA12(
-      admin = Addresses.TOKEN_ADMIN_ADDRESS
-    )
-    scenario += token
-
-    # AND a Pool contract
-    interestRate = sp.nat(100000000000000000)
-    lastInterestCompoundTime = sp.timestamp(0)
-    initialBalance = Constants.PRECISION
-    pool = SavingsPoolContract(
-      interestRate = interestRate,
-      lastInterestCompoundTime = lastInterestCompoundTime,
-      underlyingBalance = initialBalance,
-      tokenContractAddress = token.address
-    )
-    scenario += pool
-
-    # AND a stability fund contract.
-    stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
-      tokenContractAddress = token.address,
-    )
-    scenario += stabilityFund
-
-    # AND the stability fund has many tokens
-    scenario += token.mint(
-      sp.record(
-        address = stabilityFund.address,
-        value = 1000000 * Constants.PRECISION
-      )
-    ).run(
-      sender = Addresses.TOKEN_ADMIN_ADDRESS
-    )
-
-    # AND the pool has the initial balance
-    scenario += token.mint(
-      sp.record(
-        address = pool.address,
-        value = initialBalance
-      )
-    ).run(
-      sender = Addresses.TOKEN_ADMIN_ADDRESS
-    )
-
-    # AND the pool is wired to the stabiility fund.
-    scenario += pool.setStabilityFundContract(stabilityFund.address).run(
-      sender = Addresses.GOVERNOR_ADDRESS
-    )
-
-    # WHEN interest is manually accrued after one compound period
-    scenario += pool.manuallyAccrueInterest(sp.unit).run(
-      now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
-    )
-
-    # THEN the underlying balance is updated.
-    scenario.verify(pool.data.underlyingBalance == initialBalance + (initialBalance // 10))
-
-    # AND the last compound time is updated.
-    scenario.verify(pool.data.lastInterestCompoundTime == sp.timestamp(Constants.SECONDS_PER_COMPOUND))
-
-    # AND tokens are transferred to the pool.
-    scenario.verify(token.data.balances[pool.address].balance == initialBalance + (initialBalance // 10))
 
   ################################################################
   # rescueXTZ
@@ -3124,13 +3029,9 @@ if __name__ == "__main__":
       sender = Addresses.ALICE_ADDRESS
     )
 
-    # WHEN alice calls accrue interest and then withdraw
+    # WHEN alice calls withdraw
     # THEN it will succeed.
     now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
-    scenario += pool.manuallyAccrueInterest(sp.unit).run(
-      now = now,
-      sender = Addresses.ALICE_ADDRESS,      
-    )
     scenario += pool.redeem(
       pool.data.balances[Addresses.ALICE_ADDRESS].balance 
     ).run(
