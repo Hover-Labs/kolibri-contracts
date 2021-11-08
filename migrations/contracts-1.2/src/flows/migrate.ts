@@ -4,6 +4,7 @@ import { generateBreakGlassStorage } from '../storage/break-glass-contract-stora
 import { generateStabilityFundStorage } from '../storage/stability-fund-contract-storage'
 import { generateSavingsPoolStorage } from "../storage/savings-pool-contract-storage"
 import CACHE_KEYS from '../cache-keys'
+import BigNumber from 'bignumber.js'
 
 const main = async () => {
   // Debug Info
@@ -122,6 +123,45 @@ const main = async () => {
     )
   })
 
+  // Step 8: Fund the funds
+  // Give the stability fund some value by transferring 1 kUSD from the deployer to the stability fund.
+  //
+  // This works around a bug where on Sandbox net there is 0 value in the stability fund. Because the token
+  // contract will FAIL_WITH when an account which has never held a token calls the `transfer` entrypoint later 
+  // calls to move value from old stability fund to new stability fund will fail.
+  //
+  // Additionally, the automated tests assume there is *some* value in the stability fund to start in order to
+  // validate the transfer occurred, so we need some value here. 
+  console.log("Transferring 1 kUSD to the old stability fund to ensure it has value")
+  const oldStabilityFundTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.OLD_STABILITY_FUND_TRANSFER, async () => {
+    const tokenContractAddress = NETWORK_CONFIG.contracts.TOKEN!
+    const oldStabilityFundAddress = NETWORK_CONFIG.contracts.STABILITY_FUND!
+    const deployerAddress = await tezos.signer.publicKeyHash()
+    const amount = new BigNumber("1000000000000000000") // 1 kUSD
+
+    const transferParam = [
+      deployerAddress,
+      oldStabilityFundAddress,
+      amount
+    ]
+    return sendOperation(NETWORK_CONFIG, tezos, tokenContractAddress, 'transfer', transferParam)
+  })
+
+  console.log("Transferring 1 kUSD to the new stability fund to ensure it has value")
+  const newStabilityFundTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.NEW_STABILITY_FUND_TRANSFER, async () => {
+    const tokenContractAddress = NETWORK_CONFIG.contracts.TOKEN!
+    const newStabilityFundAddress = stabilityFundDeployResult.contractAddress
+    const deployerAddress = await tezos.signer.publicKeyHash()
+    const amount = new BigNumber("1000000000000000000") // 1 kUSD
+
+    const transferParam = [
+      deployerAddress,
+      newStabilityFundAddress,
+      amount
+    ]
+    return sendOperation(NETWORK_CONFIG, tezos, tokenContractAddress, 'transfer', transferParam)
+  })
+
   // Print Results
   console.log("----------------------------------------------------------------------------")
   console.log("Operation Results")
@@ -135,6 +175,8 @@ const main = async () => {
   console.log("")
 
   console.log("Operations:")
+  console.log(`Ensure Old Stability Fund has Value: ${oldStabilityFundTransferResult}`)
+  console.log(`Ensure New Stability Fund has Value: ${newStabilityFundTransferResult}`)
   console.log(`Wire Savings Pool To Stability Fund: ${wireStabilityFundHash}`)
   console.log(`Wire Break Glass To Stability Pool: ${wireGovernorStabilityFundHash}`)
   console.log(`Wire Break Glass To Savings Pool: ${wireGovernorSavingsPoolHash}`)

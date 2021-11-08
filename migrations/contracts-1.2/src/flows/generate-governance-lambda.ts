@@ -1,26 +1,27 @@
-import { fetchFromCache, compileLambda, ContractOriginationResult, getTezos, getTokenBalance } from '@hover-labs/tezos-utils'
+import { fetchFromCache, compileLambda, ContractOriginationResult, getTezos, getTokenBalanceFromDefaultSmartPyContract } from '@hover-labs/tezos-utils'
 import { NETWORK_CONFIG } from '../config'
 import CACHE_KEYS from '../cache-keys'
 import BigNumber from 'bignumber.js'
 
 const main = async () => {
-  // Contracts
-  const minterContract = NETWORK_CONFIG.contracts.MINTER!
-  const stabilityFundContract = NETWORK_CONFIG.contracts.STABILITY_FUND!
-  const tokenContract = NETWORK_CONFIG.contracts.TOKEN!
+    // Contracts
+    const minterContract = NETWORK_CONFIG.contracts.MINTER!
+    const stabilityFundContract = NETWORK_CONFIG.contracts.STABILITY_FUND!
+    const tokenContract = NETWORK_CONFIG.contracts.TOKEN!
 
-  // Break Glasses
-  const minterBreakGlassContract = NETWORK_CONFIG.contracts.BREAK_GLASS_CONTRACTS.MINTER
-  const stabilityFundBreakGlassContract = NETWORK_CONFIG.contracts.BREAK_GLASS_CONTRACTS.STABILITY_FUND
+    // Break Glasses
+    const minterBreakGlassContract = NETWORK_CONFIG.contracts.BREAK_GLASS_CONTRACTS.MINTER
+    const stabilityFundBreakGlassContract = NETWORK_CONFIG.contracts.BREAK_GLASS_CONTRACTS.STABILITY_FUND
 
-  // New Stability fund contract
-  const newStabilityFundContract = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_DEPLOY) as ContractOriginationResult).contractAddress
+    // New Stability fund contract
+    const newStabilityFundContract = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_DEPLOY) as ContractOriginationResult).contractAddress
 
-  // Grab the current value in the stability fund.
-  const tezos = await getTezos(NETWORK_CONFIG)
-  const stabilityFundBalance: BigNumber = await getTokenBalance(stabilityFundContract, tokenContract, tezos)
+    // Grab the current value in the stability fund.
+    const tezos = await getTezos(NETWORK_CONFIG)
+    const stabilityFundBalance: BigNumber = await getTokenBalanceFromDefaultSmartPyContract(stabilityFundContract, tokenContract, tezos)
+    console.log("FYI: got balance of " + JSON.stringify(stabilityFundBalance))
 
-  const program = `
+    const program = `
 import smartpy as sp
 
 def setStabilityFundLambda(unit):
@@ -88,10 +89,10 @@ def governanceLambda(unit):
 sp.add_expression_compilation_target("operation", governanceLambda)
 `
 
-  const compiled = compileLambda(program)
+    const compiled = compileLambda(program)
 
-  console.log("Governance Lambda:")
-  console.log(compiled)
+    console.log("Governance Lambda:")
+    console.log(compiled)
 }
 
 main()

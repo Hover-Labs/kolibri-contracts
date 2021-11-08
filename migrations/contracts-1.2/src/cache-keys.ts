@@ -1,5 +1,8 @@
 /** Keys for cache actions */
 const CACHE_KEYS = {
+  OLD_STABILITY_FUND_TRANSFER: 'old-stability-fund-transfer',
+  NEW_STABILITY_FUND_TRANSFER: 'new-stability-fund-transfer',
+
   STABILITY_FUND_DEPLOY: 'stability-fund-deploy',
   STABILITY_FUND_BREAK_GLASS_DEPLOY: 'stability-fund-break-glass-deploy',
   SAVINGS_POOL_DEPLOY: 'savings-pool-deploy',
