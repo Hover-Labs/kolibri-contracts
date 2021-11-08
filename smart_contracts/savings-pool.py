@@ -49,6 +49,9 @@ class SavingsPoolContract(FA12.FA12):
     # The initial token balance.
     underlyingBalance = sp.nat(0),
 
+    # Whether the savings rate is paused
+    paused = False,
+
     # The initial state of the state machine.
     state = IDLE,
 
@@ -111,7 +114,8 @@ class SavingsPoolContract(FA12.FA12):
       # Internal State
       underlyingBalance = underlyingBalance,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      
+      paused = paused,
+
       # State machinge
       state = state,
       savedState_tokensToRedeem = savedState_tokensToRedeem, # Amount of tokens to redeem, populated when state = WAITING_REDEEM
@@ -146,7 +150,7 @@ class SavingsPoolContract(FA12.FA12):
     ).open_some()
     sp.transfer(param, sp.mutez(0), contractHandle)
 
-  # Private callback for redeem.
+  # Private callback for deposit.
   @sp.entry_point
   def deposit_callback(self, updatedBalance):
     sp.set_type(updatedBalance, sp.TNat)
@@ -348,6 +352,16 @@ class SavingsPoolContract(FA12.FA12):
     self.data.underlyingBalance = self.data.underlyingBalance + self.accrueInterest(sp.unit)
 
   ################################################################
+  # Pause Guardian
+  ################################################################
+
+  # Pause the system
+  @sp.entry_point
+  def pause(self):
+    sp.verify(sp.sender == self.data.pauseGuardianContractAddress, message = Errors.NOT_PAUSE_GUARDIAN)
+    self.data.paused = True
+
+  ################################################################
   # Governance
   ################################################################
 
@@ -418,6 +432,12 @@ class SavingsPoolContract(FA12.FA12):
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
 
     sp.send(params.destinationAddress, sp.tez(10))    
+
+  # Unpause the system.
+  @sp.entry_point
+  def unpause(self):
+    sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+    self.data.paused = False
 
   ################################################################
   # Helpers
@@ -1505,6 +1525,84 @@ if __name__ == "__main__":
 
     # THEN the interest rate is updated.
     scenario.verify(pool.data.interestRate == newInterestRate)
+
+  ################################################################
+  # unpause
+  ################################################################
+
+  @sp.add_test(name="unpause - fails if sender is not governor")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a pool contract which is paused
+    pool = SavingsPoolContract(
+      paused = True
+    )
+    scenario += pool
+
+    # WHEN unpause is called by someone other than the governor
+    # THEN the call will fail
+    notGovernor = Addresses.NULL_ADDRESS
+    scenario += pool.unpause(sp.unit).run(
+      sender = notGovernor,
+      valid = False
+    )
+
+  @sp.add_test(name="unpause - can unpause contract")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a pool contract which is paused
+    pool = SavingsPoolContract(
+      paused = True,
+    )
+    scenario += pool
+
+    # WHEN unpause is called
+    scenario += pool.unpause(sp.unit).run(
+      sender = Addresses.GOVERNOR_ADDRESS,
+    )    
+
+    # THEN the contract is unpaused
+    scenario.verify(pool.data.paused == False)
+
+  ################################################################
+  # pause
+  ################################################################
+
+  @sp.add_test(name="unpause - fails if sender is not pause guardian")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a pool contract
+    pool = SavingsPoolContract(
+      paused = True
+    )
+    scenario += pool
+
+    # WHEN pause is called by someone other than the pause guardian
+    # THEN the call will fail
+    notPauseGuardian = Addresses.NULL_ADDRESS
+    scenario += pool.unpause(sp.unit).run(
+      sender = notPauseGuardian,
+      valid = False
+    )
+
+  @sp.add_test(name="pause - can pause contract")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a pool contract
+    pool = SavingsPoolContract()
+    scenario += pool
+
+    # WHEN pause is called
+    scenario += pool.pause(sp.unit).run(
+      sender = Addresses.PAUSE_GUARDIAN_ADDRESS,
+    )    
+
+    # THEN the contract is paused
+    scenario.verify(pool.data.paused == True)    
 
   ################################################################
   # deposit
