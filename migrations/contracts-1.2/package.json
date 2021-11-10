@@ -11,13 +11,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@hover-labs/kolibri-js": "^1.15.0",
-    "@hover-labs/tezos-utils": "^0.0.7",
+    "@hover-labs/kolibri-js": "^2.0.0",
+    "@hover-labs/tezos-utils": "^0.0.8",
     "@taquito/taquito": "^10.2.1",
-    "@types/node": "^16.10.3",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.176"
+    "@types/lodash": "^4.14.176",
+    "@types/node": "^16.11.7"
   }
 }

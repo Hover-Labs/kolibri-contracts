@@ -19,7 +19,7 @@ const main = async () => {
     // Grab the current value in the stability fund.
     const tezos = await getTezos(NETWORK_CONFIG)
     const stabilityFundBalance: BigNumber = await getTokenBalanceFromDefaultSmartPyContract(stabilityFundContract, tokenContract, tezos)
-    console.log("FYI: got balance of " + JSON.stringify(stabilityFundBalance))
+    console.log(`FYI: got balance of ${JSON.stringify(stabilityFundBalance)}`)
 
     const program = `
 import smartpy as sp
@@ -47,24 +47,24 @@ def moveStabilityFundLambda(unit):
     sp.set_type(unit, sp.TUnit)
 
     contractHandle = sp.contract(
-      sp.TPair(sp.TNat, sp.TAddress),
-      sp.address("${stabilityFundContract}"),
-      "sendTokens"
+        sp.TPair(sp.TNat, sp.TAddress),
+        sp.address("${stabilityFundContract}"),
+        "sendTokens"
     ).open_some()
 
     param = (sp.nat(${stabilityFundBalance.toString()}), sp.address("${newStabilityFundContract}"))
     sp.result(
-      [
-          sp.transfer_operation(
-              param,
-              sp.mutez(0),
-              contractHandle
-          )
-      ]
-  )  
+        [
+            sp.transfer_operation(
+                param,
+                sp.mutez(0),
+                contractHandle
+            )
+        ]
+    )  
 
 
-def governanceLambda(unit): 
+def governanceLambda(unit):
     sp.set_type(unit, sp.TUnit)
 
     minterBreakGlassHandle = sp.contract(
@@ -74,10 +74,10 @@ def governanceLambda(unit):
     ).open_some()
 
     stabilityFundBreakGlassHandle = sp.contract(
-      sp.TLambda(sp.TUnit, sp.TList(sp.TOperation)),
-      sp.address("${stabilityFundBreakGlassContract}"),
-      "runLambda"
-    ).open_some()      
+        sp.TLambda(sp.TUnit, sp.TList(sp.TOperation)),
+        sp.address("${stabilityFundBreakGlassContract}"),
+        "runLambda"
+    ).open_some()
 
     sp.result(
         [
@@ -86,8 +86,8 @@ def governanceLambda(unit):
         ]
     )
 
-sp.add_expression_compilation_target("operation", governanceLambda)
-`
+    sp.add_expression_compilation_target("operation", governanceLambda)
+        `
 
     const compiled = compileLambda(program)
 
