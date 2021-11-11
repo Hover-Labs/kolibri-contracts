@@ -12,7 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@hover-labs/kolibri-js": "^2.0.0",
-    "@hover-labs/tezos-utils": "^0.0.8",
+    "@hover-labs/tezos-utils": "^0.0.9",
     "@taquito/taquito": "^10.2.1",
     "lodash": "^4.17.21"
   },

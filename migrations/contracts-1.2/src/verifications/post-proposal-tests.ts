@@ -1,4 +1,4 @@
-import { checkConfirmed, ContractOriginationResult, fetchFromCache, getTezos, validateBreakGlass, validateStorageValue, sleep, getSigner, getTokenBalanceFromDefaultSmartPyContract } from "@hover-labs/tezos-utils"
+import { checkConfirmed, ContractOriginationResult, fetchFromCache, getTezos, validateBreakGlass, validateStorageValue, sleep, getSigner, getTokenBalanceFromDefaultSmartPyContract, CONSTANTS } from "@hover-labs/tezos-utils"
 import CACHE_KEYS from "../cache-keys"
 import { NETWORK_CONFIG } from "../config"
 import BigNumber from 'bignumber.js'
@@ -34,35 +34,35 @@ const main = async () => {
   console.log(``)
 
   // Check wiring for savings pool
-  console.log("Verifying savings pool break glass is attached to savings pool")
-  await validateBreakGlass(savingsPool, 'governorContractAddress', savingsPoolBreakGlass, breakGlassMsig, dao, tezos)
-  console.log("   / passed")
+  // console.log("Verifying savings pool break glass is attached to savings pool")
+  // await validateBreakGlass(savingsPool, 'governorContractAddress', savingsPoolBreakGlass, breakGlassMsig, dao, tezos)
+  // console.log("   / passed")
 
-  console.log("Verifying savings pool is attached to savings pool break glass")
-  await validateStorageValue(savingsPool, 'governorContractAddress', savingsPoolBreakGlass, tezos)
-  console.log("   / passed")
+  // console.log("Verifying savings pool is attached to savings pool break glass")
+  // await validateStorageValue(savingsPool, 'governorContractAddress', savingsPoolBreakGlass, tezos)
+  // console.log("   / passed")
 
-  console.log("Verifying savings pool is attached to stability fund")
-  await validateStorageValue(savingsPool, 'stabilityFundContractAddress', stabilityFund, tezos)
-  console.log("   / passed")
+  // console.log("Verifying savings pool is attached to stability fund")
+  // await validateStorageValue(savingsPool, 'stabilityFundContractAddress', stabilityFund, tezos)
+  // console.log("   / passed")
 
-  // Check wiring for stability fund
-  console.log("Verifying stability fund break glass is attached to stability fund")
-  await validateBreakGlass(stabilityFund, 'governorContractAddress', stabilityFundBreakGlass, breakGlassMsig, dao, tezos)
-  console.log("   / passed")
+  // // Check wiring for stability fund
+  // console.log("Verifying stability fund break glass is attached to stability fund")
+  // await validateBreakGlass(stabilityFund, 'governorContractAddress', stabilityFundBreakGlass, breakGlassMsig, dao, tezos)
+  // console.log("   / passed")
 
-  console.log("Verifying stability fund is attached to stability fund break glass")
-  await validateStorageValue(stabilityFund, 'governorContractAddress', stabilityFundBreakGlass, tezos)
-  console.log("   / passed")
+  // console.log("Verifying stability fund is attached to stability fund break glass")
+  // await validateStorageValue(stabilityFund, 'governorContractAddress', stabilityFundBreakGlass, tezos)
+  // console.log("   / passed")
 
-  console.log("Verifying stability fund is attached to savings pool")
-  await validateStorageValue(stabilityFund, 'savingsAccountContractAddress', savingsPool, tezos)
-  console.log("   / passed")
+  // console.log("Verifying stability fund is attached to savings pool")
+  // await validateStorageValue(stabilityFund, 'savingsAccountContractAddress', savingsPool, tezos)
+  // console.log("   / passed")
 
-  // Check wiring for minter
-  console.log("Verifying minter is attached to new stability fund")
-  await validateStorageValue(minter, 'stabilityFundContractAddress', stabilityFund, tezos)
-  console.log("   / passed")
+  // // Check wiring for minter
+  // console.log("Verifying minter is attached to new stability fund")
+  // await validateStorageValue(minter, 'stabilityFundContractAddress', stabilityFund, tezos)
+  // console.log("   / passed")
 
   // Check that the balance of the old fund is 0
   // NOTE: this test will likely fail on prod since the proposal will be timelocked for a non-trivial amount of time.
@@ -109,16 +109,16 @@ const main = async () => {
   console.log("...Depositing to the oven")
   const harbingerClient = new HarbingerClient(NETWORK_CONFIG.tezosNodeUrl, harbingerNormalizer)
   const ovenClient = new OvenClient(NETWORK_CONFIG.tezosNodeUrl, signer, ovenAddress, stablecoinClient, harbingerClient)
-  const depositResult = (await ovenClient.deposit(new BigNumber(1000000000))) as TransactionWalletOperation // Deposit 1000 XTZ
+  const depositResult = (await ovenClient.deposit(new BigNumber(1000 * CONSTANTS.XTZ_MANTISSA))) as TransactionWalletOperation // Deposit 1000 XTZ
   await checkConfirmed(NETWORK_CONFIG, depositResult.opHash)
 
   console.log("...Taking a loan")
-  const loanAmount = new BigNumber('100')
+  const loanAmount = new BigNumber(100).times(new BigNumber(CONSTANTS.MANTISSA))
   const borrowResult = (await ovenClient.borrow(loanAmount)) as TransactionWalletOperation // Borrow 100 kUSD
   await checkConfirmed(NETWORK_CONFIG, borrowResult.opHash)
 
-  const minutesToWait = 480 // low - 120
-  console.log(`...Waiting ${minutesToWait} minutes for interest to accrue (${(new Date()).toString()}`)
+  const minutesToWait = 5
+  console.log(`...Waiting ${minutesToWait} minutes for interest to accrue (Started at ${(new Date()).toString()}`)
   await sleep(minutesToWait * 60)
 
   console.log("...Repaying loan")
