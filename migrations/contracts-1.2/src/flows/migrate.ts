@@ -162,6 +162,21 @@ const main = async () => {
     return sendOperation(NETWORK_CONFIG, tezos, tokenContractAddress, 'transfer', transferParam)
   })
 
+  console.log("Transferring 1 kUSD to the new savings pool to ensure it has value")
+  const savingsPoolTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.SAVINGS_POOL_TRANSFER, async () => {
+    const tokenContractAddress = NETWORK_CONFIG.contracts.TOKEN!
+    const savingsPoolAddress = savingsPoolDeployResult.contractAddress
+    const deployerAddress = await tezos.signer.publicKeyHash()
+    const amount = new BigNumber("1000000000000000000") // 1 kUSD
+
+    const transferParam = [
+      deployerAddress,
+      savingsPoolAddress,
+      amount
+    ]
+    return sendOperation(NETWORK_CONFIG, tezos, tokenContractAddress, 'transfer', transferParam)
+  })
+
   // Print Results
   console.log("----------------------------------------------------------------------------")
   console.log("Operation Results")
@@ -177,6 +192,7 @@ const main = async () => {
   console.log("Operations:")
   console.log(`Ensure Old Stability Fund has Value: ${oldStabilityFundTransferResult}`)
   console.log(`Ensure New Stability Fund has Value: ${newStabilityFundTransferResult}`)
+  console.log(`Ensure Savings Pool has Value: ${savingsPoolTransferResult}`)
   console.log(`Wire Savings Pool To Stability Fund: ${wireStabilityFundHash}`)
   console.log(`Wire Break Glass To Stability Pool: ${wireGovernorStabilityFundHash}`)
   console.log(`Wire Break Glass To Savings Pool: ${wireGovernorSavingsPoolHash}`)

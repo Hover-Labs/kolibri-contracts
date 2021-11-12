@@ -6,7 +6,9 @@ import { OvenClient, StableCoinClient, Network, HarbingerClient } from "@hover-l
 import _ from "lodash";
 import { OperationContentsAndResult, OperationContentsAndResultTransaction, InternalOperationResultEnum, OperationResultTransaction, } from '@taquito/rpc'
 import { InMemorySigner } from '@taquito/signer'
-import { TransactionWalletOperation } from '@taquito/taquito'
+import { TezosOperationError, TransactionWalletOperation } from '@taquito/taquito'
+import SavingsPoolClient from "../savings-pool-client"
+import { approveToken } from "../token-utils"
 
 const main = async () => {
   console.log("Validating end state is correct")
@@ -28,41 +30,47 @@ const main = async () => {
   const ovenFactory = NETWORK_CONFIG.contracts.OVEN_FACTORY!
   const harbingerNormalizer = NETWORK_CONFIG.contracts.HARBINGER_NORMALIZER!
 
+  // Time to wait for interest to accrue.
+  const minutesToWait = 5
+
+  // Get a local signer to use with Kolibri-JS
+  const signer = await getSigner(NETWORK_CONFIG)
+
   console.log(``)
   console.log(`New Stability Fund: ${stabilityFund}`)
   console.log(`Old Stability Fund: ${oldStabilityFund}`)
   console.log(``)
 
   // Check wiring for savings pool
-  // console.log("Verifying savings pool break glass is attached to savings pool")
-  // await validateBreakGlass(savingsPool, 'governorContractAddress', savingsPoolBreakGlass, breakGlassMsig, dao, tezos)
-  // console.log("   / passed")
+  console.log("Verifying savings pool break glass is attached to savings pool")
+  await validateBreakGlass(savingsPool, 'governorContractAddress', savingsPoolBreakGlass, breakGlassMsig, dao, tezos)
+  console.log("   / passed")
 
-  // console.log("Verifying savings pool is attached to savings pool break glass")
-  // await validateStorageValue(savingsPool, 'governorContractAddress', savingsPoolBreakGlass, tezos)
-  // console.log("   / passed")
+  console.log("Verifying savings pool is attached to savings pool break glass")
+  await validateStorageValue(savingsPool, 'governorContractAddress', savingsPoolBreakGlass, tezos)
+  console.log("   / passed")
 
-  // console.log("Verifying savings pool is attached to stability fund")
-  // await validateStorageValue(savingsPool, 'stabilityFundContractAddress', stabilityFund, tezos)
-  // console.log("   / passed")
+  console.log("Verifying savings pool is attached to stability fund")
+  await validateStorageValue(savingsPool, 'stabilityFundContractAddress', stabilityFund, tezos)
+  console.log("   / passed")
 
-  // // Check wiring for stability fund
-  // console.log("Verifying stability fund break glass is attached to stability fund")
-  // await validateBreakGlass(stabilityFund, 'governorContractAddress', stabilityFundBreakGlass, breakGlassMsig, dao, tezos)
-  // console.log("   / passed")
+  // Check wiring for stability fund
+  console.log("Verifying stability fund break glass is attached to stability fund")
+  await validateBreakGlass(stabilityFund, 'governorContractAddress', stabilityFundBreakGlass, breakGlassMsig, dao, tezos)
+  console.log("   / passed")
 
-  // console.log("Verifying stability fund is attached to stability fund break glass")
-  // await validateStorageValue(stabilityFund, 'governorContractAddress', stabilityFundBreakGlass, tezos)
-  // console.log("   / passed")
+  console.log("Verifying stability fund is attached to stability fund break glass")
+  await validateStorageValue(stabilityFund, 'governorContractAddress', stabilityFundBreakGlass, tezos)
+  console.log("   / passed")
 
-  // console.log("Verifying stability fund is attached to savings pool")
-  // await validateStorageValue(stabilityFund, 'savingsAccountContractAddress', savingsPool, tezos)
-  // console.log("   / passed")
+  console.log("Verifying stability fund is attached to savings pool")
+  await validateStorageValue(stabilityFund, 'savingsAccountContractAddress', savingsPool, tezos)
+  console.log("   / passed")
 
-  // // Check wiring for minter
-  // console.log("Verifying minter is attached to new stability fund")
-  // await validateStorageValue(minter, 'stabilityFundContractAddress', stabilityFund, tezos)
-  // console.log("   / passed")
+  // Check wiring for minter
+  console.log("Verifying minter is attached to new stability fund")
+  await validateStorageValue(minter, 'stabilityFundContractAddress', stabilityFund, tezos)
+  console.log("   / passed")
 
   // Check that the balance of the old fund is 0
   // NOTE: this test will likely fail on prod since the proposal will be timelocked for a non-trivial amount of time.
@@ -84,7 +92,6 @@ const main = async () => {
   // Check that we can borrow and repay interest
   console.log("Verifying that repayment still works")
   console.log("...Creating an oven")
-  const signer = await getSigner(NETWORK_CONFIG)
 
   // NOTE: Network doesn't matter
   const stablecoinClient = new StableCoinClient(NETWORK_CONFIG.tezosNodeUrl, Network.Sandbox, ovenRegistry, minter, ovenFactory, '')
@@ -117,7 +124,6 @@ const main = async () => {
   const borrowResult = (await ovenClient.borrow(loanAmount)) as TransactionWalletOperation // Borrow 100 kUSD
   await checkConfirmed(NETWORK_CONFIG, borrowResult.opHash)
 
-  const minutesToWait = 5
   console.log(`...Waiting ${minutesToWait} minutes for interest to accrue (Started at ${(new Date()).toString()}`)
   await sleep(minutesToWait * 60)
 
@@ -137,5 +143,75 @@ const main = async () => {
     throw new Error('Interest did not accrue to the new fund')
   }
   console.log("   / passed")
+  console.log("")
+
+  // Check that interest can be accrued from the savings pool
+  console.log("Verifying users can accrue interest")
+  const savingsPoolClient = new SavingsPoolClient(NETWORK_CONFIG.tezosNodeUrl, signer, savingsPool)
+  const initialBalance = await getTokenBalanceFromDefaultSmartPyContract(await signer.publicKeyHash(), token, tezos)
+  const depositAmount = new BigNumber(100).times(new BigNumber(CONSTANTS.MANTISSA))
+
+  console.log("...Zeroing kUSD Approval for Savings Pool")
+  await approveToken(savingsPool, new BigNumber(0), token, tezos, NETWORK_CONFIG)
+
+  console.log("...Zeroing LP Token Approval for Savings Pool")
+  await approveToken(savingsPool, new BigNumber(0), savingsPool, tezos, NETWORK_CONFIG)
+
+  console.log("...Taking a loan")
+  const savingsPoolBorrowResult = (await ovenClient.borrow(loanAmount)) as TransactionWalletOperation // Borrow 100 kUSD
+  await checkConfirmed(NETWORK_CONFIG, savingsPoolBorrowResult.opHash)
+  console.log(`...Initial kUSD Balance: ${initialBalance.toString()}`)
+
+  console.log(`...Issuing an approval for ${depositAmount.toString()} kUSD to be spent by the pool`)
+  await approveToken(savingsPool, depositAmount, token, tezos, NETWORK_CONFIG)
+
+  console.log(`...Depositing ${depositAmount.toString()} to pool`)
+  const savingsPoolDepositResult = (await savingsPoolClient.deposit(depositAmount)) as TransactionWalletOperation
+  await checkConfirmed(NETWORK_CONFIG, savingsPoolDepositResult.opHash)
+  const lpTokenBalance = await getTokenBalanceFromDefaultSmartPyContract(await signer.publicKeyHash(), savingsPool, tezos)
+  console.log(`...Deposit completed in hash ${savingsPoolDepositResult.opHash}`)
+  console.log(`...Received ${lpTokenBalance} LP tokens`)
+
+  console.log(`...Waiting ${minutesToWait} minutes for interest to accrue (Started at ${(new Date()).toString()}`)
+  await sleep(minutesToWait * 60)
+
+  console.log(`...Approving ${lpTokenBalance.toString()} LP tokens to be spent by the pool`)
+  await approveToken(savingsPool, lpTokenBalance, savingsPool, tezos, NETWORK_CONFIG)
+
+  console.log(`...Redeeming ${lpTokenBalance.toString()} against the pool`)
+  const savingPoolRedeemResult = (await savingsPoolClient.redeem(lpTokenBalance)) as TransactionWalletOperation
+  await checkConfirmed(NETWORK_CONFIG, savingPoolRedeemResult.opHash)
+  console.log(`...Redeem completed in hash ${savingPoolRedeemResult.opHash}`)
+
+  console.log("...Validating the pool has 0 kUSD")
+  const savingsPoolkUSDBalance = await getTokenBalanceFromDefaultSmartPyContract(savingsPool, token, tezos)
+  if (!savingsPoolkUSDBalance.isEqualTo(0)) {
+    throw new Error("The savings pool contained value after it should be empty")
+  }
+  console.log("   / passed")
+
+  console.log("...Validating there are 0 LP tokens issued")
+  const savingsPoolContract = await tezos.contract.at(savingsPool)
+  const savingsPoolStorage: any = await savingsPoolContract.storage()
+  if (!savingsPoolStorage.totalSupply.isEqualTo(0)) {
+    throw new Error("The savings pool contained value after it should be empty")
+  }
+  console.log("   / passed")
+
+  console.log("...Validating the user received interest")
+  const balanceAfterRedeem = await getTokenBalanceFromDefaultSmartPyContract(await signer.publicKeyHash(), token, tezos)
+  if (!balanceAfterRedeem.isGreaterThan(initialBalance)) {
+    throw new Error("Balance after redemption did not increase!")
+  }
+  console.log("   / passed")
+
+  console.log("...Repaying loan")
+  const savingsPoolRepayResult = (await ovenClient.repay(loanAmount)) as TransactionWalletOperation
+  await checkConfirmed(NETWORK_CONFIG, savingsPoolRepayResult.opHash)
+  console.log(`...Repaid in ${savingsPoolRepayResult.opHash} `)
+
+  console.log("")
+  console.log("All Tests Pass!")
+  console.log(`Note: ${ovenAddress} has ${depositAmount.toString()} mutez in it. We cannot automatically withdraw.`)
 }
 main()

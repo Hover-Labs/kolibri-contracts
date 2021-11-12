@@ -86,7 +86,7 @@ def governanceLambda(unit):
         ]
     )
 
-    sp.add_expression_compilation_target("operation", governanceLambda)
+sp.add_expression_compilation_target("operation", governanceLambda)
         `
 
     const compiled = compileLambda(program)
