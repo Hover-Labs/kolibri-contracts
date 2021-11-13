@@ -20,7 +20,9 @@ code
             DIG 2;      # @storage : int : @parameter%getXtzUsdRate
             DUP;        # @storage : @storage : int : @parameter%getXtzUsdRate
             DUG 3;      # @storage : int : @parameter%getXtzUsdRate : @storage
-            CDDDR;      # int : int : @parameter%getXtzUsdRate : @storage
+            CDR;        # pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : int : @parameter%getXtzUsdRate : @storage
+            CDR;        # pair (nat %maxDataDelaySec) (int %state) : int : @parameter%getXtzUsdRate : @storage
+            CDR;        # int : int : @parameter%getXtzUsdRate : @storage
             COMPARE;    # int : @parameter%getXtzUsdRate : @storage
             EQ;         # bool : @parameter%getXtzUsdRate : @storage
             IF
@@ -49,7 +51,8 @@ code
             DUP;        # pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%getXtzUsdRate
             CAR;        # address : pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%getXtzUsdRate
             SWAP;       # pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : address : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%getXtzUsdRate
-            CDAR;       # nat : address : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%getXtzUsdRate
+            CDR;        # pair (nat %maxDataDelaySec) (int %state) : address : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%getXtzUsdRate
+            CAR;        # nat : address : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%getXtzUsdRate
             PUSH int 1; # int : nat : address : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%getXtzUsdRate
             SWAP;       # nat : int : address : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%getXtzUsdRate
             PAIR;       # pair nat int : address : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%getXtzUsdRate
@@ -61,7 +64,8 @@ code
             DUP;        # pair (pair (option %clientCallback address) (address %governorContractAddress)) (pair address (pair nat int)) : pair (pair (option %clientCallback address) (address %governorContractAddress)) (pair address (pair nat int)) : @parameter%getXtzUsdRate
             CDR;        # pair address (pair nat int) : pair (pair (option %clientCallback address) (address %governorContractAddress)) (pair address (pair nat int)) : @parameter%getXtzUsdRate
             SWAP;       # pair (pair (option %clientCallback address) (address %governorContractAddress)) (pair address (pair nat int)) : pair address (pair nat int) : @parameter%getXtzUsdRate
-            CADR;       # address : pair address (pair nat int) : @parameter%getXtzUsdRate
+            CAR;        # pair (option %clientCallback address) (address %governorContractAddress) : pair address (pair nat int) : @parameter%getXtzUsdRate
+            CDR;        # address : pair address (pair nat int) : @parameter%getXtzUsdRate
             DIG 2;      # @parameter%getXtzUsdRate : address : pair address (pair nat int)
             ADDRESS;    # address : address : pair address (pair nat int)
             SOME;       # option address : address : pair address (pair nat int)
@@ -69,7 +73,8 @@ code
             PAIR;       # pair (pair (option address) address) (pair address (pair nat int))
             # sp.transfer(('XTZ-USD', sp.self_entry_point('getXtzUsdRate_callback')), sp.tez(0), sp.contract(sp.TPair(sp.TString, sp.TContract(sp.TPair(sp.TString, sp.TPair(sp.TTimestamp, sp.TNat)))), self.data.harbingerContractAddress, entry_point='get').open_some()) # pair (pair (option address) address) (pair address (pair nat int))
             DUP;        # pair (pair (option address) address) (pair address (pair nat int)) : pair (pair (option address) address) (pair address (pair nat int))
-            CDAR;       # address : pair (pair (option address) address) (pair address (pair nat int))
+            CDR;        # pair address (pair nat int) : pair (pair (option address) address) (pair address (pair nat int))
+            CAR;        # address : pair (pair (option address) address) (pair address (pair nat int))
             CONTRACT %get (pair string (contract (pair string (pair timestamp nat)))); # option (contract (pair string (contract (pair string (pair timestamp nat))))) : pair (pair (option address) address) (pair address (pair nat int))
             IF_SOME
               {}
@@ -96,7 +101,9 @@ code
             DIG 2;      # @storage : int : @parameter%getXtzUsdRate_callback
             DUP;        # @storage : @storage : int : @parameter%getXtzUsdRate_callback
             DUG 3;      # @storage : int : @parameter%getXtzUsdRate_callback : @storage
-            CDDDR;      # int : int : @parameter%getXtzUsdRate_callback : @storage
+            CDR;        # pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : int : @parameter%getXtzUsdRate_callback : @storage
+            CDR;        # pair (nat %maxDataDelaySec) (int %state) : int : @parameter%getXtzUsdRate_callback : @storage
+            CDR;        # int : int : @parameter%getXtzUsdRate_callback : @storage
             COMPARE;    # int : @parameter%getXtzUsdRate_callback : @storage
             EQ;         # bool : @parameter%getXtzUsdRate_callback : @storage
             IF
@@ -109,7 +116,8 @@ code
             # sp.verify(sp.sender == self.data.harbingerContractAddress, message = 3) # @storage : @parameter%getXtzUsdRate_callback
             DUP;        # @storage : @storage : @parameter%getXtzUsdRate_callback
             DUG 2;      # @storage : @parameter%getXtzUsdRate_callback : @storage
-            CDAR;       # address : @parameter%getXtzUsdRate_callback : @storage
+            CDR;        # pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : @parameter%getXtzUsdRate_callback : @storage
+            CAR;        # address : @parameter%getXtzUsdRate_callback : @storage
             SENDER;     # address : address : @parameter%getXtzUsdRate_callback : @storage
             COMPARE;    # int : @parameter%getXtzUsdRate_callback : @storage
             EQ;         # bool : @parameter%getXtzUsdRate_callback : @storage
@@ -136,7 +144,8 @@ code
             DIG 2;      # @storage : list operation : @parameter%getXtzUsdRate_callback
             DUP;        # @storage : @storage : list operation : @parameter%getXtzUsdRate_callback
             DUG 3;      # @storage : list operation : @parameter%getXtzUsdRate_callback : @storage
-            CAAR;       # option address : list operation : @parameter%getXtzUsdRate_callback : @storage
+            CAR;        # pair (option %clientCallback address) (address %governorContractAddress) : list operation : @parameter%getXtzUsdRate_callback : @storage
+            CAR;        # option address : list operation : @parameter%getXtzUsdRate_callback : @storage
             IF_SOME
               {}
               {
@@ -153,7 +162,8 @@ code
             PUSH mutez 0; # mutez : @some : list operation : @parameter%getXtzUsdRate_callback : @storage
             PUSH nat 1000000000000; # nat : mutez : @some : list operation : @parameter%getXtzUsdRate_callback : @storage
             DIG 4;      # @parameter%getXtzUsdRate_callback : nat : mutez : @some : list operation : @storage
-            CDDR;       # nat : nat : mutez : @some : list operation : @storage
+            CDR;        # pair timestamp nat : nat : mutez : @some : list operation : @storage
+            CDR;        # nat : nat : mutez : @some : list operation : @storage
             MUL;        # nat : mutez : @some : list operation : @storage
             TRANSFER_TOKENS; # operation : list operation : @storage
             CONS;       # list operation : @storage
@@ -166,7 +176,8 @@ code
             DUP;        # pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : pair (option %clientCallback address) (address %governorContractAddress) : list operation
             CAR;        # address : pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : pair (option %clientCallback address) (address %governorContractAddress) : list operation
             SWAP;       # pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : address : pair (option %clientCallback address) (address %governorContractAddress) : list operation
-            CDAR;       # nat : address : pair (option %clientCallback address) (address %governorContractAddress) : list operation
+            CDR;        # pair (nat %maxDataDelaySec) (int %state) : address : pair (option %clientCallback address) (address %governorContractAddress) : list operation
+            CAR;        # nat : address : pair (option %clientCallback address) (address %governorContractAddress) : list operation
             PUSH int 0; # int : nat : address : pair (option %clientCallback address) (address %governorContractAddress) : list operation
             SWAP;       # nat : int : address : pair (option %clientCallback address) (address %governorContractAddress) : list operation
             PAIR;       # pair nat int : address : pair (option %clientCallback address) (address %governorContractAddress) : list operation
@@ -178,7 +189,8 @@ code
             DUP;        # pair (pair (option %clientCallback address) (address %governorContractAddress)) (pair address (pair nat int)) : pair (pair (option %clientCallback address) (address %governorContractAddress)) (pair address (pair nat int)) : list operation
             CDR;        # pair address (pair nat int) : pair (pair (option %clientCallback address) (address %governorContractAddress)) (pair address (pair nat int)) : list operation
             SWAP;       # pair (pair (option %clientCallback address) (address %governorContractAddress)) (pair address (pair nat int)) : pair address (pair nat int) : list operation
-            CADR;       # address : pair address (pair nat int) : list operation
+            CAR;        # pair (option %clientCallback address) (address %governorContractAddress) : pair address (pair nat int) : list operation
+            CDR;        # address : pair address (pair nat int) : list operation
             NONE address; # option address : address : pair address (pair nat int) : list operation
             PAIR;       # pair (option address) address : pair address (pair nat int) : list operation
             PAIR;       # pair (pair (option address) address) (pair address (pair nat int)) : list operation
@@ -192,7 +204,8 @@ code
                 # sp.verify(sp.sender == self.data.governorContractAddress, message = 4) # @storage : @parameter%setGovernorContract
                 DUP;        # @storage : @storage : @parameter%setGovernorContract
                 DUG 2;      # @storage : @parameter%setGovernorContract : @storage
-                CADR;       # address : @parameter%setGovernorContract : @storage
+                CAR;        # pair (option %clientCallback address) (address %governorContractAddress) : @parameter%setGovernorContract : @storage
+                CDR;        # address : @parameter%setGovernorContract : @storage
                 SENDER;     # address : address : @parameter%setGovernorContract : @storage
                 COMPARE;    # int : @parameter%setGovernorContract : @storage
                 EQ;         # bool : @parameter%setGovernorContract : @storage
@@ -207,7 +220,8 @@ code
                 DUP;        # @storage : @storage : @parameter%setGovernorContract
                 CDR;        # pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : @storage : @parameter%setGovernorContract
                 SWAP;       # @storage : pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : @parameter%setGovernorContract
-                CAAR;       # option address : pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : @parameter%setGovernorContract
+                CAR;        # pair (option %clientCallback address) (address %governorContractAddress) : pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : @parameter%setGovernorContract
+                CAR;        # option address : pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : @parameter%setGovernorContract
                 DIG 2;      # @parameter%setGovernorContract : option address : pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state))
                 SWAP;       # option address : @parameter%setGovernorContract : pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state))
                 PAIR;       # pair (option address) @parameter%setGovernorContract : pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state))
@@ -219,7 +233,8 @@ code
                 # sp.verify(sp.sender == self.data.governorContractAddress, message = 4) # @storage : @parameter%setMaxDataDelaySec
                 DUP;        # @storage : @storage : @parameter%setMaxDataDelaySec
                 DUG 2;      # @storage : @parameter%setMaxDataDelaySec : @storage
-                CADR;       # address : @parameter%setMaxDataDelaySec : @storage
+                CAR;        # pair (option %clientCallback address) (address %governorContractAddress) : @parameter%setMaxDataDelaySec : @storage
+                CDR;        # address : @parameter%setMaxDataDelaySec : @storage
                 SENDER;     # address : address : @parameter%setMaxDataDelaySec : @storage
                 COMPARE;    # int : @parameter%setMaxDataDelaySec : @storage
                 EQ;         # bool : @parameter%setMaxDataDelaySec : @storage
@@ -238,7 +253,8 @@ code
                 DUP;        # pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%setMaxDataDelaySec
                 CAR;        # address : pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%setMaxDataDelaySec
                 SWAP;       # pair (address %harbingerContractAddress) (pair (nat %maxDataDelaySec) (int %state)) : address : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%setMaxDataDelaySec
-                CDDR;       # int : address : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%setMaxDataDelaySec
+                CDR;        # pair (nat %maxDataDelaySec) (int %state) : address : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%setMaxDataDelaySec
+                CDR;        # int : address : pair (option %clientCallback address) (address %governorContractAddress) : @parameter%setMaxDataDelaySec
                 DIG 3;      # @parameter%setMaxDataDelaySec : int : address : pair (option %clientCallback address) (address %governorContractAddress)
                 PAIR;       # pair @parameter%setMaxDataDelaySec int : address : pair (option %clientCallback address) (address %governorContractAddress)
                 SWAP;       # address : pair @parameter%setMaxDataDelaySec int : pair (option %clientCallback address) (address %governorContractAddress)

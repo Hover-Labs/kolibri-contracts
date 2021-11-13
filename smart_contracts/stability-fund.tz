@@ -17,7 +17,9 @@ code
                 # sp.verify(sp.sender == self.data.savingsAccountContractAddress, message = 27) # @storage : @parameter%accrueInterest
                 DUP;        # @storage : @storage : @parameter%accrueInterest
                 DUG 2;      # @storage : @parameter%accrueInterest : @storage
-                CDDAR;      # address : @parameter%accrueInterest : @storage
+                CDR;        # pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : @parameter%accrueInterest : @storage
+                CDR;        # pair (address %savingsAccountContractAddress) (address %tokenContractAddress) : @parameter%accrueInterest : @storage
+                CAR;        # address : @parameter%accrueInterest : @storage
                 SENDER;     # address : address : @parameter%accrueInterest : @storage
                 COMPARE;    # int : @parameter%accrueInterest : @storage
                 EQ;         # bool : @parameter%accrueInterest : @storage
@@ -32,7 +34,9 @@ code
                 DIG 2;      # @storage : list operation : @parameter%accrueInterest
                 DUP;        # @storage : @storage : list operation : @parameter%accrueInterest
                 DUG 3;      # @storage : list operation : @parameter%accrueInterest : @storage
-                CDDDR;      # address : list operation : @parameter%accrueInterest : @storage
+                CDR;        # pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : list operation : @parameter%accrueInterest : @storage
+                CDR;        # pair (address %savingsAccountContractAddress) (address %tokenContractAddress) : list operation : @parameter%accrueInterest : @storage
+                CDR;        # address : list operation : @parameter%accrueInterest : @storage
                 CONTRACT %transfer (pair (address %from) (pair (address %to) (nat %value))); # option (contract (pair (address %from) (pair (address %to) (nat %value)))) : list operation : @parameter%accrueInterest : @storage
                 IF_SOME
                   {}
@@ -45,7 +49,9 @@ code
                 DIG 4;      # @storage : @parameter%accrueInterest : mutez : @some : list operation
                 DUP;        # @storage : @storage : @parameter%accrueInterest : mutez : @some : list operation
                 DUG 5;      # @storage : @parameter%accrueInterest : mutez : @some : list operation : @storage
-                CDDAR;      # address : @parameter%accrueInterest : mutez : @some : list operation : @storage
+                CDR;        # pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : @parameter%accrueInterest : mutez : @some : list operation : @storage
+                CDR;        # pair (address %savingsAccountContractAddress) (address %tokenContractAddress) : @parameter%accrueInterest : mutez : @some : list operation : @storage
+                CAR;        # address : @parameter%accrueInterest : mutez : @some : list operation : @storage
                 PAIR %to %value; # pair (address %to) (@parameter%accrueInterest %value) : mutez : @some : list operation : @storage
                 SELF;       # contract (or (or (or (nat %accrueInterest) (unit %default)) (or (address %liquidate) (or (pair %send mutez address) (pair %sendTokens nat address)))) (or (or (address %setAdministratorContract) (option %setDelegate key_hash)) (or (address %setGovernorContract) (or (address %setOvenRegistryContract) (address %setSavingsAccountContract))))) : pair (address %to) (@parameter%accrueInterest %value) : mutez : @some : list operation : @storage
                 ADDRESS;    # address : pair (address %to) (@parameter%accrueInterest %value) : mutez : @some : list operation : @storage
@@ -67,7 +73,8 @@ code
                 # sp.verify(sp.sender == self.data.administratorContractAddress, message = 8) # @storage : @parameter%liquidate
                 DUP;        # @storage : @storage : @parameter%liquidate
                 DUG 2;      # @storage : @parameter%liquidate : @storage
-                CAAR;       # address : @parameter%liquidate : @storage
+                CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%liquidate : @storage
+                CAR;        # address : @parameter%liquidate : @storage
                 SENDER;     # address : address : @parameter%liquidate : @storage
                 COMPARE;    # int : @parameter%liquidate : @storage
                 EQ;         # bool : @parameter%liquidate : @storage
@@ -82,7 +89,8 @@ code
                 DIG 2;      # @storage : list operation : @parameter%liquidate
                 DUP;        # @storage : @storage : list operation : @parameter%liquidate
                 DUG 3;      # @storage : list operation : @parameter%liquidate : @storage
-                CDAR;       # address : list operation : @parameter%liquidate : @storage
+                CDR;        # pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : list operation : @parameter%liquidate : @storage
+                CAR;        # address : list operation : @parameter%liquidate : @storage
                 CONTRACT %isOven address; # option (contract address) : list operation : @parameter%liquidate : @storage
                 IF_SOME
                   {}
@@ -118,7 +126,8 @@ code
                     # sp.verify(sp.sender == self.data.governorContractAddress, message = 4) # @storage : @parameter%send
                     DUP;        # @storage : @storage : @parameter%send
                     DUG 2;      # @storage : @parameter%send : @storage
-                    CADR;       # address : @parameter%send : @storage
+                    CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%send : @storage
+                    CDR;        # address : @parameter%send : @storage
                     SENDER;     # address : address : @parameter%send : @storage
                     COMPARE;    # int : @parameter%send : @storage
                     EQ;         # bool : @parameter%send : @storage
@@ -152,7 +161,8 @@ code
                     # sp.verify(sp.sender == self.data.governorContractAddress, message = 4) # @storage : @parameter%sendTokens
                     DUP;        # @storage : @storage : @parameter%sendTokens
                     DUG 2;      # @storage : @parameter%sendTokens : @storage
-                    CADR;       # address : @parameter%sendTokens : @storage
+                    CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%sendTokens : @storage
+                    CDR;        # address : @parameter%sendTokens : @storage
                     SENDER;     # address : address : @parameter%sendTokens : @storage
                     COMPARE;    # int : @parameter%sendTokens : @storage
                     EQ;         # bool : @parameter%sendTokens : @storage
@@ -167,7 +177,9 @@ code
                     DIG 2;      # @storage : list operation : @parameter%sendTokens
                     DUP;        # @storage : @storage : list operation : @parameter%sendTokens
                     DUG 3;      # @storage : list operation : @parameter%sendTokens : @storage
-                    CDDDR;      # address : list operation : @parameter%sendTokens : @storage
+                    CDR;        # pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : list operation : @parameter%sendTokens : @storage
+                    CDR;        # pair (address %savingsAccountContractAddress) (address %tokenContractAddress) : list operation : @parameter%sendTokens : @storage
+                    CDR;        # address : list operation : @parameter%sendTokens : @storage
                     CONTRACT %transfer (pair (address %from) (pair (address %to) (nat %value))); # option (contract (pair (address %from) (pair (address %to) (nat %value)))) : list operation : @parameter%sendTokens : @storage
                     IF_SOME
                       {}
@@ -201,7 +213,8 @@ code
                 # sp.verify(sp.sender == self.data.governorContractAddress, message = 4) # @storage : @parameter%setAdministratorContract
                 DUP;        # @storage : @storage : @parameter%setAdministratorContract
                 DUG 2;      # @storage : @parameter%setAdministratorContract : @storage
-                CADR;       # address : @parameter%setAdministratorContract : @storage
+                CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setAdministratorContract : @storage
+                CDR;        # address : @parameter%setAdministratorContract : @storage
                 SENDER;     # address : address : @parameter%setAdministratorContract : @storage
                 COMPARE;    # int : @parameter%setAdministratorContract : @storage
                 EQ;         # bool : @parameter%setAdministratorContract : @storage
@@ -216,7 +229,8 @@ code
                 DUP;        # @storage : @storage : @parameter%setAdministratorContract
                 CDR;        # pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : @storage : @parameter%setAdministratorContract
                 SWAP;       # @storage : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : @parameter%setAdministratorContract
-                CADR;       # address : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : @parameter%setAdministratorContract
+                CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : @parameter%setAdministratorContract
+                CDR;        # address : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : @parameter%setAdministratorContract
                 DIG 2;      # @parameter%setAdministratorContract : address : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress))
                 PAIR;       # pair @parameter%setAdministratorContract address : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress))
                 PAIR;       # pair (pair @parameter%setAdministratorContract address) (pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)))
@@ -228,7 +242,8 @@ code
                 # sp.verify(sp.sender == self.data.administratorContractAddress, message = 8) # @storage : @parameter%setDelegate
                 DUP;        # @storage : @storage : @parameter%setDelegate
                 DUG 2;      # @storage : @parameter%setDelegate : @storage
-                CAAR;       # address : @parameter%setDelegate : @storage
+                CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setDelegate : @storage
+                CAR;        # address : @parameter%setDelegate : @storage
                 SENDER;     # address : address : @parameter%setDelegate : @storage
                 COMPARE;    # int : @parameter%setDelegate : @storage
                 EQ;         # bool : @parameter%setDelegate : @storage
@@ -253,7 +268,8 @@ code
                 # sp.verify(sp.sender == self.data.governorContractAddress, message = 4) # @storage : @parameter%setGovernorContract
                 DUP;        # @storage : @storage : @parameter%setGovernorContract
                 DUG 2;      # @storage : @parameter%setGovernorContract : @storage
-                CADR;       # address : @parameter%setGovernorContract : @storage
+                CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setGovernorContract : @storage
+                CDR;        # address : @parameter%setGovernorContract : @storage
                 SENDER;     # address : address : @parameter%setGovernorContract : @storage
                 COMPARE;    # int : @parameter%setGovernorContract : @storage
                 EQ;         # bool : @parameter%setGovernorContract : @storage
@@ -268,7 +284,8 @@ code
                 DUP;        # @storage : @storage : @parameter%setGovernorContract
                 CDR;        # pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : @storage : @parameter%setGovernorContract
                 SWAP;       # @storage : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : @parameter%setGovernorContract
-                CAAR;       # address : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : @parameter%setGovernorContract
+                CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : @parameter%setGovernorContract
+                CAR;        # address : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : @parameter%setGovernorContract
                 DIG 2;      # @parameter%setGovernorContract : address : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress))
                 SWAP;       # address : @parameter%setGovernorContract : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress))
                 PAIR;       # pair address @parameter%setGovernorContract : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress))
@@ -282,7 +299,8 @@ code
                     # sp.verify(sp.sender == self.data.governorContractAddress, message = 4) # @storage : @parameter%setOvenRegistryContract
                     DUP;        # @storage : @storage : @parameter%setOvenRegistryContract
                     DUG 2;      # @storage : @parameter%setOvenRegistryContract : @storage
-                    CADR;       # address : @parameter%setOvenRegistryContract : @storage
+                    CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setOvenRegistryContract : @storage
+                    CDR;        # address : @parameter%setOvenRegistryContract : @storage
                     SENDER;     # address : address : @parameter%setOvenRegistryContract : @storage
                     COMPARE;    # int : @parameter%setOvenRegistryContract : @storage
                     EQ;         # bool : @parameter%setOvenRegistryContract : @storage
@@ -297,7 +315,8 @@ code
                     DUP;        # @storage : @storage : @parameter%setOvenRegistryContract
                     CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @storage : @parameter%setOvenRegistryContract
                     SWAP;       # @storage : pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setOvenRegistryContract
-                    CDDR;       # pair (address %savingsAccountContractAddress) (address %tokenContractAddress) : pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setOvenRegistryContract
+                    CDR;        # pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setOvenRegistryContract
+                    CDR;        # pair (address %savingsAccountContractAddress) (address %tokenContractAddress) : pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setOvenRegistryContract
                     DIG 2;      # @parameter%setOvenRegistryContract : pair (address %savingsAccountContractAddress) (address %tokenContractAddress) : pair (address %administratorContractAddress) (address %governorContractAddress)
                     PAIR;       # pair @parameter%setOvenRegistryContract (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : pair (address %administratorContractAddress) (address %governorContractAddress)
                     SWAP;       # pair (address %administratorContractAddress) (address %governorContractAddress) : pair @parameter%setOvenRegistryContract (pair (address %savingsAccountContractAddress) (address %tokenContractAddress))
@@ -309,7 +328,8 @@ code
                     # sp.verify(sp.sender == self.data.governorContractAddress, message = 4) # @storage : @parameter%setSavingsAccountContract
                     DUP;        # @storage : @storage : @parameter%setSavingsAccountContract
                     DUG 2;      # @storage : @parameter%setSavingsAccountContract : @storage
-                    CADR;       # address : @parameter%setSavingsAccountContract : @storage
+                    CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setSavingsAccountContract : @storage
+                    CDR;        # address : @parameter%setSavingsAccountContract : @storage
                     SENDER;     # address : address : @parameter%setSavingsAccountContract : @storage
                     COMPARE;    # int : @parameter%setSavingsAccountContract : @storage
                     EQ;         # bool : @parameter%setSavingsAccountContract : @storage
@@ -328,7 +348,8 @@ code
                     DUP;        # pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setSavingsAccountContract
                     CAR;        # address : pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setSavingsAccountContract
                     SWAP;       # pair (address %ovenRegistryContractAddress) (pair (address %savingsAccountContractAddress) (address %tokenContractAddress)) : address : pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setSavingsAccountContract
-                    CDDR;       # address : address : pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setSavingsAccountContract
+                    CDR;        # pair (address %savingsAccountContractAddress) (address %tokenContractAddress) : address : pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setSavingsAccountContract
+                    CDR;        # address : address : pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setSavingsAccountContract
                     DIG 3;      # @parameter%setSavingsAccountContract : address : address : pair (address %administratorContractAddress) (address %governorContractAddress)
                     PAIR;       # pair @parameter%setSavingsAccountContract address : address : pair (address %administratorContractAddress) (address %governorContractAddress)
                     SWAP;       # address : pair @parameter%setSavingsAccountContract address : pair (address %administratorContractAddress) (address %governorContractAddress)

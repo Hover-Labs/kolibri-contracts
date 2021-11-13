@@ -15,7 +15,8 @@ code
             # sp.verify(sp.sender == self.data.ovenFactoryContractAddress, message = 7) # @storage : @parameter%addOven
             DUP;        # @storage : @storage : @parameter%addOven
             DUG 2;      # @storage : @parameter%addOven : @storage
-            CDAR;       # address : @parameter%addOven : @storage
+            CDR;        # pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address) : @parameter%addOven : @storage
+            CAR;        # address : @parameter%addOven : @storage
             SENDER;     # address : address : @parameter%addOven : @storage
             COMPARE;    # int : @parameter%addOven : @storage
             EQ;         # bool : @parameter%addOven : @storage
@@ -37,11 +38,11 @@ code
             CDR;        # big_map address address : address : address : @parameter%addOven
             DIG 3;      # @parameter%addOven : big_map address address : address : address
             DUP;        # @parameter%addOven : @parameter%addOven : big_map address address : address : address
-            CAR;        # address : @parameter%addOven : big_map address address : address : address
-            SWAP;       # @parameter%addOven : address : big_map address address : address : address
-            CDR;        # address : address : big_map address address : address : address
-            SOME;       # option address : address : big_map address address : address : address
-            SWAP;       # address : option address : big_map address address : address : address
+            DUG 4;      # @parameter%addOven : big_map address address : address : address : @parameter%addOven
+            CDR;        # address : big_map address address : address : address : @parameter%addOven
+            SOME;       # option address : big_map address address : address : address : @parameter%addOven
+            DIG 4;      # @parameter%addOven : option address : big_map address address : address : address
+            CAR;        # address : option address : big_map address address : address : address
             UPDATE;     # big_map address address : address : address
             SWAP;       # address : big_map address address : address
             PAIR;       # pair address (big_map address address) : address
@@ -61,7 +62,8 @@ code
             # sp.verify(self.data.ovenMap.contains(params), message = 1) # @storage : @parameter%isOven
             DUP;        # @storage : @storage : @parameter%isOven
             DUG 2;      # @storage : @parameter%isOven : @storage
-            CDDR;       # big_map address address : @parameter%isOven : @storage
+            CDR;        # pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address) : @parameter%isOven : @storage
+            CDR;        # big_map address address : @parameter%isOven : @storage
             SWAP;       # @parameter%isOven : big_map address address : @storage
             MEM;        # bool : @storage
             IF
@@ -127,7 +129,8 @@ code
                 DUP;        # @storage : @storage : @parameter%setOvenFactoryContract
                 CAR;        # address : @storage : @parameter%setOvenFactoryContract
                 SWAP;       # @storage : address : @parameter%setOvenFactoryContract
-                CDDR;       # big_map address address : address : @parameter%setOvenFactoryContract
+                CDR;        # pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address) : address : @parameter%setOvenFactoryContract
+                CDR;        # big_map address address : address : @parameter%setOvenFactoryContract
                 DIG 2;      # @parameter%setOvenFactoryContract : big_map address address : address
                 PAIR;       # pair @parameter%setOvenFactoryContract (big_map address address) : address
                 SWAP;       # address : pair @parameter%setOvenFactoryContract (big_map address address)
