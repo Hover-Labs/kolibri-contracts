@@ -1,0 +1,22 @@
+import { TezosToolkit } from "@taquito/taquito";
+import { ContractGroup } from "@hover-labs/kolibri-js";
+import BigNumber from "bignumber.js";
+export declare const MANTISSA: number;
+export declare const XTZ_MANTISSA: number;
+export declare const LOG_LEVEL = "info";
+export declare let NODE_URL: string;
+export declare let BETTER_CALL_DEV_BASE_URL: string;
+export declare let OPERATION_DELAY_SECS: number;
+export declare const MAX_RETRIES_FOR_CONFIRMATION_POLLING = 10;
+export declare const NUMBER_OF_CONFIRMATIONS = 2;
+export declare const coreContracts: ContractGroup;
+export declare const GOV_PARAMS: {
+    escrowAmount: BigNumber;
+    voteLengthBlocks: BigNumber;
+    blocksInTimelockForExecution: BigNumber;
+};
+export declare const privateKeyName = "DEPLOY_SK";
+export declare const privateKey: string;
+export declare const SMARTPY_CLI = "~/smartpy-cli/SmartPy.sh";
+export declare const PRIVATE_OWNER_LIQUIDATION_THRESHOLD: number;
+export declare function getTezos(): Promise<TezosToolkit>;

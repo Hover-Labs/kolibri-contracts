@@ -173,3 +173,5 @@ if "templates" not in __name__:
         scenario.verify(c1.data.totalSupply == 17)
         scenario.verify(c1.data.balances[alice.address].balance == 8)
         scenario.verify(c1.data.balances[bob.address].balance == 9)
+
+    sp.add_compilation_target("fa12", FA12())

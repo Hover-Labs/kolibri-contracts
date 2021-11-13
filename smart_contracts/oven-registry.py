@@ -78,7 +78,6 @@ class OvenRegistryContract(sp.Contract):
         sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
         self.data.ovenFactoryContractAddress = newOvenFactoryContract
 
-
 # Only run tests if this file is main.
 if __name__ == "__main__":
 
@@ -317,3 +316,5 @@ if __name__ == "__main__":
             sender = Addresses.NULL_ADDRESS,
             valid = False
         )    
+
+    sp.add_compilation_target("oven-registry", OvenRegistryContract())

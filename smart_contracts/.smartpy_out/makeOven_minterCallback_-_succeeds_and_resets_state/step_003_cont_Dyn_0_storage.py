@@ -1,0 +1,1 @@
+sp.record(borrowedTokens = 0, interestIndex = 1, isLiquidated = False, ovenProxyContractAddress = sp.address('tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm'), owner = sp.address('tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2'), stabilityFeeTokens = 0)

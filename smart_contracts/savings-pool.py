@@ -4562,3 +4562,5 @@ if __name__ == "__main__":
 
     # AND the pool thinks it has 0 tokens
     scenario.verify(pool.data.underlyingBalance == sp.nat(0))
+
+  sp.add_compilation_target("savings-pool", SavingsPoolContract())

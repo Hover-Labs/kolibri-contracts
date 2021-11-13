@@ -1,0 +1,44 @@
+Creating contract
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "tz1irJKkXS2DBWkU1NnmFQx1c1L7pbGg4yhk" {}))
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_000_cont_0_storage.tz 1
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_000_cont_0_storage.json 1
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_000_cont_0_sizes.csv 2
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_000_cont_0_storage.py 1
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_000_cont_0_types.py 7
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_000_cont_0_contract.tz 143
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_000_cont_0_contract.json 162
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_000_cont_0_contract.py 33
+Creating contract
+ -> (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair (Some "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Some "tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2"))) (Pair (Pair "tz1UUgPwikRHW1mEyVZfGYy6QaxrY6Y7WaG5" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm") (Pair "tz1hAYfexyzPGG6RhZZMpDvAHifubsbb6kgn" 1)))
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_001_cont_2_storage.tz 1
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_001_cont_2_storage.json 25
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_001_cont_2_sizes.csv 2
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_001_cont_2_storage.py 1
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_001_cont_2_types.py 7
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_001_cont_2_contract.tz 1048
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_001_cont_2_contract.json 1237
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_001_cont_2_contract.py 60
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_002_cont_0_params.py 1
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_002_cont_0_params.tz 1
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_002_cont_0_params.json 1
+Executing setOvenFactoryContract(sp.contract_address(Contract2))...
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "Contract_2" {}))
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_003_cont_2_params.py 1
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_003_cont_2_params.tz 1
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_003_cont_2_params.json 1
+Executing makeOven_minterCallback(1)...
+ -> (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair (Some "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") None)) (Pair (Pair "tz1UUgPwikRHW1mEyVZfGYy6QaxrY6Y7WaG5" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm") (Pair "tz1hAYfexyzPGG6RhZZMpDvAHifubsbb6kgn" 0)))
+Creating contract
+ -> (Pair (Pair 0 (Pair 1 False)) (Pair "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm" (Pair "tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2" 0)))
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_003_cont_Dyn_0_storage.tz 1
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_003_cont_Dyn_0_storage.json 10
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_003_cont_Dyn_0_sizes.csv 2
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_003_cont_Dyn_0_storage.py 1
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_003_cont_Dyn_0_types.py 7
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_003_cont_Dyn_0_contract.tz 614
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_003_cont_Dyn_0_contract.json 747
+ => ./.smartpy_out/makeOven_minterCallback_-_succeeds_and_resets_state/step_003_cont_Dyn_0_contract.py 54
+Verifying sp.contract_data(2).state == 0...
+ OK
+Verifying sp.contract_data(2).makeOvenOwner.is_some() == False...
+ OK

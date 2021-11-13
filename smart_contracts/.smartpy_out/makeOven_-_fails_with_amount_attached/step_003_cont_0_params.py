@@ -1,0 +1,1 @@
+sp.contract_address(Contract3)

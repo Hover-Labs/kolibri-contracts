@@ -325,7 +325,6 @@ class OvenProxyContract(sp.Contract):
 
         sp.transfer(oracleCallback, sp.mutez(0), oracleContractHandle)
 
-
 # Only run tests if this file is main.
 if __name__ == "__main__":
 
@@ -1965,3 +1964,5 @@ if __name__ == "__main__":
             sender = newContractAddress,
             valid = False
         )            
+
+    sp.add_compilation_target("oven-proxy", OvenProxyContract())

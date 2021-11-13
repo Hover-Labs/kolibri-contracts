@@ -664,3 +664,5 @@ if __name__ == "__main__":
         scenario.verify(contract.data.stabilityFeeTokens == stabilityFeeTokens)
         scenario.verify(contract.data.interestIndex == interestIndex)
         scenario.verify(contract.data.isLiquidated == isLiquidated)
+
+    sp.add_compilation_target("oven", OvenContract())

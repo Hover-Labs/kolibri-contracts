@@ -94,6 +94,7 @@ class StabilityFundContract(DevFund.DevFundContract):
         self.data.ovenRegistryContractAddress = newOvenRegistryContractAddress        
 
     # Update the savings account contract.
+    # TODO(keefertaylor): Use `SavingsPool` here for consistency, and audit codebase for other uses.
     @sp.entry_point
     def setSavingsAccountContract(self, newSavingsAccountContractAddress):
         sp.set_type(newSavingsAccountContractAddress, sp.TAddress)
@@ -392,3 +393,4 @@ if __name__ == "__main__":
             valid = False
         )        
         
+    sp.add_compilation_target("stability-fund", StabilityFundContract())

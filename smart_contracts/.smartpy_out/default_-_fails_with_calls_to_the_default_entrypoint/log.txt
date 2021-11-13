@@ -1,0 +1,16 @@
+Creating contract
+ -> (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair (Some "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") None)) (Pair (Pair "tz1UUgPwikRHW1mEyVZfGYy6QaxrY6Y7WaG5" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm") (Pair "tz1hAYfexyzPGG6RhZZMpDvAHifubsbb6kgn" 0)))
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint/step_000_cont_1_storage.tz 1
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint/step_000_cont_1_storage.json 19
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint/step_000_cont_1_sizes.csv 2
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint/step_000_cont_1_storage.py 1
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint/step_000_cont_1_types.py 7
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint/step_000_cont_1_contract.tz 1048
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint/step_000_cont_1_contract.json 1237
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint/step_000_cont_1_contract.py 60
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint/step_001_cont_1_params.py 1
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint/step_001_cont_1_params.tz 1
+ => ./.smartpy_out/default_-_fails_with_calls_to_the_default_entrypoint/step_001_cont_1_params.json 1
+Executing default(sp.unit)...
+ -> --- Expected failure in transaction --- Failure: 19 
+ (line 76)

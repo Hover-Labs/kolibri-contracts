@@ -3646,3 +3646,5 @@ if __name__ == "__main__":
             sender = notGovernor,
             valid = False
         )        
+
+    sp.add_compilation_target("minter", MinterContract())

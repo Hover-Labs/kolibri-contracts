@@ -419,3 +419,5 @@ if __name__ == "__main__":
             sender = Addresses.NULL_ADDRESS,
             valid = False
         )    
+
+    sp.add_compilation_target("oracle", OracleContract())

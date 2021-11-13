@@ -13,8 +13,7 @@ SMART_PY_CLI=~/smartpy-cli/SmartPy.sh
 OUT_DIR=./.smartpy_out
 
 # Parallel sorted arrays.
-CONTRACTS_ARRAY=(oven-factory         dev-fund token                stability-fund            minter                  oven-proxy            oracle              oven             oven-registry  sandbox-oracle savings-pool)
-INVOCATION_ARRAY=("OvenFactoryContract()" "DevFundContract()" "FA12()"  "StabilityFundContract()" "MinterContract()"   "OvenProxyContract()" "OracleContract()"  "OvenContract()" "OvenRegistryContract()" "SandboxOracleContract()" "SavingsPoolContract()")
+CONTRACTS_ARRAY=(oven-factory dev-fund token stability-fund minter oven-proxy oracle oven oven-registry sandbox-oracle savings-pool)
 
 # Ensure we have a SmartPy binary.
 if [ ! -f "$SMART_PY_CLI" ]; then
@@ -25,11 +24,10 @@ fi
 # Args <contract name, ex: minter> <invocation, ex: MinterContract()> <out dir>
 function processContract {
     CONTRACT_NAME=$1
-    INVOCATION=$2
-    OUT_DIR=$3
+    OUT_DIR=$2
     CONTRACT_IN="${CONTRACT_NAME}.py"
     CONTRACT_OUT="${CONTRACT_NAME}.tz"
-    CONTRACT_COMPILED="${CONTRACT_NAME}_compiled.tz"
+    CONTRACT_COMPILED="${CONTRACT_NAME}/step_000_cont_0_contract.tz"
 
     echo ">> Processing ${CONTRACT_NAME}"
 
@@ -53,6 +51,7 @@ function processContract {
 }
 
 echo "> [1 / 3] Unit Testing and Compiling Contracts."
+rm -rf $OUT_DIR
 for i in ${!CONTRACTS_ARRAY[@]}; do
     echo ">> [$((i + 1)) / ${#CONTRACTS_ARRAY[@]}] Processing ${CONTRACTS_ARRAY[$i]}"
     processContract ${CONTRACTS_ARRAY[$i]} ${INVOCATION_ARRAY[$i]} $OUT_DIR

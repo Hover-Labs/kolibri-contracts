@@ -219,7 +219,6 @@ class Viewer(sp.Contract):
     def target(self, params):
         self.data.last = sp.some(params)
 
-
 # Only run tests if this file is main.
 if __name__ == "__main__":
 
@@ -571,3 +570,5 @@ if __name__ == "__main__":
             sender = Addresses.NULL_ADDRESS,
             valid = False
         )    
+
+    sp.add_compilation_target("token", FA12())
