@@ -1,0 +1,33 @@
+Creating contract
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "0"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm")) (Pair (Pair 20000000000000000000 1000000000000000000) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))))
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_000_cont_0_storage.tz 1
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_000_cont_0_storage.json 34
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_000_cont_0_sizes.csv 2
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_000_cont_0_storage.py 1
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_000_cont_0_types.py 7
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_000_cont_0_contract.tz 4902
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_000_cont_0_contract.json 4383
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_000_cont_0_contract.py 290
+Creating contract
+ -> (Pair 0 0)
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_001_cont_1_storage.tz 1
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_001_cont_1_storage.json 1
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_001_cont_1_sizes.csv 2
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_001_cont_1_storage.py 1
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_001_cont_1_types.py 7
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_001_cont_1_contract.tz 34
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_001_cont_1_contract.json 40
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_001_cont_1_contract.py 17
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_002_cont_0_params.py 1
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_002_cont_0_params.tz 1
+ => ./smartpy_out/getInterestIndex_-_compounds_interest_and_calls_back/step_002_cont_0_params.json 1
+Executing getInterestIndex(sp.contract(sp.TNat, sp.contract_address(Contract1), entry_point='natCallback').open_some())...
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 27280592000000000000000000 "1636835460"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm")) (Pair (Pair 20000000000000000000 1000000000000000000) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))))
+Executing natCallback(27280592000000000000000000)...
+ -> (Pair 0 27280592000000000000000000)
+Verifying sp.contract_data(0).interestIndex > 1000000000000000000...
+ OK
+Verifying sp.contract_data(0).lastInterestIndexUpdateTime > sp.timestamp(0)...
+ OK
+Verifying sp.contract_data(1).natValue == sp.contract_data(0).interestIndex...
+ OK

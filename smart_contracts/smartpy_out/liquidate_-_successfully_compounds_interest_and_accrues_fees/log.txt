@@ -1,0 +1,103 @@
+Creating contract
+ -> (Pair (Pair (Pair (Pair (Pair 0 False) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0)) (Pair 0 (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")))) (Pair (Pair (Pair 0 0) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")) (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))))) (Pair (Pair (Pair (Pair 0 0) (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair 0 0)))) (Pair (Pair (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 False))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))))))
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_000_cont_0_storage.tz 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_000_cont_0_storage.json 97
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_000_cont_0_sizes.csv 2
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_000_cont_0_storage.py 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_000_cont_0_types.py 7
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_000_cont_0_contract.tz 1613
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_000_cont_0_contract.json 1968
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_000_cont_0_contract.py 73
+Creating contract
+ -> (Pair (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" {}) (Pair 1000000000000000000000000000000000000000000000000000000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 0)))
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_001_cont_1_storage.tz 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_001_cont_1_storage.json 68
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_001_cont_1_sizes.csv 2
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_001_cont_1_storage.py 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_001_cont_1_types.py 7
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_001_cont_1_contract.tz 1192
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_001_cont_1_contract.json 1183
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_001_cont_1_contract.py 104
+Creating contract
+ -> (Pair 0 0)
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_002_cont_2_storage.tz 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_002_cont_2_storage.json 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_002_cont_2_sizes.csv 2
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_002_cont_2_storage.py 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_002_cont_2_types.py 7
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_002_cont_2_contract.tz 34
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_002_cont_2_contract.json 40
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_002_cont_2_contract.py 17
+Creating contract
+ -> (Pair 0 0)
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_003_cont_3_storage.tz 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_003_cont_3_storage.json 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_003_cont_3_sizes.csv 2
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_003_cont_3_storage.py 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_003_cont_3_types.py 7
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_003_cont_3_contract.tz 34
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_003_cont_3_contract.json 40
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_003_cont_3_contract.py 17
+Creating contract
+ -> (Pair 0 0)
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_004_cont_4_storage.tz 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_004_cont_4_storage.json 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_004_cont_4_sizes.csv 2
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_004_cont_4_storage.py 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_004_cont_4_types.py 7
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_004_cont_4_contract.tz 34
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_004_cont_4_contract.json 40
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_004_cont_4_contract.py 17
+Creating contract
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "Contract_3")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "0"))) (Pair (Pair 80000000000000000 (Pair "Contract_4" "Contract_0")) (Pair (Pair 20000000000000000000 100000000000000000) (Pair "Contract_2" "Contract_1"))))
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_005_cont_5_storage.tz 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_005_cont_5_storage.json 25
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_005_cont_5_sizes.csv 2
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_005_cont_5_storage.py 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_005_cont_5_types.py 7
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_005_cont_5_contract.tz 4902
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_005_cont_5_contract.json 4383
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_005_cont_5_contract.py 290
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_006_cont_1_params.py 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_006_cont_1_params.tz 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_006_cont_1_params.json 1
+Executing setAdministrator(sp.contract_address(Contract5))...
+ -> (Pair (Pair (Pair "Contract_5" {}) (Pair 1000000000000000000000000000000000000000000000000000000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 0)))
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_007_cont_1_params.py 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_007_cont_1_params.tz 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_007_cont_1_params.json 1
+Executing mint(sp.record(address = sp.contract_address(Contract4), value = 1000 * 1000000000000000000))...
+ -> (Pair (Pair (Pair "Contract_5" {Elt "Contract_4" (Pair {} 1000000000000000000000)}) (Pair 1000000000000000000000000000000000000000000000000000000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 1000000000000000000000)))
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_008_cont_5_params.py 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_008_cont_5_params.tz 1
+ => ./smartpy_out/liquidate_-_successfully_compounds_interest_and_accrues_fees/step_008_cont_5_params.json 40
+Executing liquidate((1000000000000000000, (sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), (sp.address('tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2'), (1000000000000000000, (90 * 1000000000000000000, (False, (sp.to_int(10 * 1000000000000000000), (sp.to_int(1000000000000000000), sp.contract_address(Contract4))))))))))...
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "Contract_3")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1100000000000000000 "60"))) (Pair (Pair 80000000000000000 (Pair "Contract_4" "Contract_0")) (Pair (Pair 20000000000000000000 100000000000000000) (Pair "Contract_2" "Contract_1"))))
+Executing burn(sp.record(address = sp.contract_address(Contract4), value = 118800000000000000000))...
+ -> (Pair (Pair (Pair "Contract_5" {Elt "Contract_4" (Pair {} 881200000000000000000)}) (Pair 1000000000000000000000000000000000000000000000000000000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 881200000000000000000)))
+Executing mint(sp.record(address = sp.contract_address(Contract3), value = 2880000000000000000))...
+ -> (Pair (Pair (Pair "Contract_5" {Elt "Contract_3" (Pair {} 2880000000000000000); Elt "Contract_4" (Pair {} 881200000000000000000)}) (Pair 1000000000000000000000000000000000000000000000000000000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 884080000000000000000)))
+Executing mint(sp.record(address = sp.contract_address(Contract2), value = 25920000000000000000))...
+ -> (Pair (Pair (Pair "Contract_5" {Elt "Contract_2" (Pair {} 25920000000000000000); Elt "Contract_3" (Pair {} 2880000000000000000); Elt "Contract_4" (Pair {} 881200000000000000000)}) (Pair 1000000000000000000000000000000000000000000000000000000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 910000000000000000000)))
+Executing default(sp.unit)...
+ -> (Pair 0 0)
+Executing updateState((sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), (0, (0, (1100000000000000000, True)))))...
+ -> (Pair (Pair (Pair (Pair (Pair 0 False) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0)) (Pair 0 (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")))) (Pair (Pair (Pair 0 0) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")) (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))))) (Pair (Pair (Pair (Pair 0 0) (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair 0 1100000000000000000)))) (Pair (Pair (Pair True "tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF") (Pair 0 (Pair 0 False))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))))))
+Verifying sp.contract_data(0).updateState_interestIndex == (sp.to_int(sp.contract_data(5).interestIndex))...
+ OK
+Verifying sp.contract_data(0).updateState_stabilityFeeTokens == 0...
+ OK
+Verifying sp.contract_data(5).interestIndex == 1100000000000000000...
+ OK
+Verifying sp.contract_data(5).lastInterestIndexUpdateTime == sp.timestamp(60)...
+ OK
+Verifying sp.contract_balance(4) == sp.tez(1)...
+ OK
+Verifying sp.contract_data(1).balances[sp.contract_address(Contract4)].balance == sp.as_nat((1000 * 1000000000000000000) - (((sp.as_nat(sp.to_int(10 * 1000000000000000000)) + (90 * 1000000000000000000)) + (10 * 1000000000000000000)) + ((((sp.as_nat(sp.to_int(10 * 1000000000000000000)) + (90 * 1000000000000000000)) + (10 * 1000000000000000000)) * 80000000000000000) // 1000000000000000000)))...
+ OK
+Verifying sp.contract_data(0).updateState_ovenAddress == sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF')...
+ OK
+Verifying sp.contract_data(0).updateState_borrowedTokens == 0...
+ OK
+Verifying sp.contract_data(0).updateState_isLiquidated == True...
+ OK

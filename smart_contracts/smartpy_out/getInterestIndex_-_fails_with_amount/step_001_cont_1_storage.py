@@ -1,0 +1,1 @@
+sp.record(intValue = 0, natValue = 0)

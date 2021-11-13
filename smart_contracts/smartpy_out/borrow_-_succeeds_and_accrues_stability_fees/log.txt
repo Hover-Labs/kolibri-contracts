@@ -1,0 +1,35 @@
+Creating contract
+ -> (Pair (Pair (Pair (Pair (Pair 0 False) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0)) (Pair 0 (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")))) (Pair (Pair (Pair 0 0) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")) (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))))) (Pair (Pair (Pair (Pair 0 0) (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair 0 0)))) (Pair (Pair (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA") (Pair 0 (Pair 0 False))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))))))
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_000_cont_0_storage.tz 1
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_000_cont_0_storage.json 97
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_000_cont_0_sizes.csv 2
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_000_cont_0_storage.py 1
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_000_cont_0_types.py 7
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_000_cont_0_contract.tz 1613
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_000_cont_0_contract.json 1968
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_000_cont_0_contract.py 73
+Creating contract
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "0"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "Contract_0")) (Pair (Pair 20000000000000000000 100000000000000000) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))))
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_001_cont_1_storage.tz 1
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_001_cont_1_storage.json 31
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_001_cont_1_sizes.csv 2
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_001_cont_1_storage.py 1
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_001_cont_1_types.py 7
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_001_cont_1_contract.tz 4902
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_001_cont_1_contract.json 4383
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_001_cont_1_contract.py 290
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_002_cont_1_params.py 1
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_002_cont_1_params.tz 1
+ => ./smartpy_out/borrow_-_succeeds_and_accrues_stability_fees/step_002_cont_1_params.json 37
+Executing borrow((1000000000000000000, (sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), (sp.address('tz1S8MNvuFEUsWgjHvi3AxibRBf388NhT1q2'), (300 * 1000000000000000000, (100 * 1000000000000000000, (False, (0, (sp.to_int(1000000000000000000), 1000000000000000000)))))))))...
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1100000000000000000 "60"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "Contract_0")) (Pair (Pair 20000000000000000000 100000000000000000) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))))
+Executing updateState((sp.address('tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF'), (101000000000000000000, (10000000000000000000, (1100000000000000000, False)))))...
+ -> (Pair (Pair (Pair (Pair (Pair 0 False) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0)) (Pair 0 (Pair False "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")))) (Pair (Pair (Pair 0 0) (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" (Pair 0 0))) (Pair (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")) (Pair 0 (Pair 0 "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA"))))) (Pair (Pair (Pair (Pair 0 0) (Pair False (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair 101000000000000000000 1100000000000000000)))) (Pair (Pair (Pair False "tz1LmaFsWRkjr7QMCx5PtV6xTUz3AmEpKQiF") (Pair 10000000000000000000 (Pair 0 False))) (Pair (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0)) (Pair 0 (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" 0))))))
+Verifying sp.contract_data(0).updateState_stabilityFeeTokens == (sp.to_int(10 * 1000000000000000000))...
+ OK
+Verifying sp.contract_data(0).updateState_interestIndex == (sp.to_int(sp.contract_data(1).interestIndex))...
+ OK
+Verifying sp.contract_data(1).interestIndex == 1100000000000000000...
+ OK
+Verifying sp.contract_data(1).lastInterestIndexUpdateTime == sp.timestamp(60)...
+ OK

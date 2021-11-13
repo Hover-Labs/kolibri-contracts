@@ -1,0 +1,35 @@
+Creating contract
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1601871456"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm")) (Pair (Pair 20000000000000000000 0) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))))
+ => ./smartpy_out/compoundWithLinearApproximation/step_000_cont_0_storage.tz 1
+ => ./smartpy_out/compoundWithLinearApproximation/step_000_cont_0_storage.json 37
+ => ./smartpy_out/compoundWithLinearApproximation/step_000_cont_0_sizes.csv 2
+ => ./smartpy_out/compoundWithLinearApproximation/step_000_cont_0_storage.py 1
+ => ./smartpy_out/compoundWithLinearApproximation/step_000_cont_0_types.py 7
+ => ./smartpy_out/compoundWithLinearApproximation/step_000_cont_0_contract.tz 4902
+ => ./smartpy_out/compoundWithLinearApproximation/step_000_cont_0_contract.json 4383
+ => ./smartpy_out/compoundWithLinearApproximation/step_000_cont_0_contract.py 290
+Creating contract
+ -> None
+ => ./smartpy_out/compoundWithLinearApproximation/step_001_cont_1_storage.tz 1
+ => ./smartpy_out/compoundWithLinearApproximation/step_001_cont_1_storage.json 1
+ => ./smartpy_out/compoundWithLinearApproximation/step_001_cont_1_sizes.csv 2
+ => ./smartpy_out/compoundWithLinearApproximation/step_001_cont_1_storage.py 1
+ => ./smartpy_out/compoundWithLinearApproximation/step_001_cont_1_types.py 7
+ => ./smartpy_out/compoundWithLinearApproximation/step_001_cont_1_contract.tz 90
+ => ./smartpy_out/compoundWithLinearApproximation/step_001_cont_1_contract.json 96
+ => ./smartpy_out/compoundWithLinearApproximation/step_001_cont_1_contract.py 17
+ => ./smartpy_out/compoundWithLinearApproximation/step_002_cont_1_params.py 1
+ => ./smartpy_out/compoundWithLinearApproximation/step_002_cont_1_params.tz 1
+ => ./smartpy_out/compoundWithLinearApproximation/step_002_cont_1_params.json 7
+Executing check(sp.record(params = (1 * 1000000000000000000, (100000000000000000, 1)), result = 1100000000000000000))...
+ -> None
+ => ./smartpy_out/compoundWithLinearApproximation/step_003_cont_1_params.py 1
+ => ./smartpy_out/compoundWithLinearApproximation/step_003_cont_1_params.tz 1
+ => ./smartpy_out/compoundWithLinearApproximation/step_003_cont_1_params.json 7
+Executing check(sp.record(params = (1100000000000000000, (100000000000000000, 1)), result = 1210000000000000000))...
+ -> None
+ => ./smartpy_out/compoundWithLinearApproximation/step_004_cont_1_params.py 1
+ => ./smartpy_out/compoundWithLinearApproximation/step_004_cont_1_params.tz 1
+ => ./smartpy_out/compoundWithLinearApproximation/step_004_cont_1_params.json 7
+Executing check(sp.record(params = (1 * 1000000000000000000, (100000000000000000, 2)), result = 1200000000000000000))...
+ -> None

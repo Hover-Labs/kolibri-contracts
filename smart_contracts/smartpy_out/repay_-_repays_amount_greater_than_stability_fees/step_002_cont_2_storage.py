@@ -1,0 +1,1 @@
+sp.record(administratorContractAddress = sp.address('tz1VmiY38m3y95HqQLjMwqnMS7sdMfGomzKi'), governorContractAddress = sp.address('tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf'), tokenContractAddress = sp.address('tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494'))

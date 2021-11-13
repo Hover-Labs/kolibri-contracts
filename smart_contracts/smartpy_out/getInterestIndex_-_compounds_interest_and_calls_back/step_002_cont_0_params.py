@@ -1,0 +1,1 @@
+sp.contract(sp.TNat, sp.contract_address(Contract1%natCallback)).open_some()

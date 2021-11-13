@@ -1,0 +1,6 @@
+import smartpy as sp
+
+tstorage = sp.TRecord(administratorContractAddress = sp.TAddress, governorContractAddress = sp.TAddress, tokenContractAddress = sp.TAddress).layout(("administratorContractAddress", ("governorContractAddress", "tokenContractAddress")))
+tparameter = sp.TVariant(default = sp.TUnit, send = sp.TPair(sp.TMutez, sp.TAddress), sendTokens = sp.TPair(sp.TNat, sp.TAddress), setAdministratorContract = sp.TAddress, setDelegate = sp.TOption(sp.TKeyHash), setGovernorContract = sp.TAddress).layout((("default", ("send", "sendTokens")), ("setAdministratorContract", ("setDelegate", "setGovernorContract"))))
+tglobals = { }
+tviews = { }
