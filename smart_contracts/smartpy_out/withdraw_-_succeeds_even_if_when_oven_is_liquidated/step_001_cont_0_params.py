@@ -1,1 +1,0 @@
-(1000000000000000000, (sp.address('tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf'), (sp.address('tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf'), (1000000000000000000, (0, (True, (0, (1000000000000000000, sp.mutez(1)))))))))

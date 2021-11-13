@@ -1,1 +1,0 @@
-sp.record(address = sp.contract_address(Contract2), value = 1000000000000000000000)

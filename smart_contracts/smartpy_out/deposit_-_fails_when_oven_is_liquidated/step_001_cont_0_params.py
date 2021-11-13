@@ -1,1 +1,0 @@
-(sp.address('tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf'), (sp.address('tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf'), (1, (2, (True, (3, 4))))))

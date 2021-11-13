@@ -1,1 +1,0 @@
-(sp.contract_address(Contract1), (sp.contract_address(Contract2), (sp.contract_address(Contract3), (sp.contract_address(Contract4), sp.contract_address(Contract5)))))
