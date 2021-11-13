@@ -7,12 +7,14 @@ all:
 	make test
 	make compile
 
+# TODO(keefertaylor): Write rules for all contracts, and add them here.
 compile:
 	make compile-oven
 	make compile-minter
 	make compile-savings-pool
 	make compile-stability-fund
 
+# TODO(keefertaylor): Write rules for all contracts, and add them here.
 test:
 	make test-minter
 	make test-savings-pool
