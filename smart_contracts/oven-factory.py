@@ -161,486 +161,486 @@ class OvenFactoryContract(sp.Contract):
 # Only run tests if this file is main.
 if __name__ == "__main__":
 
-    # ################################################################
-    # ################################################################
-    # # Tests
-    # ################################################################
-    # ################################################################
+    ################################################################
+    ################################################################
+    # Tests
+    ################################################################
+    ################################################################
 
-    # Minter = sp.import_script_from_url("file:minter.py")
-    # OvenRegistry = sp.import_script_from_url("file:oven-registry.py")
+    Minter = sp.import_script_from_url("file:minter.py")
+    OvenRegistry = sp.import_script_from_url("file:oven-registry.py")
 
-    # ################################################################
-    # # makeOven
-    # ################################################################
+    ################################################################
+    # makeOven
+    ################################################################
 
-    # @sp.add_test(name="makeOven succeeds")
-    # def test():
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="makeOven succeeds")
+    def test():
+        scenario = sp.test_scenario()
         
-    #     # GIVEN an OvenRegistry contract
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenRegistry = OvenRegistry.OvenRegistryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenRegistry
+        # GIVEN an OvenRegistry contract
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenRegistry = OvenRegistry.OvenRegistryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenRegistry
 
-    #     # AND a Minter contract.
-    #     minter = Minter.MinterContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += minter
+        # AND a Minter contract.
+        minter = Minter.MinterContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += minter
 
-    #     # AND an OvenFactory contract
-    #     ovenFactory = OvenFactoryContract(
-    #         minterContractAddress = minter.address,
-    #         ovenRegistryContractAddress = ovenRegistry.address,
-    #         state = IDLE,
-    #         makeOvenOwner = sp.none
-    #     )
-    #     scenario += ovenFactory
+        # AND an OvenFactory contract
+        ovenFactory = OvenFactoryContract(
+            minterContractAddress = minter.address,
+            ovenRegistryContractAddress = ovenRegistry.address,
+            state = IDLE,
+            makeOvenOwner = sp.none
+        )
+        scenario += ovenFactory
 
-    #     # AND OvenRegistry is bound to OvenFactory
-    #     scenario += ovenRegistry.setOvenFactoryContract(
-    #         ovenFactory.address
-    #     ).run(
-    #         sender = governorContractAddress
-    #     )
+        # AND OvenRegistry is bound to OvenFactory
+        scenario += ovenRegistry.setOvenFactoryContract(
+            ovenFactory.address
+        ).run(
+            sender = governorContractAddress
+        )
 
-    #     # WHEN the makeOven is called THEN the request succeeds.
-    #     ovenOwner =  Addresses.OVEN_OWNER_ADDRESS
-    #     scenario += ovenFactory.makeOven(sp.unit).run(
-    #         now = sp.timestamp_from_utc_now(),
-    #         sender = ovenOwner
-    #     )
+        # WHEN the makeOven is called THEN the request succeeds.
+        ovenOwner =  Addresses.OVEN_OWNER_ADDRESS
+        scenario += ovenFactory.makeOven(sp.unit).run(
+            now = sp.timestamp_from_utc_now(),
+            sender = ovenOwner
+        )
 
-    # @sp.add_test(name="makeOven - fails in bad state")
-    # def test():
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="makeOven - fails in bad state")
+    def test():
+        scenario = sp.test_scenario()
         
-    #     # GIVEN an OvenRegistry contract
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenRegistry = OvenRegistry.OvenRegistryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenRegistry
+        # GIVEN an OvenRegistry contract
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenRegistry = OvenRegistry.OvenRegistryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenRegistry
 
-    #     # AND a Minter contract.
-    #     minter = Minter.MinterContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += minter
+        # AND a Minter contract.
+        minter = Minter.MinterContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += minter
 
-    #     # AND an OvenFactory contract in the WAITING_FOR_INTEREST_INDEX state
-    #     ovenFactory = OvenFactoryContract(
-    #         minterContractAddress = minter.address,
-    #         ovenRegistryContractAddress = ovenRegistry.address,
-    #         state = WAITING_FOR_INTEREST_INDEX,
-    #         makeOvenOwner = sp.none
-    #     )
-    #     scenario += ovenFactory
+        # AND an OvenFactory contract in the WAITING_FOR_INTEREST_INDEX state
+        ovenFactory = OvenFactoryContract(
+            minterContractAddress = minter.address,
+            ovenRegistryContractAddress = ovenRegistry.address,
+            state = WAITING_FOR_INTEREST_INDEX,
+            makeOvenOwner = sp.none
+        )
+        scenario += ovenFactory
 
-    #     # AND OvenRegistry is bound to OvenFactory
-    #     scenario += ovenRegistry.setOvenFactoryContract(
-    #         ovenFactory.address
-    #     ).run(
-    #         sender = governorContractAddress
-    #     )
+        # AND OvenRegistry is bound to OvenFactory
+        scenario += ovenRegistry.setOvenFactoryContract(
+            ovenFactory.address
+        ).run(
+            sender = governorContractAddress
+        )
 
-    #     # WHEN the makeOven is called THEN the request fails.
-    #     ovenOwner =  Addresses.OVEN_OWNER_ADDRESS
-    #     scenario += ovenFactory.makeOven(sp.unit).run(
-    #         sender = ovenOwner,
-    #         now = sp.timestamp_from_utc_now(),
-    #         valid = False
-    #     )
+        # WHEN the makeOven is called THEN the request fails.
+        ovenOwner =  Addresses.OVEN_OWNER_ADDRESS
+        scenario += ovenFactory.makeOven(sp.unit).run(
+            sender = ovenOwner,
+            now = sp.timestamp_from_utc_now(),
+            valid = False
+        )
 
-    # @sp.add_test(name="makeOven - fails with amount attached")
-    # def test():
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="makeOven - fails with amount attached")
+    def test():
+        scenario = sp.test_scenario()
         
-    #     # GIVEN an OvenRegistry contract
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenRegistry = OvenRegistry.OvenRegistryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenRegistry
+        # GIVEN an OvenRegistry contract
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenRegistry = OvenRegistry.OvenRegistryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenRegistry
 
-    #     # AND a Minter contract.
-    #     minter = Minter.MinterContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += minter
+        # AND a Minter contract.
+        minter = Minter.MinterContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += minter
 
-    #     # AND an OvenFactory contract
-    #     ovenFactory = OvenFactoryContract(
-    #         minterContractAddress = minter.address,
-    #         ovenRegistryContractAddress = ovenRegistry.address,
-    #         state = IDLE,
-    #         makeOvenOwner = sp.none
-    #     )
-    #     scenario += ovenFactory
+        # AND an OvenFactory contract
+        ovenFactory = OvenFactoryContract(
+            minterContractAddress = minter.address,
+            ovenRegistryContractAddress = ovenRegistry.address,
+            state = IDLE,
+            makeOvenOwner = sp.none
+        )
+        scenario += ovenFactory
 
-    #     # AND OvenRegistry is bound to OvenFactory
-    #     scenario += ovenRegistry.setOvenFactoryContract(
-    #         ovenFactory.address
-    #     ).run(
-    #         sender = governorContractAddress
-    #     )
+        # AND OvenRegistry is bound to OvenFactory
+        scenario += ovenRegistry.setOvenFactoryContract(
+            ovenFactory.address
+        ).run(
+            sender = governorContractAddress
+        )
 
-    #     # WHEN the makeOven is called with an amount THEN the request fails.
-    #     ovenOwner =  Addresses.OVEN_OWNER_ADDRESS
-    #     scenario += ovenFactory.makeOven(sp.unit).run(
-    #         sender = ovenOwner,
-    #         amount = sp.mutez(1),
-    #         now = sp.timestamp_from_utc_now(),
-    #         valid = False
-    #     )
+        # WHEN the makeOven is called with an amount THEN the request fails.
+        ovenOwner =  Addresses.OVEN_OWNER_ADDRESS
+        scenario += ovenFactory.makeOven(sp.unit).run(
+            sender = ovenOwner,
+            amount = sp.mutez(1),
+            now = sp.timestamp_from_utc_now(),
+            valid = False
+        )
 
-    # ###############################################################
-    # # makeOven_minterCallback
-    # ###############################################################
+    ###############################################################
+    # makeOven_minterCallback
+    ###############################################################
 
-    # @sp.add_test(name="makeOven_minterCallback - fails when not called from minter")
-    # def test():
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="makeOven_minterCallback - fails when not called from minter")
+    def test():
+        scenario = sp.test_scenario()
         
-    #     # GIVEN an OvenRegistry contract
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenRegistry = OvenRegistry.OvenRegistryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenRegistry
+        # GIVEN an OvenRegistry contract
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenRegistry = OvenRegistry.OvenRegistryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenRegistry
 
-    #     # AND an OvenFactory contract
-    #     ovenOwner = sp.some(Addresses.OVEN_OWNER_ADDRESS)
-    #     minterContractAddress = Addresses.MINTER_ADDRESS
-    #     ovenFactory = OvenFactoryContract(
-    #         minterContractAddress = minterContractAddress,
-    #         ovenRegistryContractAddress = ovenRegistry.address,
-    #         state = WAITING_FOR_INTEREST_INDEX,
-    #         makeOvenOwner = ovenOwner
-    #     )
-    #     scenario += ovenFactory
+        # AND an OvenFactory contract
+        ovenOwner = sp.some(Addresses.OVEN_OWNER_ADDRESS)
+        minterContractAddress = Addresses.MINTER_ADDRESS
+        ovenFactory = OvenFactoryContract(
+            minterContractAddress = minterContractAddress,
+            ovenRegistryContractAddress = ovenRegistry.address,
+            state = WAITING_FOR_INTEREST_INDEX,
+            makeOvenOwner = ovenOwner
+        )
+        scenario += ovenFactory
 
-    #     # AND OvenRegistry is bound to OvenFactory
-    #     scenario += ovenRegistry.setOvenFactoryContract(
-    #         ovenFactory.address
-    #     ).run(
-    #         sender = governorContractAddress
-    #     )
+        # AND OvenRegistry is bound to OvenFactory
+        scenario += ovenRegistry.setOvenFactoryContract(
+            ovenFactory.address
+        ).run(
+            sender = governorContractAddress
+        )
 
-    #     # WHEN the makeOven_minterCallback entry point is called by someone other than the minter THEN the request fails
-    #     interestIndex = 1
-    #     notMinter = Addresses.NULL_ADDRESS
-    #     scenario += ovenFactory.makeOven_minterCallback(interestIndex).run(
-    #         sender = notMinter,
-    #         valid = False
-    #     )
+        # WHEN the makeOven_minterCallback entry point is called by someone other than the minter THEN the request fails
+        interestIndex = 1
+        notMinter = Addresses.NULL_ADDRESS
+        scenario += ovenFactory.makeOven_minterCallback(interestIndex).run(
+            sender = notMinter,
+            valid = False
+        )
 
-    # @sp.add_test(name="makeOven_minterCallback - fails when called in bad state")
-    # def test():
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="makeOven_minterCallback - fails when called in bad state")
+    def test():
+        scenario = sp.test_scenario()
         
-    #     # GIVEN an OvenRegistry contract
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenRegistry = OvenRegistry.OvenRegistryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenRegistry
+        # GIVEN an OvenRegistry contract
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenRegistry = OvenRegistry.OvenRegistryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenRegistry
 
-    #     # AND an OvenFactory contract in the IDLE state
-    #     minterContractAddress = Addresses.MINTER_ADDRESS
-    #     ovenOwner = sp.some(Addresses.OVEN_OWNER_ADDRESS)
-    #     ovenFactory = OvenFactoryContract(
-    #         minterContractAddress = minterContractAddress,
-    #         state = IDLE,
-    #         makeOvenOwner = ovenOwner
-    #     )
-    #     scenario += ovenFactory
+        # AND an OvenFactory contract in the IDLE state
+        minterContractAddress = Addresses.MINTER_ADDRESS
+        ovenOwner = sp.some(Addresses.OVEN_OWNER_ADDRESS)
+        ovenFactory = OvenFactoryContract(
+            minterContractAddress = minterContractAddress,
+            state = IDLE,
+            makeOvenOwner = ovenOwner
+        )
+        scenario += ovenFactory
 
-    #     # AND OvenRegistry is bound to OvenFactory
-    #     scenario += ovenRegistry.setOvenFactoryContract(
-    #         ovenFactory.address
-    #     ).run(
-    #         sender = governorContractAddress
-    #     )
+        # AND OvenRegistry is bound to OvenFactory
+        scenario += ovenRegistry.setOvenFactoryContract(
+            ovenFactory.address
+        ).run(
+            sender = governorContractAddress
+        )
 
-    #     # WHEN the makeOven_minterCallback entry point is called THEN the request fails
-    #     interestIndex = 1
-    #     scenario += ovenFactory.makeOven_minterCallback(interestIndex).run(
-    #         sender = minterContractAddress,
-    #         valid = False
-    #     )
+        # WHEN the makeOven_minterCallback entry point is called THEN the request fails
+        interestIndex = 1
+        scenario += ovenFactory.makeOven_minterCallback(interestIndex).run(
+            sender = minterContractAddress,
+            valid = False
+        )
 
-    # @sp.add_test(name="makeOven_minterCallback - succeeds and resets state")
-    # def test():
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="makeOven_minterCallback - succeeds and resets state")
+    def test():
+        scenario = sp.test_scenario()
         
-    #     # GIVEN an OvenRegistry contract
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenRegistry = OvenRegistry.OvenRegistryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenRegistry
+        # GIVEN an OvenRegistry contract
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenRegistry = OvenRegistry.OvenRegistryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenRegistry
 
-    #     # AND an OvenFactory contract in the IDLE state
-    #     minterContractAddress = Addresses.MINTER_ADDRESS
-    #     ovenOwner = sp.some(Addresses.OVEN_OWNER_ADDRESS)
-    #     ovenFactory = OvenFactoryContract(
-    #         minterContractAddress = minterContractAddress,
-    #         state = WAITING_FOR_INTEREST_INDEX,
-    #         makeOvenOwner = ovenOwner
-    #     )
-    #     scenario += ovenFactory
+        # AND an OvenFactory contract in the IDLE state
+        minterContractAddress = Addresses.MINTER_ADDRESS
+        ovenOwner = sp.some(Addresses.OVEN_OWNER_ADDRESS)
+        ovenFactory = OvenFactoryContract(
+            minterContractAddress = minterContractAddress,
+            state = WAITING_FOR_INTEREST_INDEX,
+            makeOvenOwner = ovenOwner
+        )
+        scenario += ovenFactory
 
-    #     # AND OvenRegistry is bound to OvenFactory
-    #     scenario += ovenRegistry.setOvenFactoryContract(
-    #         ovenFactory.address
-    #     ).run(
-    #         sender = governorContractAddress
-    #     )
+        # AND OvenRegistry is bound to OvenFactory
+        scenario += ovenRegistry.setOvenFactoryContract(
+            ovenFactory.address
+        ).run(
+            sender = governorContractAddress
+        )
 
-    #     # WHEN the makeOven_minterCallback entry point is called
-    #     interestIndex = sp.nat(1)
-    #     scenario += ovenFactory.makeOven_minterCallback(interestIndex).run(
-    #         sender = minterContractAddress,
-    #     )        
+        # WHEN the makeOven_minterCallback entry point is called
+        interestIndex = sp.nat(1)
+        scenario += ovenFactory.makeOven_minterCallback(interestIndex).run(
+            sender = minterContractAddress,
+        )        
 
-    #     # THEN the call succeeds and the state is reset.
-    #     scenario.verify(ovenFactory.data.state == IDLE)
-    #     scenario.verify(ovenFactory.data.makeOvenOwner.is_some() == False)
+        # THEN the call succeeds and the state is reset.
+        scenario.verify(ovenFactory.data.state == IDLE)
+        scenario.verify(ovenFactory.data.makeOvenOwner.is_some() == False)
 
-    # ################################################################
-    # # default
-    # ################################################################
+    ################################################################
+    # default
+    ################################################################
 
-    # @sp.add_test(name="default - fails with calls to the default entrypoint")
-    # def test():
-    #     # GIVEN an OvenFactory contract
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="default - fails with calls to the default entrypoint")
+    def test():
+        # GIVEN an OvenFactory contract
+        scenario = sp.test_scenario()
 
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenFactory = OvenFactoryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenFactory
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenFactory = OvenFactoryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenFactory
 
-    #     # WHEN the default entry point is called THEN the request fails
-    #     scenario += ovenFactory.default(sp.unit).run(
-    #         amount = sp.mutez(1),
-    #         valid = False
-    #     )
+        # WHEN the default entry point is called THEN the request fails
+        scenario += ovenFactory.default(sp.unit).run(
+            amount = sp.mutez(1),
+            valid = False
+        )
 
-    # ################################################################
-    # # setGovernorContract
-    # ################################################################
+    ################################################################
+    # setGovernorContract
+    ################################################################
 
-    # @sp.add_test(name="setGovernorContract - succeeds when called by governor")
-    # def test():
-    #     # GIVEN an OvenFactory contract
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="setGovernorContract - succeeds when called by governor")
+    def test():
+        # GIVEN an OvenFactory contract
+        scenario = sp.test_scenario()
 
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenFactory = OvenFactoryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenFactory
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenFactory = OvenFactoryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenFactory
 
-    #     # WHEN the setGovernorContract is called with a new contract
-    #     newGovernorContractAddress = Addresses.ROTATED_ADDRESS
-    #     scenario += ovenFactory.setGovernorContract(newGovernorContractAddress).run(
-    #         sender = governorContractAddress,
-    #     )
+        # WHEN the setGovernorContract is called with a new contract
+        newGovernorContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += ovenFactory.setGovernorContract(newGovernorContractAddress).run(
+            sender = governorContractAddress,
+        )
 
-    #     # THEN the contract is updated.
-    #     scenario.verify(ovenFactory.data.governorContractAddress == newGovernorContractAddress)
+        # THEN the contract is updated.
+        scenario.verify(ovenFactory.data.governorContractAddress == newGovernorContractAddress)
 
-    # @sp.add_test(name="setGovernorContract - fails when not called by governor")
-    # def test():
-    #     # GIVEN an OvenFactory contract
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="setGovernorContract - fails when not called by governor")
+    def test():
+        # GIVEN an OvenFactory contract
+        scenario = sp.test_scenario()
 
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenFactory = OvenFactoryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenFactory
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenFactory = OvenFactoryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenFactory
 
-    #     # WHEN the setGovernorContract is called by someone who isn't the governor THEN the call fails
-    #     newGovernorContractAddress = Addresses.ROTATED_ADDRESS
-    #     scenario += ovenFactory.setGovernorContract(newGovernorContractAddress).run(
-    #         sender = newGovernorContractAddress,
-    #         valid = False
-    #     )    
+        # WHEN the setGovernorContract is called by someone who isn't the governor THEN the call fails
+        newGovernorContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += ovenFactory.setGovernorContract(newGovernorContractAddress).run(
+            sender = newGovernorContractAddress,
+            valid = False
+        )    
 
-    # ################################################################
-    # # setOvenRegistryContract
-    # ################################################################
+    ################################################################
+    # setOvenRegistryContract
+    ################################################################
 
-    # @sp.add_test(name="setOvenRegistryContract - succeeds when called by governor")
-    # def test():
-    #     # GIVEN an OvenFactory contract
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="setOvenRegistryContract - succeeds when called by governor")
+    def test():
+        # GIVEN an OvenFactory contract
+        scenario = sp.test_scenario()
 
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenFactory = OvenFactoryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenFactory
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenFactory = OvenFactoryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenFactory
 
-    #     # WHEN the setOvenRegistryContract is called with a new contract
-    #     newOvenRegistryContractAddress = Addresses.ROTATED_ADDRESS
-    #     scenario += ovenFactory.setOvenRegistryContract(newOvenRegistryContractAddress).run(
-    #         sender = governorContractAddress,
-    #     )
+        # WHEN the setOvenRegistryContract is called with a new contract
+        newOvenRegistryContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += ovenFactory.setOvenRegistryContract(newOvenRegistryContractAddress).run(
+            sender = governorContractAddress,
+        )
 
-    #     # THEN the contract is updated.
-    #     scenario.verify(ovenFactory.data.ovenRegistryContractAddress == newOvenRegistryContractAddress)
+        # THEN the contract is updated.
+        scenario.verify(ovenFactory.data.ovenRegistryContractAddress == newOvenRegistryContractAddress)
 
-    # @sp.add_test(name="setOvenRegistryContract - fails when not called by governor")
-    # def test():
-    #     # GIVEN an OvenFactory contract
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="setOvenRegistryContract - fails when not called by governor")
+    def test():
+        # GIVEN an OvenFactory contract
+        scenario = sp.test_scenario()
 
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenFactory = OvenFactoryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenFactory
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenFactory = OvenFactoryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenFactory
 
-    #     # WHEN the setOvenRegistryContract is called by someone who isn't the governor THEN the call fails
-    #     newOvenRegistryContractAddress = Addresses.ROTATED_ADDRESS
-    #     scenario += ovenFactory.setOvenRegistryContract(newOvenRegistryContractAddress).run(
-    #         sender = Addresses.NULL_ADDRESS,
-    #         valid = False
-    #     )    
+        # WHEN the setOvenRegistryContract is called by someone who isn't the governor THEN the call fails
+        newOvenRegistryContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += ovenFactory.setOvenRegistryContract(newOvenRegistryContractAddress).run(
+            sender = Addresses.NULL_ADDRESS,
+            valid = False
+        )    
 
-    # ################################################################
-    # # setOvenProxyContract
-    # ################################################################
+    ################################################################
+    # setOvenProxyContract
+    ################################################################
 
-    # @sp.add_test(name="setOvenProxyContract - succeeds when called by governor")
-    # def test():
-    #     # GIVEN an OvenFactory contract
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="setOvenProxyContract - succeeds when called by governor")
+    def test():
+        # GIVEN an OvenFactory contract
+        scenario = sp.test_scenario()
 
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenFactory = OvenFactoryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenFactory
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenFactory = OvenFactoryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenFactory
 
-    #     # WHEN the setOvenProxyContract is called with a new contract
-    #     newOvenProxyContractAddress = Addresses.ROTATED_ADDRESS
-    #     scenario += ovenFactory.setOvenProxyContract(newOvenProxyContractAddress).run(
-    #         sender = governorContractAddress,
-    #     )
+        # WHEN the setOvenProxyContract is called with a new contract
+        newOvenProxyContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += ovenFactory.setOvenProxyContract(newOvenProxyContractAddress).run(
+            sender = governorContractAddress,
+        )
 
-    #     # THEN the contract is updated.
-    #     scenario.verify(ovenFactory.data.ovenProxyContractAddress == newOvenProxyContractAddress)
+        # THEN the contract is updated.
+        scenario.verify(ovenFactory.data.ovenProxyContractAddress == newOvenProxyContractAddress)
 
-    # @sp.add_test(name="setOvenProxyContract - fails when not called by governor")
-    # def test():
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="setOvenProxyContract - fails when not called by governor")
+    def test():
+        scenario = sp.test_scenario()
 
-    #     # GIVEN an OvenFactory contract
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenFactory = OvenFactoryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenFactory
+        # GIVEN an OvenFactory contract
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenFactory = OvenFactoryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenFactory
 
-    #     # WHEN the setOvenProxyContract is called by someone who isn't the governor THEN the call fails
-    #     newOvenProxyContractAddress = Addresses.ROTATED_ADDRESS
-    #     scenario += ovenFactory.setOvenProxyContract(newOvenProxyContractAddress).run(
-    #         sender = newOvenProxyContractAddress,
-    #         valid = False
-    #     )    
+        # WHEN the setOvenProxyContract is called by someone who isn't the governor THEN the call fails
+        newOvenProxyContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += ovenFactory.setOvenProxyContract(newOvenProxyContractAddress).run(
+            sender = newOvenProxyContractAddress,
+            valid = False
+        )    
 
-    # ################################################################
-    # # setMinterContract
-    # ################################################################
+    ################################################################
+    # setMinterContract
+    ################################################################
 
-    # @sp.add_test(name="setMinterContract - succeeds when called by governor")
-    # def test():
-    #     # GIVEN an OvenFactory contract
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="setMinterContract - succeeds when called by governor")
+    def test():
+        # GIVEN an OvenFactory contract
+        scenario = sp.test_scenario()
 
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenFactory = OvenFactoryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenFactory
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenFactory = OvenFactoryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenFactory
 
-    #     # WHEN the setMinterContract is called with a new contract
-    #     newMinterContractAddress = Addresses.ROTATED_ADDRESS
-    #     scenario += ovenFactory.setMinterContract(newMinterContractAddress).run(
-    #         sender = governorContractAddress,
-    #     )
+        # WHEN the setMinterContract is called with a new contract
+        newMinterContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += ovenFactory.setMinterContract(newMinterContractAddress).run(
+            sender = governorContractAddress,
+        )
 
-    #     # THEN the contract is updated.
-    #     scenario.verify(ovenFactory.data.minterContractAddress == newMinterContractAddress)
+        # THEN the contract is updated.
+        scenario.verify(ovenFactory.data.minterContractAddress == newMinterContractAddress)
 
-    # @sp.add_test(name="setMinterContract - fails when not called by governor")
-    # def test():
-    #     # GIVEN an OvenFactory contract
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="setMinterContract - fails when not called by governor")
+    def test():
+        # GIVEN an OvenFactory contract
+        scenario = sp.test_scenario()
 
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenFactory = OvenFactoryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenFactory
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenFactory = OvenFactoryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenFactory
 
-    #     # WHEN the setMinterContract is called by someone who isn't the governor THEN the call fails
-    #     newMinterContractAddress = Addresses.ROTATED_ADDRESS
-    #     scenario += ovenFactory.setMinterContract(newMinterContractAddress).run(
-    #         sender = Addresses.NULL_ADDRESS,
-    #         valid = False
-    #     )    
+        # WHEN the setMinterContract is called by someone who isn't the governor THEN the call fails
+        newMinterContractAddress = Addresses.ROTATED_ADDRESS
+        scenario += ovenFactory.setMinterContract(newMinterContractAddress).run(
+            sender = Addresses.NULL_ADDRESS,
+            valid = False
+        )    
 
-    # ################################################################
-    # # setInitialDelegate
-    # ################################################################
+    ################################################################
+    # setInitialDelegate
+    ################################################################
 
-    # @sp.add_test(name="setInitialDelegate - succeeds when called by governor")
-    # def test():
-    #     # GIVEN an OvenFactory contract
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="setInitialDelegate - succeeds when called by governor")
+    def test():
+        # GIVEN an OvenFactory contract
+        scenario = sp.test_scenario()
 
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenFactory = OvenFactoryContract(
-    #         governorContractAddress = governorContractAddress,
-    #         initialDelegate = sp.none
-    #     )
-    #     scenario += ovenFactory
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenFactory = OvenFactoryContract(
+            governorContractAddress = governorContractAddress,
+            initialDelegate = sp.none
+        )
+        scenario += ovenFactory
 
-    #     # WHEN the setInitialDelegate is called with a new contract
-    #     newInitialDelegate = sp.some(sp.key_hash("tz1NRTQeqcuwybgrZfJavBY3of83u8uLpFBj"))
-    #     scenario += ovenFactory.setInitialDelegate(newInitialDelegate).run(
-    #         sender = governorContractAddress,
-    #     )
+        # WHEN the setInitialDelegate is called with a new contract
+        newInitialDelegate = sp.some(sp.key_hash("tz1NRTQeqcuwybgrZfJavBY3of83u8uLpFBj"))
+        scenario += ovenFactory.setInitialDelegate(newInitialDelegate).run(
+            sender = governorContractAddress,
+        )
 
-    #     # THEN the contract is updated.
-    #     scenario.verify(ovenFactory.data.initialDelegate.open_some() == newInitialDelegate.open_some())
+        # THEN the contract is updated.
+        scenario.verify(ovenFactory.data.initialDelegate.open_some() == newInitialDelegate.open_some())
 
-    # @sp.add_test(name="setInitialDelegate - fails when not called by governor")
-    # def test():
-    #     # GIVEN an OvenFactory contract
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="setInitialDelegate - fails when not called by governor")
+    def test():
+        # GIVEN an OvenFactory contract
+        scenario = sp.test_scenario()
 
-    #     governorContractAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenFactory = OvenFactoryContract(
-    #         governorContractAddress = governorContractAddress
-    #     )
-    #     scenario += ovenFactory
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        ovenFactory = OvenFactoryContract(
+            governorContractAddress = governorContractAddress
+        )
+        scenario += ovenFactory
 
-    #     # WHEN the setInitialDelegate is called by someone who isn't the governor THEN the call fails
-    #     newInitialDelegate = sp.some(sp.key_hash("tz1NRTQeqcuwybgrZfJavBY3of83u8uLpFBj"))
-    #     scenario += ovenFactory.setInitialDelegate(newInitialDelegate).run(
-    #         sender = Addresses.NULL_ADDRESS,
-    #         valid = False
-    #     )    
+        # WHEN the setInitialDelegate is called by someone who isn't the governor THEN the call fails
+        newInitialDelegate = sp.some(sp.key_hash("tz1NRTQeqcuwybgrZfJavBY3of83u8uLpFBj"))
+        scenario += ovenFactory.setInitialDelegate(newInitialDelegate).run(
+            sender = Addresses.NULL_ADDRESS,
+            valid = False
+        )    
 
     sp.add_compilation_target("oven-factory", OvenFactoryContract())
