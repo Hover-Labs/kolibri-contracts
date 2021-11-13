@@ -78,7 +78,7 @@ export async function sendOperation(
             return result.hash
         }
 
-    } catch (e) {
+    } catch (e: any) {
         console.log('Caught exception, retrying...')
         console.log(e.message)
         console.error(e)
@@ -120,7 +120,7 @@ export async function deployContract(
             operationHash: result.hash,
             contractAddress: result.contractAddress || "ERR",
         }
-    } catch (e) {
+    } catch (e: any) {
         console.log('Caught exception, retrying...')
         console.error(e)
         debugger;
@@ -175,7 +175,7 @@ export const checkConfirmed = async (config: any, operationHash: string): Promis
 
             // If we've made it here without an error, then all tests have passed and the operation has confirmed.
             return
-        } catch (e) {
+        } catch (e: any) {
             // Something above didn't track - that's probably okay since the network sometimes runs slow.
             // Print the error and sleep for another block before trying again.
             console.log(`Caught exception while polling ${e}`)
