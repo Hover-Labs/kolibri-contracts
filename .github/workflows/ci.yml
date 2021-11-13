@@ -32,7 +32,7 @@ jobs:
         sudo apt-get update && sudo apt-get install make
     - name: "Install SmartPy"
       run: |
-        curl -s https://smartpy.io/releases/20210212-2affd5164a82b2238c9ee9593cf2a03a58bec979/cli/install.sh | sh -s -- local-install ~/smartpy-cli
+        curl -s https://smartpy.io/releases/20210217-215a92bfa20c23e833c46dd6f75f8af5ea65e57b/cli/install.sh | sh -s -- local-install ~/smartpy-cli
     - name: "Build and Test Smart Contracts"
       run: |
         cd smart_contracts
