@@ -472,11 +472,14 @@ class SavingsPoolContract(FA12.FA12):
     self.data.lastInterestCompoundTime = self.data.lastInterestCompoundTime.add_seconds(sp.to_int(numPeriods.value * Constants.SECONDS_PER_COMPOUND))
 
     # Determine the new amount of interest accrued.
-    newUnderlyingBalance = sp.local(
-      'newTotalUnderlying', 
-      self.data.underlyingBalance * (Constants.PRECISION + (numPeriods.value * self.data.interestRate)) // Constants.PRECISION
-    )
-    accruedInterest = sp.local('accruedInterest', sp.as_nat(newUnderlyingBalance.value - self.data.underlyingBalance))
+    # newUnderlyingBalance = sp.local(
+    #   'newTotalUnderlying', 
+    #   self.data.underlyingBalance * (Constants.PRECISION + (numPeriods.value * self.data.interestRate)) // Constants.PRECISION
+    # )
+    # accruedInterest = sp.local('accruedInterest', sp.as_nat(newUnderlyingBalance.value - self.data.underlyingBalance))
+    # TODO(keefertaylor): Unwind the boxing / unboxing / reboxing of sp.locals
+    # newlyAccruedInterest = sp.as_nat(getNewlyAccruedInterest(self.data.interestRate, self.data.underlyingBalance, numPeriods.value))
+    newlyAccruedInterest = sp.local('accruedInterest', getNewlyAccruedInterest(self.data.interestRate, self.data.underlyingBalance, numPeriods.value))
 
     # Transfer in accrued tokens
     stabilityFundHandle = sp.contract(
@@ -484,13 +487,28 @@ class SavingsPoolContract(FA12.FA12):
       self.data.stabilityFundContractAddress,
       'accrueInterest'
     ).open_some()
-    sp.transfer(accruedInterest.value, sp.mutez(0), stabilityFundHandle)
+    sp.transfer(newlyAccruedInterest.value, sp.mutez(0), stabilityFundHandle)
 
     # Return the number of newly accrued tokens.
-    sp.result(accruedInterest.value)
+    sp.result(newlyAccruedInterest.value)
     # sp.result(sp.nat(1))
 
+# TODO(keefertaylor): Doc why this is separated.
+# TODO(keefertaylor): Use locals?
+def getNewlyAccruedInterest(interestRate, underlyingBalance, numPeriods):
+  newUnderlyingBalance = underlyingBalance * (Constants.PRECISION + (numPeriods * interestRate)) // Constants.PRECISION
+  return sp.as_nat(newUnderlyingBalance - underlyingBalance)
+  # return 1
+
+  # newUnderlyingBalance = sp.local(
+  #   'newTotalUnderlying', 
+  #   underlyingBalance * (Constants.PRECISION + (numPeriods.value * interestRate)) // Constants.PRECISION
+  # )
+  # accruedInterest = sp.local('accruedInterest', sp.as_nat(newUnderlyingBalance.value - underlyingBalance))
+  # return accruedInterest.value
+
 # TODO(keefertaylor): Doc why this is separated 
+# TODO(keefertaylor): Use locals?
 def getNumberOfElapsedInterestPeriods(lastInterestCompoundTime):
   sp.set_type(lastInterestCompoundTime, sp.TTimestamp)
 
