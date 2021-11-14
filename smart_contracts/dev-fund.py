@@ -1,8 +1,8 @@
 import smartpy as sp
 
-Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
-Constants = sp.import_script_from_url("file:common/constants.py")
-Errors = sp.import_script_from_url("file:common/errors.py")
+Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
+Constants = sp.io.import_script_from_url("file:common/constants.py")
+Errors = sp.io.import_script_from_url("file:common/errors.py")
 
 ################################################################
 # Contract
@@ -109,11 +109,11 @@ if __name__ == "__main__":
     ################################################################
     ################################################################
 
-    DummyContract = sp.import_script_from_url("file:test-helpers/dummy-contract.py")
-    MockOvenProxy = sp.import_script_from_url("file:test-helpers/mock-oven-proxy.py")
-    Oven = sp.import_script_from_url("file:oven.py")
-    OvenRegistry = sp.import_script_from_url("file:oven-registry.py")
-    Token = sp.import_script_from_url("file:token.py")
+    DummyContract = sp.io.import_script_from_url("file:test-helpers/dummy-contract.py")
+    MockOvenProxy = sp.io.import_script_from_url("file:test-helpers/mock-oven-proxy.py")
+    Oven = sp.io.import_script_from_url("file:oven.py")
+    OvenRegistry = sp.io.import_script_from_url("file:oven-registry.py")
+    Token = sp.io.import_script_from_url("file:token.py")
 
     ################################################################
     # default

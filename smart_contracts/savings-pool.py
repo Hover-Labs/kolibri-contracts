@@ -1,7 +1,7 @@
 import smartpy as sp
 
-Constants = sp.import_script_from_url("file:common/constants.py")
-Token = sp.import_script_from_url("file:token.py")
+Constants = sp.io.import_script_from_url("file:common/constants.py")
+Token = sp.io.import_script_from_url("file:token.py")
 
 ################################################################
 ################################################################
@@ -20,9 +20,25 @@ WAITING_DEPOSIT = 3
 ################################################################
 ################################################################
 
-Addresses = sp.import_script_from_url("file:./test-helpers/addresses.py")
-Errors = sp.import_script_from_url("file:./common/errors.py")
-FA12 = sp.import_script_from_url("file:./fa12.py")
+Addresses = sp.io.import_script_from_url("file:./test-helpers/addresses.py")
+Errors = sp.io.import_script_from_url("file:./common/errors.py")
+FA12 = sp.io.import_script_from_url("file:./fa12.py")
+
+# class CommonHelpers(sp.Contract):
+#   @sp.entry_point
+#   def default(self, unit):
+#     pass
+# #   # TODO(keefertaylor): Can I use locals
+# #   # TODO(keefertaylor): Doc why this is split out.
+
+
+# #     # numPeriods = sp.local('numPeriods', timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
+    
+# #     # sp.result(numPeriods.value)
+# #     # return numPeriods.value
+# #     # return timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
+
+
 
 class SavingsPoolContract(FA12.FA12):
   def __init__(
@@ -75,7 +91,7 @@ class SavingsPoolContract(FA12.FA12):
       tvalue = sp.TRecord(token_id = sp.TNat, token_info = sp.TMap(sp.TString, sp.TBytes))
     )
 
-    metadata_data = sp.bytes_of_string('{ "name": "Interest Bearing kUSD",  "description": "Interest Bearing kUSD",  "authors": ["Hover Labs <hello@hover.engineering>"],  "homepage":  "https://kolibri.finance", "interfaces": [ "TZIP-007-2021-01-29"] }')
+    metadata_data = sp.utils.bytes_of_string('{ "name": "Interest Bearing kUSD",  "description": "Interest Bearing kUSD",  "authors": ["Hover Labs <hello@hover.engineering>"],  "homepage":  "https://kolibri.finance", "interfaces": [ "TZIP-007-2021-01-29"] }')
     metadata = sp.big_map(
       l = {
         "": sp.bytes('0x74657a6f732d73746f726167653a64617461'), # "tezos-storage:data"
@@ -154,7 +170,7 @@ class SavingsPoolContract(FA12.FA12):
     sp.verify(self.data.state == WAITING_DEPOSIT, Errors.BAD_STATE)
 
     # Calculate the newly accrued interest.
-    accruedInterest = self.accrueInterest(sp.unit)
+    accruedInterest = self.accrueInterest()
 
     # Calculate the tokens to issue.
     tokensToDeposit = sp.local('tokensToDeposit', self.data.savedState_tokensToDeposit.open_some())
@@ -407,6 +423,29 @@ class SavingsPoolContract(FA12.FA12):
 
     sp.send(params.destinationAddress, sp.tez(10))    
 
+  ###############################################################
+  # Views
+  ###############################################################
+
+  # # Get the conversion rate of 1 LP token to 1 kUSD
+  # @sp.offchain_view(pure = True)
+  # def getConversionRate(self, unit):
+  #   sp.set_type(unit, sp.TUnit)
+  #   sp.result(1)
+
+  # # Get the total number of kUSD that will be in the pool next time interest
+  # # accrues
+  # @sp.offchain_view(pure = False)
+  # def getPoolSize(self, unit):
+  #   sp.set_type(unit, sp.TUnit)
+  #   sp.result(self.data.underlyingBalance + self.accrueInterest(sp.unit))
+
+  # # Get the balance of an account in kUSD that could be redeemed
+  # @sp.offchain_view(pure = True)
+  # def getAddressBalance(self, targetAddress):
+  #   sp.set_type(targetAddress, sp.TAddress)
+  #   sp.result(3)
+
   ################################################################
   # Helpers
   ################################################################
@@ -425,8 +464,9 @@ class SavingsPoolContract(FA12.FA12):
     sp.set_type(unit, sp.TUnit)
 
     # Calculate the number of periods that elapsed.
-    timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestCompoundTime)
-    numPeriods = sp.local('numPeriods', timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
+    # timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestCompoundTime)
+    # numPeriods = sp.local('numPeriods', timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
+    numPeriods = sp.local('numPeriods', getNumberOfElapsedInterestPeriods(self.data.lastInterestCompoundTime))
 
     # Update the last updated time.
     self.data.lastInterestCompoundTime = self.data.lastInterestCompoundTime.add_seconds(sp.to_int(numPeriods.value * Constants.SECONDS_PER_COMPOUND))
@@ -448,6 +488,15 @@ class SavingsPoolContract(FA12.FA12):
 
     # Return the number of newly accrued tokens.
     sp.result(accruedInterest.value)
+    # sp.result(sp.nat(1))
+
+# TODO(keefertaylor): Doc why this is separated 
+def getNumberOfElapsedInterestPeriods(lastInterestCompoundTime):
+  sp.set_type(lastInterestCompoundTime, sp.TTimestamp)
+
+  timeDeltaSeconds = sp.as_nat(sp.now - lastInterestCompoundTime)
+  return timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
+  # sp.result(timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
 
 ################################################################
 ################################################################
@@ -458,10 +507,10 @@ class SavingsPoolContract(FA12.FA12):
 # Only run tests if this file is main.
 if __name__ == "__main__":
 
-  Dummy = sp.import_script_from_url("file:./test-helpers/dummy-contract.py")
-  Oven = sp.import_script_from_url("file:./oven.py")
-  StabilityFund = sp.import_script_from_url("file:./stability-fund.py")
-  Token = sp.import_script_from_url("file:./token.py")
+  Dummy = sp.io.import_script_from_url("file:./test-helpers/dummy-contract.py")
+  Oven = sp.io.import_script_from_url("file:./oven.py")
+  StabilityFund = sp.io.import_script_from_url("file:./stability-fund.py")
+  Token = sp.io.import_script_from_url("file:./token.py")
 
   ################################################################
   # Test Helpers
@@ -491,9 +540,9 @@ if __name__ == "__main__":
     def testContractEntryPoint(self, params):
       self.data.result = sp.some(self.contractEntrypoint(params))
 
-  ################################################################
-  # accrueInterest
-  ################################################################
+  # ################################################################
+  # # accrueInterest
+  # ################################################################
 
   @sp.add_test(name="accrueInterest - updates lastInterestCompoundTime for one period")
   def test():

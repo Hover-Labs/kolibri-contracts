@@ -1,7 +1,7 @@
 import smartpy as sp
 
-Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
-Errors = sp.import_script_from_url("file:common/errors.py")
+Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
+Errors = sp.io.import_script_from_url("file:common/errors.py")
 
 ################################################################
 # Contract

@@ -7,10 +7,10 @@
 import smartpy as sp
 
 # CHANGED: Import errors.
-Errors = sp.import_script_from_url("file:common/errors.py")
+Errors = sp.io.import_script_from_url("file:common/errors.py")
 
 # CHANGED: Import address helpers
-Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
+Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
 
 # CHANGED: Define a constant for the empty string in the metadata bigmap
 METADATA_KEY = ""
@@ -88,15 +88,15 @@ class FA12_core(sp.Contract):
         sp.if ~ self.data.balances.contains(address):
             self.data.balances[address] = sp.record(balance = 0, approvals = {})
 
-    @sp.view(sp.TNat)
+    @sp.utils.view(sp.TNat)
     def getBalance(self, params):
         sp.result(self.data.balances[params].balance)
 
-    @sp.view(sp.TNat)
+    @sp.utils.view(sp.TNat)
     def getAllowance(self, params):
         sp.result(self.data.balances[params.owner].approvals[params.spender])
 
-    @sp.view(sp.TNat)
+    @sp.utils.view(sp.TNat)
     def getTotalSupply(self, params):
         sp.set_type(params, sp.TUnit)
         sp.result(self.data.totalSupply)
@@ -141,7 +141,7 @@ class FA12_administrator(FA12_core):
         sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
         self.data.administrator = params
 
-    @sp.view(sp.TAddress)
+    @sp.utils.view(sp.TAddress)
     def getAdministrator(self, params):
         sp.set_type(params, sp.TUnit)
         sp.result(self.data.administrator)
@@ -222,353 +222,353 @@ class Viewer(sp.Contract):
 # Only run tests if this file is main.
 if __name__ == "__main__":
 
-    if "templates" not in __name__:
-        @sp.add_test(name = "FA12")
-        def test():
+    # if "templates" not in __name__:
+    #     @sp.add_test(name = "FA12")
+    #     def test():
 
-            scenario = sp.test_scenario()
-            scenario.h1("FA1.2 template - Fungible assets")
+    #         scenario = sp.test_scenario()
+    #         scenario.h1("FA1.2 template - Fungible assets")
 
-            scenario.table_of_contents()
+    #         scenario.table_of_contents()
 
-            # sp.test_account generates ED25519 key-pairs deterministically:
-            admin = sp.test_account("Administrator")
-            alice = sp.test_account("Alice")
-            bob   = sp.test_account("Robert")
+    #         # sp.test_account generates ED25519 key-pairs deterministically:
+    #         admin = sp.test_account("Administrator")
+    #         alice = sp.test_account("Alice")
+    #         bob   = sp.test_account("Robert")
 
-            # Let's display the accounts:
-            scenario.h1("Accounts")
-            scenario.show([admin, alice, bob])
+    #         # Let's display the accounts:
+    #         scenario.h1("Accounts")
+    #         scenario.show([admin, alice, bob])
 
-            scenario.h1("Contract")
-            c1 = FA12(admin.address)
+    #         scenario.h1("Contract")
+    #         c1 = FA12(admin.address)
 
-            scenario.h1("Entry points")
-            scenario += c1
-            scenario.h2("Admin mints a few coins")
-            scenario += c1.mint(address = alice.address, value = 12).run(sender = admin)
-            scenario += c1.mint(address = alice.address, value = 3).run(sender = admin)
-            scenario += c1.mint(address = alice.address, value = 3).run(sender = admin)
-            scenario.h2("Alice transfers to Bob")
-            scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 4).run(sender = alice)
-            scenario.verify(c1.data.balances[alice.address].balance == 14)
-            scenario.h2("Bob tries to transfer from Alice but he doesn't have her approval")
-            scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 4).run(sender = bob, valid = False)
-            scenario.h2("Alice approves Bob and Bob transfers")
-            scenario += c1.approve(spender = bob.address, value = 5).run(sender = alice)
-            scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 4).run(sender = bob)
-            scenario.h2("Bob tries to over-transfer from Alice")
-            scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 4).run(sender = bob, valid = False)
-            scenario.h2("Admin burns Bob token")
-            scenario += c1.burn(address = bob.address, value = 1).run(sender = admin)
-            scenario.verify(c1.data.balances[alice.address].balance == 10)
-            scenario.h2("Alice tries to burn Bob token")
-            scenario += c1.burn(address = bob.address, value = 1).run(sender = alice, valid = False)
-            scenario.h2("Admin pauses the contract and Alice cannot transfer anymore")
-            scenario += c1.setPause(True).run(sender = admin)
-            scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 4).run(sender = alice, valid = False)
-            scenario.verify(c1.data.balances[alice.address].balance == 10)
-            scenario.h2("Admin transfers while on pause")
-            scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 1).run(sender = admin)
-            scenario.h2("Admin unpauses the contract and transfers are allowed")
-            scenario += c1.setPause(False).run(sender = admin)
-            scenario.verify(c1.data.balances[alice.address].balance == 9)
-            scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 1).run(sender = alice)
+    #         scenario.h1("Entry points")
+    #         scenario += c1
+    #         scenario.h2("Admin mints a few coins")
+    #         scenario += c1.mint(address = alice.address, value = 12).run(sender = admin)
+    #         scenario += c1.mint(address = alice.address, value = 3).run(sender = admin)
+    #         scenario += c1.mint(address = alice.address, value = 3).run(sender = admin)
+    #         scenario.h2("Alice transfers to Bob")
+    #         scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 4).run(sender = alice)
+    #         scenario.verify(c1.data.balances[alice.address].balance == 14)
+    #         scenario.h2("Bob tries to transfer from Alice but he doesn't have her approval")
+    #         scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 4).run(sender = bob, valid = False)
+    #         scenario.h2("Alice approves Bob and Bob transfers")
+    #         scenario += c1.approve(spender = bob.address, value = 5).run(sender = alice)
+    #         scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 4).run(sender = bob)
+    #         scenario.h2("Bob tries to over-transfer from Alice")
+    #         scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 4).run(sender = bob, valid = False)
+    #         scenario.h2("Admin burns Bob token")
+    #         scenario += c1.burn(address = bob.address, value = 1).run(sender = admin)
+    #         scenario.verify(c1.data.balances[alice.address].balance == 10)
+    #         scenario.h2("Alice tries to burn Bob token")
+    #         scenario += c1.burn(address = bob.address, value = 1).run(sender = alice, valid = False)
+    #         scenario.h2("Admin pauses the contract and Alice cannot transfer anymore")
+    #         scenario += c1.setPause(True).run(sender = admin)
+    #         scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 4).run(sender = alice, valid = False)
+    #         scenario.verify(c1.data.balances[alice.address].balance == 10)
+    #         scenario.h2("Admin transfers while on pause")
+    #         scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 1).run(sender = admin)
+    #         scenario.h2("Admin unpauses the contract and transfers are allowed")
+    #         scenario += c1.setPause(False).run(sender = admin)
+    #         scenario.verify(c1.data.balances[alice.address].balance == 9)
+    #         scenario += c1.transfer(from_ = alice.address, to_ = bob.address, value = 1).run(sender = alice)
 
-            scenario.verify(c1.data.totalSupply == 17)
-            scenario.verify(c1.data.balances[alice.address].balance == 8)
-            scenario.verify(c1.data.balances[bob.address].balance == 9)
+    #         scenario.verify(c1.data.totalSupply == 17)
+    #         scenario.verify(c1.data.balances[alice.address].balance == 8)
+    #         scenario.verify(c1.data.balances[bob.address].balance == 9)
 
-            scenario.h1("Views")
-            scenario.h2("Balance")
-            view_balance = Viewer(sp.TNat)
-            scenario += view_balance
-            scenario += c1.getBalance((alice.address, view_balance.typed))
-            scenario.verify_equal(view_balance.data.last, sp.some(8))
+    #         scenario.h1("Views")
+    #         scenario.h2("Balance")
+    #         view_balance = Viewer(sp.TNat)
+    #         scenario += view_balance
+    #         scenario += c1.getBalance((alice.address, view_balance.typed))
+    #         scenario.verify_equal(view_balance.data.last, sp.some(8))
 
-            scenario.h2("Administrator")
-            view_administrator = Viewer(sp.TAddress)
-            scenario += view_administrator
-            scenario += c1.getAdministrator((sp.unit, view_administrator.typed))
-            scenario.verify_equal(view_administrator.data.last, sp.some(admin.address))
+    #         scenario.h2("Administrator")
+    #         view_administrator = Viewer(sp.TAddress)
+    #         scenario += view_administrator
+    #         scenario += c1.getAdministrator((sp.unit, view_administrator.typed))
+    #         scenario.verify_equal(view_administrator.data.last, sp.some(admin.address))
 
-            scenario.h2("Total Supply")
-            view_totalSupply = Viewer(sp.TNat)
-            scenario += view_totalSupply
-            scenario += c1.getTotalSupply((sp.unit, view_totalSupply.typed))
-            scenario.verify_equal(view_totalSupply.data.last, sp.some(17))
+    #         scenario.h2("Total Supply")
+    #         view_totalSupply = Viewer(sp.TNat)
+    #         scenario += view_totalSupply
+    #         scenario += c1.getTotalSupply((sp.unit, view_totalSupply.typed))
+    #         scenario.verify_equal(view_totalSupply.data.last, sp.some(17))
 
-            scenario.h2("Allowance")
-            view_allowance = Viewer(sp.TNat)
-            scenario += view_allowance
-            scenario += c1.getAllowance((sp.record(owner = alice.address, spender = bob.address), view_allowance.typed))
-            scenario.verify_equal(view_allowance.data.last, sp.some(1))
+    #         scenario.h2("Allowance")
+    #         view_allowance = Viewer(sp.TNat)
+    #         scenario += view_allowance
+    #         scenario += c1.getAllowance((sp.record(owner = alice.address, spender = bob.address), view_allowance.typed))
+    #         scenario.verify_equal(view_allowance.data.last, sp.some(1))
     
-    # CHANGED: Additional tests added below this line.
+    # # CHANGED: Additional tests added below this line.
 
-    ################################################################
-    # mint
-    ################################################################
+    # ################################################################
+    # # mint
+    # ################################################################
 
-    Dummy = sp.import_script_from_url("file:test-helpers/dummy-contract.py")
+    # Dummy = sp.io.import_script_from_url("file:test-helpers/dummy-contract.py")
 
-    @sp.add_test(name="mint - respects debt ceiling")
-    def test():
-        # GIVEN a Token contract
-        scenario = sp.test_scenario()
+    # @sp.add_test(name="mint - respects debt ceiling")
+    # def test():
+    #     # GIVEN a Token contract
+    #     scenario = sp.test_scenario()
 
-        debtCeiling = 100
-        token = FA12(
-            admin = Addresses.GOVERNOR_ADDRESS,
-            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
-            debtCeiling = debtCeiling
-        )
-        scenario += token
+    #     debtCeiling = 100
+    #     token = FA12(
+    #         admin = Addresses.GOVERNOR_ADDRESS,
+    #         governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+    #         debtCeiling = debtCeiling
+    #     )
+    #     scenario += token
 
-        # AND a token holder.
-        tokenHolder = Dummy.DummyContract()
-        scenario += tokenHolder
+    #     # AND a token holder.
+    #     tokenHolder = Dummy.DummyContract()
+    #     scenario += tokenHolder
 
-        # WHEN tokens are minted to the debt ceiling.
-        mintParam = sp.record(address= tokenHolder.address, value= debtCeiling)
-        scenario += token.mint(mintParam).run(
-            sender = Addresses.GOVERNOR_ADDRESS,
-        )
+    #     # WHEN tokens are minted to the debt ceiling.
+    #     mintParam = sp.record(address= tokenHolder.address, value= debtCeiling)
+    #     scenario += token.mint(mintParam).run(
+    #         sender = Addresses.GOVERNOR_ADDRESS,
+    #     )
 
-        # THEN tokens are minted successfully
-        scenario.verify(token.data.balances[tokenHolder.address].balance == debtCeiling)
-        scenario.verify(token.data.totalSupply == debtCeiling)
+    #     # THEN tokens are minted successfully
+    #     scenario.verify(token.data.balances[tokenHolder.address].balance == debtCeiling)
+    #     scenario.verify(token.data.totalSupply == debtCeiling)
 
-        # WHEN another mint is called THEN the call fails
-        mintParam = sp.record(address= tokenHolder.address, value= 1)
-        scenario += token.mint(mintParam).run(
-            sender = Addresses.GOVERNOR_ADDRESS,
-            valid = False
-        )
+    #     # WHEN another mint is called THEN the call fails
+    #     mintParam = sp.record(address= tokenHolder.address, value= 1)
+    #     scenario += token.mint(mintParam).run(
+    #         sender = Addresses.GOVERNOR_ADDRESS,
+    #         valid = False
+    #     )
 
-    ################################################################
-    # setDebtCeiling
-    ################################################################
+    # ################################################################
+    # # setDebtCeiling
+    # ################################################################
 
-    @sp.add_test(name="setDebtCeiling - succeeds when called by governor")
-    def test():
-        # GIVEN a Token contract
-        scenario = sp.test_scenario()
+    # @sp.add_test(name="setDebtCeiling - succeeds when called by governor")
+    # def test():
+    #     # GIVEN a Token contract
+    #     scenario = sp.test_scenario()
 
-        token = FA12(
-            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
-            debtCeiling = 123
-        )
-        scenario += token
+    #     token = FA12(
+    #         governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+    #         debtCeiling = 123
+    #     )
+    #     scenario += token
 
-        # WHEN the setDebtCeiling is called with a new ceiling
-        newDebtCeiling = 456
-        scenario += token.setDebtCeiling(newDebtCeiling).run(
-            sender = Addresses.GOVERNOR_ADDRESS,
-        )
+    #     # WHEN the setDebtCeiling is called with a new ceiling
+    #     newDebtCeiling = 456
+    #     scenario += token.setDebtCeiling(newDebtCeiling).run(
+    #         sender = Addresses.GOVERNOR_ADDRESS,
+    #     )
 
-        # THEN the contract is updated.
-        scenario.verify(token.data.debtCeiling == newDebtCeiling)
+    #     # THEN the contract is updated.
+    #     scenario.verify(token.data.debtCeiling == newDebtCeiling)
 
-    @sp.add_test(name="setDebtCeiling - fails when not called by governor")
-    def test():
-        # GIVEN a Token contract
-        scenario = sp.test_scenario()
+    # @sp.add_test(name="setDebtCeiling - fails when not called by governor")
+    # def test():
+    #     # GIVEN a Token contract
+    #     scenario = sp.test_scenario()
 
-        token = FA12(
-            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
-            debtCeiling = 123
-        )
-        scenario += token
+    #     token = FA12(
+    #         governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+    #         debtCeiling = 123
+    #     )
+    #     scenario += token
 
-        # WHEN the setDebtCeiling is called by someone who isn't the governor THEN the call fails
-        newDebtCeiling = 456
-        scenario += token.setDebtCeiling(newDebtCeiling).run(
-            sender = Addresses.NULL_ADDRESS,
-            valid = False
-        )    
+    #     # WHEN the setDebtCeiling is called by someone who isn't the governor THEN the call fails
+    #     newDebtCeiling = 456
+    #     scenario += token.setDebtCeiling(newDebtCeiling).run(
+    #         sender = Addresses.NULL_ADDRESS,
+    #         valid = False
+    #     )    
 
-    ################################################################
-    # updateContractMetadata
-    ################################################################
+    # ################################################################
+    # # updateContractMetadata
+    # ################################################################
 
-    @sp.add_test(name="updateContractMetadata - succeeds when called by governor")
-    def test():
-        # GIVEN a Token contract
-        scenario = sp.test_scenario()
+    # @sp.add_test(name="updateContractMetadata - succeeds when called by governor")
+    # def test():
+    #     # GIVEN a Token contract
+    #     scenario = sp.test_scenario()
 
-        token = FA12(
-            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
-        )
-        scenario += token
+    #     token = FA12(
+    #         governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+    #     )
+    #     scenario += token
 
-        # WHEN the updateContractMetadata is called with a new locator
-        locatorKey = ""
-        newLocator = sp.bytes('0x1234567890')
-        scenario += token.updateContractMetadata((locatorKey, newLocator)).run(
-            sender = Addresses.GOVERNOR_ADDRESS,
-        )
+    #     # WHEN the updateContractMetadata is called with a new locator
+    #     locatorKey = ""
+    #     newLocator = sp.bytes('0x1234567890')
+    #     scenario += token.updateContractMetadata((locatorKey, newLocator)).run(
+    #         sender = Addresses.GOVERNOR_ADDRESS,
+    #     )
 
-        # THEN the contract is updated.
-        scenario.verify(token.data.metadata[locatorKey] == newLocator)
+    #     # THEN the contract is updated.
+    #     scenario.verify(token.data.metadata[locatorKey] == newLocator)
 
-    @sp.add_test(name="updateContractMetadata - fails when not called by governor")
-    def test():
-        # GIVEN a Token contract
-        scenario = sp.test_scenario()
+    # @sp.add_test(name="updateContractMetadata - fails when not called by governor")
+    # def test():
+    #     # GIVEN a Token contract
+    #     scenario = sp.test_scenario()
 
-        token = FA12(
-            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
-        )
-        scenario += token
+    #     token = FA12(
+    #         governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+    #     )
+    #     scenario += token
 
-        # WHEN the updateContractMetadata is called by someone who isn't the governor THEN the call fails
-        locatorKey = ""
-        newLocator = sp.bytes('0x1234567890')
-        scenario += token.updateContractMetadata((locatorKey, newLocator)).run(
-            sender = Addresses.NULL_ADDRESS,
-            valid = False
-        )            
+    #     # WHEN the updateContractMetadata is called by someone who isn't the governor THEN the call fails
+    #     locatorKey = ""
+    #     newLocator = sp.bytes('0x1234567890')
+    #     scenario += token.updateContractMetadata((locatorKey, newLocator)).run(
+    #         sender = Addresses.NULL_ADDRESS,
+    #         valid = False
+    #     )            
 
-    ################################################################
-    # updateTokenMetadata
-    ################################################################
+    # ################################################################
+    # # updateTokenMetadata
+    # ################################################################
 
-    @sp.add_test(name="updateTokenMetadata - succeeds when called by governor")
-    def test():
-        # GIVEN a Token contract
-        scenario = sp.test_scenario()
+    # @sp.add_test(name="updateTokenMetadata - succeeds when called by governor")
+    # def test():
+    #     # GIVEN a Token contract
+    #     scenario = sp.test_scenario()
 
-        token = FA12(
-            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
-        )
-        scenario += token
+    #     token = FA12(
+    #         governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+    #     )
+    #     scenario += token
 
-        # WHEN the updateTokenMetadata is called with a new data set.
-        newKey = "new"
-        newValue = sp.bytes('0x123456')
-        newMap = sp.map(
-            l = {
-                newKey: newValue
-            },
-            tkey = sp.TString,
-            tvalue = sp.TBytes
-        )
-        newData = (sp.nat(0), newMap)
+    #     # WHEN the updateTokenMetadata is called with a new data set.
+    #     newKey = "new"
+    #     newValue = sp.bytes('0x123456')
+    #     newMap = sp.map(
+    #         l = {
+    #             newKey: newValue
+    #         },
+    #         tkey = sp.TString,
+    #         tvalue = sp.TBytes
+    #     )
+    #     newData = (sp.nat(0), newMap)
 
-        scenario += token.updateTokenMetadata(newData).run(
-            sender = Addresses.GOVERNOR_ADDRESS,
-        )
+    #     scenario += token.updateTokenMetadata(newData).run(
+    #         sender = Addresses.GOVERNOR_ADDRESS,
+    #     )
 
-        # THEN the contract is updated.
-        tokenMetadata = token.data.token_metadata[0]
-        tokenId = sp.fst(tokenMetadata)
-        tokenMetadataMap = sp.snd(tokenMetadata)
+    #     # THEN the contract is updated.
+    #     tokenMetadata = token.data.token_metadata[0]
+    #     tokenId = sp.fst(tokenMetadata)
+    #     tokenMetadataMap = sp.snd(tokenMetadata)
                 
-        scenario.verify(tokenId == sp.nat(0))
-        scenario.verify(tokenMetadataMap[newKey] == newValue)
+    #     scenario.verify(tokenId == sp.nat(0))
+    #     scenario.verify(tokenMetadataMap[newKey] == newValue)
 
-    @sp.add_test(name="updateTokenMetadata - fails when not called by governor")
-    def test():
-        # GIVEN a Token contract
-        scenario = sp.test_scenario()
+    # @sp.add_test(name="updateTokenMetadata - fails when not called by governor")
+    # def test():
+    #     # GIVEN a Token contract
+    #     scenario = sp.test_scenario()
 
-        token = FA12(
-            governorContractAddress = Addresses.GOVERNOR_ADDRESS,
-        )
-        scenario += token
+    #     token = FA12(
+    #         governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+    #     )
+    #     scenario += token
 
-        # WHEN the updateTokenMetadata is called by someone who isn't the governor THEN the call fails
-        newMap = sp.map(
-            l = {
-                "new": sp.bytes('0x123456')
-            },
-            tkey = sp.TString,
-            tvalue = sp.TBytes
-        )
-        newData = (sp.nat(0), newMap)
-        scenario += token.updateTokenMetadata(newData).run(
-            sender = Addresses.NULL_ADDRESS,
-            valid = False
-        )            
+    #     # WHEN the updateTokenMetadata is called by someone who isn't the governor THEN the call fails
+    #     newMap = sp.map(
+    #         l = {
+    #             "new": sp.bytes('0x123456')
+    #         },
+    #         tkey = sp.TString,
+    #         tvalue = sp.TBytes
+    #     )
+    #     newData = (sp.nat(0), newMap)
+    #     scenario += token.updateTokenMetadata(newData).run(
+    #         sender = Addresses.NULL_ADDRESS,
+    #         valid = False
+    #     )            
 
-    ################################################################
-    # setAdministrator
-    ################################################################
+    # ################################################################
+    # # setAdministrator
+    # ################################################################
 
-    @sp.add_test(name="setAdministrator - succeeds when called by governor")
-    def test():
-        # GIVEN a Token contract
-        scenario = sp.test_scenario()
+    # @sp.add_test(name="setAdministrator - succeeds when called by governor")
+    # def test():
+    #     # GIVEN a Token contract
+    #     scenario = sp.test_scenario()
 
-        token = FA12(
-            admin = Addresses.FUND_ADMINISTRATOR_ADDRESS,
-            governorContractAddress = Addresses.GOVERNOR_ADDRESS
-        )
-        scenario += token
+    #     token = FA12(
+    #         admin = Addresses.FUND_ADMINISTRATOR_ADDRESS,
+    #         governorContractAddress = Addresses.GOVERNOR_ADDRESS
+    #     )
+    #     scenario += token
 
-        # WHEN the setAdministrator is called with a new contract
-        scenario += token.setAdministrator(Addresses.ROTATED_ADDRESS).run(
-            sender = Addresses.GOVERNOR_ADDRESS,
-        )
+    #     # WHEN the setAdministrator is called with a new contract
+    #     scenario += token.setAdministrator(Addresses.ROTATED_ADDRESS).run(
+    #         sender = Addresses.GOVERNOR_ADDRESS,
+    #     )
 
-        # THEN the contract is updated.
-        scenario.verify(token.data.administrator == Addresses.ROTATED_ADDRESS)
+    #     # THEN the contract is updated.
+    #     scenario.verify(token.data.administrator == Addresses.ROTATED_ADDRESS)
 
-    @sp.add_test(name="setAdministrator - fails when not called by governor")
-    def test():
-        # GIVEN a Token contract
-        scenario = sp.test_scenario()
+    # @sp.add_test(name="setAdministrator - fails when not called by governor")
+    # def test():
+    #     # GIVEN a Token contract
+    #     scenario = sp.test_scenario()
 
-        token = FA12(
-            admin = Addresses.FUND_ADMINISTRATOR_ADDRESS,
-            governorContractAddress = Addresses.GOVERNOR_ADDRESS
-        )
-        scenario += token
+    #     token = FA12(
+    #         admin = Addresses.FUND_ADMINISTRATOR_ADDRESS,
+    #         governorContractAddress = Addresses.GOVERNOR_ADDRESS
+    #     )
+    #     scenario += token
 
-        # WHEN the setAdministrator is called by someone who isn't the governor THEN the call fails
-        scenario += token.setAdministrator(Addresses.ROTATED_ADDRESS).run(
-            sender = Addresses.NULL_ADDRESS,
-            valid = False
-        )    
+    #     # WHEN the setAdministrator is called by someone who isn't the governor THEN the call fails
+    #     scenario += token.setAdministrator(Addresses.ROTATED_ADDRESS).run(
+    #         sender = Addresses.NULL_ADDRESS,
+    #         valid = False
+    #     )    
 
 
-    ################################################################
-    # setGovernorContract
-    ################################################################
+    # ################################################################
+    # # setGovernorContract
+    # ################################################################
 
-    @sp.add_test(name="setGovernorContract - succeeds when called by governor")
-    def test():
-        # GIVEN a Token contract
-        scenario = sp.test_scenario()
+    # @sp.add_test(name="setGovernorContract - succeeds when called by governor")
+    # def test():
+    #     # GIVEN a Token contract
+    #     scenario = sp.test_scenario()
 
-        token = FA12(
-            governorContractAddress = Addresses.GOVERNOR_ADDRESS
-        )
-        scenario += token
+    #     token = FA12(
+    #         governorContractAddress = Addresses.GOVERNOR_ADDRESS
+    #     )
+    #     scenario += token
 
-        # WHEN the setGovernorContract is called with a new contract
-        scenario += token.setGovernorContract(Addresses.ROTATED_ADDRESS).run(
-            sender = Addresses.GOVERNOR_ADDRESS,
-        )
+    #     # WHEN the setGovernorContract is called with a new contract
+    #     scenario += token.setGovernorContract(Addresses.ROTATED_ADDRESS).run(
+    #         sender = Addresses.GOVERNOR_ADDRESS,
+    #     )
 
-        # THEN the contract is updated.
-        scenario.verify(token.data.governorContractAddress == Addresses.ROTATED_ADDRESS)
+    #     # THEN the contract is updated.
+    #     scenario.verify(token.data.governorContractAddress == Addresses.ROTATED_ADDRESS)
 
-    @sp.add_test(name="setGovernorContract - fails when not called by governor")
-    def test():
-        # GIVEN a Token contract
-        scenario = sp.test_scenario()
+    # @sp.add_test(name="setGovernorContract - fails when not called by governor")
+    # def test():
+    #     # GIVEN a Token contract
+    #     scenario = sp.test_scenario()
 
-        token = FA12(
-            governorContractAddress = Addresses.GOVERNOR_ADDRESS
-        )
-        scenario += token
+    #     token = FA12(
+    #         governorContractAddress = Addresses.GOVERNOR_ADDRESS
+    #     )
+    #     scenario += token
 
-        # WHEN the setGovernorContract is called by someone who isn't the governor THEN the call fails
-        scenario += token.setGovernorContract(Addresses.ROTATED_ADDRESS).run(
-            sender = Addresses.NULL_ADDRESS,
-            valid = False
-        )    
+    #     # WHEN the setGovernorContract is called by someone who isn't the governor THEN the call fails
+    #     scenario += token.setGovernorContract(Addresses.ROTATED_ADDRESS).run(
+    #         sender = Addresses.NULL_ADDRESS,
+    #         valid = False
+    #     )    
 
     sp.add_compilation_target("token", FA12())
