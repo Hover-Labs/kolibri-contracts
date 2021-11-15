@@ -1,9 +1,9 @@
 import smartpy as sp
 
-Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
-Constants = sp.import_script_from_url("file:common/constants.py")
-Errors = sp.import_script_from_url("file:common/errors.py")
-OvenApi = sp.import_script_from_url("file:common/oven-api.py")
+Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
+Constants = sp.io.import_script_from_url("file:common/constants.py")
+Errors = sp.io.import_script_from_url("file:common/errors.py")
+OvenApi = sp.io.import_script_from_url("file:common/oven-api.py")
 
 ################################################################
 # Contract
@@ -29,7 +29,7 @@ class MinterContract(sp.Contract):
         liquidationFeePercent = sp.nat(80000000000000000),  # 8%
     ):
         self.exception_optimization_level = "DefaultUnit"
-        self.add_flag("no_comment")
+        self.add_flag("erase-comments")
 
         self.init(
             # Contract Addresses
@@ -307,7 +307,7 @@ class MinterContract(sp.Contract):
         sp.send(ownerAddress, mutezToWithdraw)
 
         # Update the oven's state and return the remaining mutez to it.
-        remainingMutez = sp.mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION) - mutezToWithdraw
+        remainingMutez = sp.utils.nat_to_mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION) - mutezToWithdraw
         self.updateOvenState(ovenAddress, borrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, remainingMutez)
         
         # Update internal state
@@ -383,7 +383,7 @@ class MinterContract(sp.Contract):
         self.mintTokensToStabilityAndDevFund(newStabilityFeeTokens + liquidationFee)
 
         # Send collateral to liquidator.
-        sp.send(liquidatorAddress, sp.mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION))
+        sp.send(liquidatorAddress, sp.utils.nat_to_mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION))
 
         # Inform oven it is liquidated, clear owed tokens and return no collateral.
         self.updateOvenState(ovenAddress, sp.nat(0), sp.nat(0), newMinterInterestIndex, True, sp.mutez(0))
@@ -630,12 +630,12 @@ if __name__ == "__main__":
     ################################################################
     ################################################################
 
-    Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
-    DevFund = sp.import_script_from_url("file:dev-fund.py")
-    DummyContract = sp.import_script_from_url("file:test-helpers/dummy-contract.py")
-    MockOvenProxy = sp.import_script_from_url("file:test-helpers/mock-oven-proxy.py")
-    StabilityFund = sp.import_script_from_url("file:stability-fund.py")
-    Token = sp.import_script_from_url("file:token.py")
+    Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
+    DevFund = sp.io.import_script_from_url("file:dev-fund.py")
+    DummyContract = sp.io.import_script_from_url("file:test-helpers/dummy-contract.py")
+    MockOvenProxy = sp.io.import_script_from_url("file:test-helpers/mock-oven-proxy.py")
+    StabilityFund = sp.io.import_script_from_url("file:stability-fund.py")
+    Token = sp.io.import_script_from_url("file:token.py")
 
     ################################################################
     # Helpers

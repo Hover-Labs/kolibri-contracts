@@ -7,9 +7,9 @@ import smartpy as sp
 # This Oracle does NOT check that Harbinger data is recent, and is *NOT*
 # suitable for use on mainnet.
 
-Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
-Constants = sp.import_script_from_url("file:common/constants.py")
-Errors = sp.import_script_from_url("file:common/errors.py")
+Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
+Constants = sp.io.import_script_from_url("file:common/constants.py")
+Errors = sp.io.import_script_from_url("file:common/errors.py")
 
 ################################################################
 # State Machine
@@ -147,8 +147,8 @@ if __name__ == "__main__":
     ################################################################
     ################################################################
 
-    DummyContract = sp.import_script_from_url("file:test-helpers/dummy-contract.py")
-    FakeHarbinger = sp.import_script_from_url("file:test-helpers/fake-harbinger.py")
+    DummyContract = sp.io.import_script_from_url("file:test-helpers/dummy-contract.py")
+    FakeHarbinger = sp.io.import_script_from_url("file:test-helpers/fake-harbinger.py")
 
     ################################################################
     # getXtzUsdRate

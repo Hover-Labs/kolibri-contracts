@@ -1,8 +1,8 @@
 import smartpy as sp
 
-Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
-Errors = sp.import_script_from_url("file:common/errors.py")
-OvenApi = sp.import_script_from_url("file:common/oven-api.py")
+Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
+Errors = sp.io.import_script_from_url("file:common/errors.py")
+OvenApi = sp.io.import_script_from_url("file:common/oven-api.py")
 
 ################################################################
 # State Machine States.
@@ -334,11 +334,11 @@ if __name__ == "__main__":
     ################################################################
     ################################################################
 
-    MockMinter = sp.import_script_from_url("file:test-helpers/mock-minter.py")
-    Oven = sp.import_script_from_url("file:oven.py")
-    Oracle = sp.import_script_from_url("file:oracle.py")
-    OvenRegistry = sp.import_script_from_url("file:oven-registry.py")
-    FakeHarbinger = sp.import_script_from_url("file:test-helpers/fake-harbinger.py")
+    MockMinter = sp.io.import_script_from_url("file:test-helpers/mock-minter.py")
+    Oven = sp.io.import_script_from_url("file:oven.py")
+    Oracle = sp.io.import_script_from_url("file:oracle.py")
+    OvenRegistry = sp.io.import_script_from_url("file:oven-registry.py")
+    FakeHarbinger = sp.io.import_script_from_url("file:test-helpers/fake-harbinger.py")
 
     ################################################################
     # withdraw

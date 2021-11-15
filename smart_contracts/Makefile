@@ -9,19 +9,28 @@ all:
 
 # TODO(keefertaylor): Write rules for all contracts, and add them here.
 compile:
+	make compile-dev-fund
 	make compile-oven
 	make compile-minter
 	make compile-savings-pool
 	make compile-stability-fund
+	make compile-token
 
 # TODO(keefertaylor): Write rules for all contracts, and add them here.
 test:
+	make test-dev-fund
 	make test-minter
 	make test-savings-pool
 	make test-stability-fund
+	make test-token	
 	make test-e2e
 
 ###### TESTS ###### 
+
+# Run tests for the Dev Fund contract
+test-dev-fund:
+	$(SMART_PY_CLI) test dev-fund.py $(OUT_DIR)
+	rm -rf $(OUT_DIR)
 
 # Run tests for the Minter contract
 test-minter:
@@ -38,12 +47,23 @@ test-stability-fund:
 	$(SMART_PY_CLI) test stability-fund.py $(OUT_DIR)
 	rm -rf $(OUT_DIR)
 
+# Run tests for the Token contract
+test-token:
+	$(SMART_PY_CLI) test token.py $(OUT_DIR)
+	rm -rf $(OUT_DIR)	
+
 # Run end to end tests
 test-e2e:
 	$(SMART_PY_CLI) test end-to-end-tests.py $(OUT_DIR)
 	rm -rf $(OUT_DIR)
 
 ###### COMPILE TARGETs ######
+
+# Compile the Dev Fund
+compile-dev-fund:
+	$(SMART_PY_CLI) compile dev-fund.py $(OUT_DIR)
+	cp $(OUT_DIR)/dev-fund/step_000_cont_0_contract.tz dev-fund.tz
+	rm -rf $(OUT_DIR)
 
 # Compile the Oven
 compile-oven:
@@ -67,4 +87,10 @@ compile-savings-pool:
 compile-stability-fund:
 	$(SMART_PY_CLI) compile stability-fund.py $(OUT_DIR)
 	cp $(OUT_DIR)/stability-fund/step_000_cont_0_contract.tz stability-fund.tz
+	rm -rf $(OUT_DIR)	
+
+# Compile the Token
+compile-token:
+	$(SMART_PY_CLI) compile token.py $(OUT_DIR)
+	cp $(OUT_DIR)/token/step_000_cont_0_contract.tz token.tz
 	rm -rf $(OUT_DIR)	

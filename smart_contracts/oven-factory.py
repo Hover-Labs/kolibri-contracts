@@ -1,8 +1,8 @@
 import smartpy as sp
 
-Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
-Errors = sp.import_script_from_url("file:common/errors.py")
-Oven = sp.import_script_from_url("file:oven.py")
+Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
+Errors = sp.io.import_script_from_url("file:common/errors.py")
+Oven = sp.io.import_script_from_url("file:oven.py")
 
 ################################################################
 # State Machine States.
@@ -167,8 +167,8 @@ if __name__ == "__main__":
     ################################################################
     ################################################################
 
-    Minter = sp.import_script_from_url("file:minter.py")
-    OvenRegistry = sp.import_script_from_url("file:oven-registry.py")
+    Minter = sp.io.import_script_from_url("file:minter.py")
+    OvenRegistry = sp.io.import_script_from_url("file:oven-registry.py")
 
     ################################################################
     # makeOven
