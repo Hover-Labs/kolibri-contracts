@@ -280,30 +280,30 @@ if __name__ == "__main__":
             scenario.verify(c1.data.balances[bob.address].balance == 9)
 
             # TODO(keefertaylor): Enable me
-            # scenario.h1("Views")
-            # scenario.h2("Balance")
-            # view_balance = Viewer(sp.TNat)
-            # scenario += view_balance
-            # scenario += c1.getBalance((alice.address, view_balance.typed))
-            # scenario.verify_equal(view_balance.data.last, sp.some(8))
+            scenario.h1("Views")
+            scenario.h2("Balance")
+            view_balance = Viewer(sp.TNat)
+            scenario += view_balance
+            c1.getBalance((alice.address, view_balance.typed.target))
+            scenario.verify_equal(view_balance.data.last, sp.some(8))
+            
+            scenario.h2("Administrator")
+            view_administrator = Viewer(sp.TAddress)
+            scenario += view_administrator
+            c1.getAdministrator((sp.unit, view_administrator.typed.target))
+            scenario.verify_equal(view_administrator.data.last, sp.some(admin.address))
 
-            # scenario.h2("Administrator")
-            # view_administrator = Viewer(sp.TAddress)
-            # scenario += view_administrator
-            # scenario += c1.getAdministrator((sp.unit, view_administrator.typed))
-            # scenario.verify_equal(view_administrator.data.last, sp.some(admin.address))
+            scenario.h2("Total Supply")
+            view_totalSupply = Viewer(sp.TNat)
+            scenario += view_totalSupply
+            c1.getTotalSupply((sp.unit, view_totalSupply.typed.target))
+            scenario.verify_equal(view_totalSupply.data.last, sp.some(17))
 
-            # scenario.h2("Total Supply")
-            # view_totalSupply = Viewer(sp.TNat)
-            # scenario += view_totalSupply
-            # scenario += c1.getTotalSupply((sp.unit, view_totalSupply.typed))
-            # scenario.verify_equal(view_totalSupply.data.last, sp.some(17))
-
-            # scenario.h2("Allowance")
-            # view_allowance = Viewer(sp.TNat)
-            # scenario += view_allowance
-            # scenario += c1.getAllowance((sp.record(owner = alice.address, spender = bob.address), view_allowance.typed))
-            # scenario.verify_equal(view_allowance.data.last, sp.some(1))
+            scenario.h2("Allowance")
+            view_allowance = Viewer(sp.TNat)
+            scenario += view_allowance
+            c1.getAllowance((sp.record(owner = alice.address, spender = bob.address), view_allowance.typed.target))
+            scenario.verify_equal(view_allowance.data.last, sp.some(1))
     
     # CHANGED: Additional tests added below this line.
 
