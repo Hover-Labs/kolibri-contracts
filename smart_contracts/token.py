@@ -286,7 +286,7 @@ if __name__ == "__main__":
             scenario += view_balance
             c1.getBalance((alice.address, view_balance.typed.target))
             scenario.verify_equal(view_balance.data.last, sp.some(8))
-            
+
             scenario.h2("Administrator")
             view_administrator = Viewer(sp.TAddress)
             scenario += view_administrator
