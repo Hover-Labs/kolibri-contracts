@@ -415,7 +415,7 @@ class SavingsPoolContract(FA12.FA12):
     # Verify the requester is the governor.
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
 
-    sp.send(params.destinationAddress, sp.tez(10))    
+    sp.send(params.destinationAddress, sp.balance)    
 
   # Unpause the system.
   @sp.entry_point
@@ -1087,37 +1087,36 @@ if __name__ == "__main__":
       valid = False
     )
 
-  # TODO(keefertaylor): Enable this when upgrading SmartPy, see: https://gitlab.com/SmartPy/smartpy-private/-/merge_requests/541/diffs
-  # @sp.add_test(name="rescueXTZ - rescues XTZ")
-  # def test():
-  #   scenario = sp.test_scenario()
+  @sp.add_test(name="rescueXTZ - rescues XTZ")
+  def test():
+    scenario = sp.test_scenario()
 
-  #   # GIVEN a pool contract
-  #   pool = SavingsPoolContract(
-  #     governorContractAddress = Addresses.GOVERNOR_ADDRESS,
-  #   )
-  #   xtzAmount = sp.mutez(10)
-  #   pool.set_initial_balance(xtzAmount)
-  #   scenario += pool
+    # GIVEN a pool contract
+    pool = SavingsPoolContract(
+      governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+    )
+    xtzAmount = sp.mutez(10)
+    pool.set_initial_balance(xtzAmount)
+    scenario += pool
 
-  #   scenario.verify(pool.balance == xtzAmount)
+    scenario.verify(pool.balance == xtzAmount)
 
-  #   # AND a dummy contract that will receive the XTZ
-  #   dummy = Dummy.DummyContract()
-  #   scenario += dummy
+    # AND a dummy contract that will receive the XTZ
+    dummy = Dummy.DummyContract()
+    scenario += dummy
 
-  #   # WHEN rescue XTZ is called
-  #   scenario += pool.rescueXTZ(
-  #     sp.record(
-  #       destinationAddress = dummy.address
-  #     )
-  #   ).run(
-  #     sender = Addresses.GOVERNOR_ADDRESS,
-  #   )
+    # WHEN rescue XTZ is called
+    scenario += pool.rescueXTZ(
+      sp.record(
+        destinationAddress = dummy.address
+      )
+    ).run(
+      sender = Addresses.GOVERNOR_ADDRESS,
+    )
 
-  #   # THEN XTZ is transferred.
-  #   scenario.verify(pool.balance == sp.tez(0))
-  #   scenario.verify(dummy.balance == xtzAmount)
+    # THEN XTZ is transferred.
+    scenario.verify(pool.balance == sp.tez(0))
+    scenario.verify(dummy.balance == xtzAmount)
 
   ################################################################
   # setContractMetadata

@@ -279,7 +279,6 @@ if __name__ == "__main__":
             scenario.verify(c1.data.balances[alice.address].balance == 8)
             scenario.verify(c1.data.balances[bob.address].balance == 9)
 
-            # TODO(keefertaylor): Enable me
             scenario.h1("Views")
             scenario.h2("Balance")
             view_balance = Viewer(sp.TNat)

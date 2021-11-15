@@ -10,8 +10,9 @@ all:
 # TODO(keefertaylor): Write rules for all contracts, and add them here.
 compile:
 	make compile-dev-fund
-	make compile-oven
 	make compile-minter
+	make compile-oven
+	make compile-oven-proxy
 	make compile-savings-pool
 	make compile-stability-fund
 	make compile-token
@@ -20,6 +21,8 @@ compile:
 test:
 	make test-dev-fund
 	make test-minter
+	make test-oven
+	make test-oven-proxy
 	make test-savings-pool
 	make test-stability-fund
 	make test-token	
@@ -35,6 +38,16 @@ test-dev-fund:
 # Run tests for the Minter contract
 test-minter:
 	$(SMART_PY_CLI) test minter.py $(OUT_DIR)
+	rm -rf $(OUT_DIR)
+
+# Run tests for the Oven contract
+test-oven:
+	$(SMART_PY_CLI) test oven.py $(OUT_DIR)
+	rm -rf $(OUT_DIR)
+
+# Run tests for the Oven Proxy contract
+test-oven-proxy:
+	$(SMART_PY_CLI) test oven-proxy.py $(OUT_DIR)
 	rm -rf $(OUT_DIR)
 
 # Run tests for the Savings Pool contract
@@ -65,16 +78,22 @@ compile-dev-fund:
 	cp $(OUT_DIR)/dev-fund/step_000_cont_0_contract.tz dev-fund.tz
 	rm -rf $(OUT_DIR)
 
+# Compile the Minter
+compile-minter:
+	$(SMART_PY_CLI) compile minter.py $(OUT_DIR)
+	cp $(OUT_DIR)/minter/step_000_cont_0_contract.tz minter.tz
+	rm -rf $(OUT_DIR)
+
 # Compile the Oven
 compile-oven:
 	$(SMART_PY_CLI) compile oven.py $(OUT_DIR)
 	cp $(OUT_DIR)/oven/step_000_cont_0_contract.tz oven.tz
 	rm -rf $(OUT_DIR)
 
-# Compile the minter
-compile-minter:
-	$(SMART_PY_CLI) compile minter.py $(OUT_DIR)
-	cp $(OUT_DIR)/minter/step_000_cont_0_contract.tz minter.tz
+# Compile the Oven Proxy
+compile-oven-proxy:
+	$(SMART_PY_CLI) compile oven-proxy.py $(OUT_DIR)
+	cp $(OUT_DIR)/oven-proxy/step_000_cont_0_contract.tz oven-proxy.tz
 	rm -rf $(OUT_DIR)
 
 # Compile the Savings Pool

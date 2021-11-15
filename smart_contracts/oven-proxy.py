@@ -344,67 +344,65 @@ if __name__ == "__main__":
     # withdraw
     ################################################################
 
-    # TODO(keefertaylor): Enable when SmartPy supports handling `failwith` in other contracts with `valid = False`
-    # SEE: https://t.me/SmartPy_io/6538@
-    # sp.add_test(name="withdraw - fails when not called from oven")
-    # def test():
-    #     scenario = sp.test_scenario()
+    sp.add_test(name="withdraw - fails when not called from oven")
+    def test():
+        scenario = sp.test_scenario()
 
-    #     # AND a faked Oracle contract
-    #     fakeHarbingerValue = sp.nat(8)
-    #     harbinger = FakeHarbinger.FakeHarbingerContract(fakeHarbingerValue, sp.timestamp_from_utc_now(), "XTZ-USD")
-    #     scenario += harbinger
-    #     oracle = Oracle.OracleContract(
-    #         harbingerContractAddress = harbinger.address
-    #     )
-    #     scenario += oracle
+        # AND a faked Oracle contract
+        fakeHarbingerValue = sp.nat(8)
+        harbinger = FakeHarbinger.FakeHarbingerContract(fakeHarbingerValue, sp.timestamp_from_utc_now(), "XTZ-USD")
+        scenario += harbinger
+        oracle = Oracle.OracleContract(
+            harbingerContractAddress = harbinger.address
+        )
+        scenario += oracle
 
-    #     # GIVEN an OvenRegistry contract
-    #     ovenFactoryAddress = Addresses.OVEN_FACTORY_ADDRESS
-    #     ovenRegistry = OvenRegistry.OvenRegistryContract(
-    #         ovenFactoryContractAddress = ovenFactoryAddress
-    #     )
-    #     scenario += ovenRegistry
+        # GIVEN an OvenRegistry contract
+        ovenFactoryAddress = Addresses.OVEN_FACTORY_ADDRESS
+        ovenRegistry = OvenRegistry.OvenRegistryContract(
+            ovenFactoryContractAddress = ovenFactoryAddress
+        )
+        scenario += ovenRegistry
 
-    #     # AND an oven which is registered
-    #     ovenAddress = Addresses.OVEN_ADDRESS
-    #     scenario += ovenRegistry.addOven((ovenAddress, ovenAddress)).run(
-    #         sender = ovenFactoryAddress
-    #     )
+        # AND an oven which is registered
+        ovenAddress = Addresses.OVEN_ADDRESS
+        scenario += ovenRegistry.addOven((ovenAddress, ovenAddress)).run(
+            sender = ovenFactoryAddress
+        )
 
-    #     # AND a mock minter contract
-    #     minter = MockMinter.MockMinterContract()
-    #     scenario += minter
+        # AND a mock minter contract
+        minter = MockMinter.MockMinterContract()
+        scenario += minter
 
-    #     # AND an OvenProxy
-    #     ovenProxy = OvenProxyContract(
-    #         ovenRegistryContractAddress = ovenRegistry.address,
-    #         minterContractAddress = minter.address,
-    #         oracleContractAddress = oracle.address
-    #     )
-    #     scenario += ovenProxy
+        # AND an OvenProxy
+        ovenProxy = OvenProxyContract(
+            ovenRegistryContractAddress = ovenRegistry.address,
+            minterContractAddress = minter.address,
+            oracleContractAddress = oracle.address
+        )
+        scenario += ovenProxy
 
 
-    #     scenario += ovenRegistry.isOven(ovenAddress)
-    #     scenario += ovenRegistry.isOven(ovenFactoryAddress).run(
-    #         valid = False
-    #     )
+        scenario += ovenRegistry.isOven(ovenAddress)
+        scenario += ovenRegistry.isOven(ovenFactoryAddress).run(
+            valid = False
+        )
 
-    #     # WHEN withdraw is called by someone other than an oven THEN the call fails.
-    #     ownerAddress = sp.address("tz1YfB2H1NoZVUq4heHqrVX4oVp99yz8gwNq")
-    #     ovenBalance = sp.nat(1)
-    #     borrowedTokens = sp.nat(2)
-    #     isLiquidated = False
-    #     stabilityFeeTokens = sp.int(3)
-    #     interestIndex = sp.int(4)
-    #     mutezToWithdraw = sp.mutez(5)
-    #     param = (ovenAddress, (ownerAddress, (ovenBalance, (borrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, mutezToWithdraw)))))))
-    #     amount = sp.mutez(1)
-    #     scenario += ovenProxy.withdraw(param).run(
-    #         sender = ovenFactoryAddress,
-    #         amount = amount,
-    #         valid = False
-    #     )   
+        # WHEN withdraw is called by someone other than an oven THEN the call fails.
+        ownerAddress = sp.address("tz1YfB2H1NoZVUq4heHqrVX4oVp99yz8gwNq")
+        ovenBalance = sp.nat(1)
+        borrowedTokens = sp.nat(2)
+        isLiquidated = False
+        stabilityFeeTokens = sp.int(3)
+        interestIndex = sp.int(4)
+        mutezToWithdraw = sp.mutez(5)
+        param = (ovenAddress, (ownerAddress, (ovenBalance, (borrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, mutezToWithdraw)))))))
+        amount = sp.mutez(1)
+        scenario += ovenProxy.withdraw(param).run(
+            sender = ovenFactoryAddress,
+            amount = amount,
+            valid = False
+        )   
 
     @sp.add_test(name="withdraw - fails when paused")
     def test():
@@ -587,61 +585,59 @@ if __name__ == "__main__":
     # liquidate
     ################################################################
 
-    # TODO(keefertaylor): Enable when SmartPy supports handling `failwith` in other contracts with `valid = False`
-    # SEE: https://t.me/SmartPy_io/6538# 
-    # @sp.add_test(name="liquidate - fails when not called from oven")
-    # def test():
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="liquidate - fails when not called from oven")
+    def test():
+        scenario = sp.test_scenario()
 
-    #     # GIVEN an OvenRegistry contract
-    #     ovenFactoryAddress = Addresses.OVEN_FACTORY_ADDRESS
-    #     ovenRegistry = OvenRegistry.OvenRegistryContract(
-    #         ovenFactoryContractAddress = ovenFactoryAddress
-    #     )
-    #     scenario += ovenRegistry
+        # GIVEN an OvenRegistry contract
+        ovenFactoryAddress = Addresses.OVEN_FACTORY_ADDRESS
+        ovenRegistry = OvenRegistry.OvenRegistryContract(
+            ovenFactoryContractAddress = ovenFactoryAddress
+        )
+        scenario += ovenRegistry
 
-    #     # AND an oven which is registered
-    #     ovenAddress = Addresses.OVEN_ADDRESS
-    #     scenario += ovenRegistry.addOven((ovenAddress, ovenAddress)).run(
-    #         sender = ovenFactoryAddress
-    #     )
+        # AND an oven which is registered
+        ovenAddress = Addresses.OVEN_ADDRESS
+        scenario += ovenRegistry.addOven((ovenAddress, ovenAddress)).run(
+            sender = ovenFactoryAddress
+        )
 
-    #     # AND a mock minter contract
-    #     minter = MockMinter.MockMinterContract()
-    #     scenario += minter
+        # AND a mock minter contract
+        minter = MockMinter.MockMinterContract()
+        scenario += minter
 
-    #     # AND a faked Oracle contract
-    #     fakeHarbingerValue = sp.nat(8)
-    #     harbinger = FakeHarbinger.FakeHarbingerContract(fakeHarbingerValue, sp.timestamp_from_utc_now(), "XTZ-USD")
-    #     scenario += harbinger
-    #     oracle = Oracle.OracleContract(
-    #         harbingerContractAddress = harbinger.address
-    #     )
-    #     scenario += oracle
+        # AND a faked Oracle contract
+        fakeHarbingerValue = sp.nat(8)
+        harbinger = FakeHarbinger.FakeHarbingerContract(fakeHarbingerValue, sp.timestamp_from_utc_now(), "XTZ-USD")
+        scenario += harbinger
+        oracle = Oracle.OracleContract(
+            harbingerContractAddress = harbinger.address
+        )
+        scenario += oracle
 
-    #     # AND an OvenProxy
-    #     ovenProxy = OvenProxyContract(
-    #         ovenRegistryContractAddress = ovenRegistry.address,
-    #         minterContractAddress = minter.address,
-    #         oracleContractAddress = oracle.address
-    #     )
-    #     scenario += ovenProxy
+        # AND an OvenProxy
+        ovenProxy = OvenProxyContract(
+            ovenRegistryContractAddress = ovenRegistry.address,
+            minterContractAddress = minter.address,
+            oracleContractAddress = oracle.address
+        )
+        scenario += ovenProxy
 
-    #     # WHEN borrow is called by someone other than an oven THEN the call fails.
-    #     ownerAddress = sp.address("tz1YfB2H1NoZVUq4heHqrVX4oVp99yz8gwNq")
-    #     ovenBalance = sp.nat(1)
-    #     borrowedTokens = sp.nat(2)
-    #     isLiquidated = False
-    #     stabilityFeeTokens = sp.int(3)
-    #     interestIndex = sp.int(4)
-    #     liquidatorAddress = Addresses.LIQUIDATOR_ADDRESS
-    #     param = (ovenAddress, (ownerAddress, (ovenBalance, (borrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress)))))))
-    #     amount = sp.mutez(1)
-    #     scenario += ovenProxy.liquidate(param).run(
-    #         sender = ownerAddress,
-    #         amount = amount,
-    #         valid = False
-    #     )   
+        # WHEN borrow is called by someone other than an oven THEN the call fails.
+        ownerAddress = sp.address("tz1YfB2H1NoZVUq4heHqrVX4oVp99yz8gwNq")
+        ovenBalance = sp.nat(1)
+        borrowedTokens = sp.nat(2)
+        isLiquidated = False
+        stabilityFeeTokens = sp.int(3)
+        interestIndex = sp.int(4)
+        liquidatorAddress = Addresses.LIQUIDATOR_ADDRESS
+        param = (ovenAddress, (ownerAddress, (ovenBalance, (borrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress)))))))
+        amount = sp.mutez(1)
+        scenario += ovenProxy.liquidate(param).run(
+            sender = ownerAddress,
+            amount = amount,
+            valid = False
+        )   
 
     @sp.add_test(name="liquidate - fails when paused")
     def test():
@@ -824,61 +820,59 @@ if __name__ == "__main__":
     # borrow
     ################################################################
 
-    # TODO(keefertaylor): Enable when SmartPy supports handling `failwith` in other contracts with `valid = False`
-    # SEE: https://t.me/SmartPy_io/6538
-    # @sp.add_test(name="borrow - fails when not called from oven")
-    # def test():
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="borrow - fails when not called from oven")
+    def test():
+        scenario = sp.test_scenario()
 
-    #     # GIVEN an OvenRegistry contract
-    #     ovenFactoryAddress = Addresses.OVEN_FACTORY_ADDRESS
-    #     ovenRegistry = OvenRegistry.OvenRegistryContract(
-    #         ovenFactoryContractAddress = ovenFactoryAddress
-    #     )
-    #     scenario += ovenRegistry
+        # GIVEN an OvenRegistry contract
+        ovenFactoryAddress = Addresses.OVEN_FACTORY_ADDRESS
+        ovenRegistry = OvenRegistry.OvenRegistryContract(
+            ovenFactoryContractAddress = ovenFactoryAddress
+        )
+        scenario += ovenRegistry
 
-    #     # AND an oven which is registered
-    #     ovenAddress = Addresses.OVEN_ADDRESS
-    #     scenario += ovenRegistry.addOven((ovenAddress, ovenAddress)).run(
-    #         sender = ovenFactoryAddress
-    #     )
+        # AND an oven which is registered
+        ovenAddress = Addresses.OVEN_ADDRESS
+        scenario += ovenRegistry.addOven((ovenAddress, ovenAddress)).run(
+            sender = ovenFactoryAddress
+        )
 
-    #     # AND a mock minter contract
-    #     minter = MockMinter.MockMinterContract()
-    #     scenario += minter
+        # AND a mock minter contract
+        minter = MockMinter.MockMinterContract()
+        scenario += minter
 
-    #     # AND a faked Oracle contract
-    #     fakeHarbingerValue = sp.nat(8)
-    #     harbinger = FakeHarbinger.FakeHarbingerContract(fakeHarbingerValue, sp.timestamp_from_utc_now(), "XTZ-USD")
-    #     scenario += harbinger
-    #     oracle = Oracle.OracleContract(
-    #         harbingerContractAddress = harbinger.address
-    #     )
-    #     scenario += oracle
+        # AND a faked Oracle contract
+        fakeHarbingerValue = sp.nat(8)
+        harbinger = FakeHarbinger.FakeHarbingerContract(fakeHarbingerValue, sp.timestamp_from_utc_now(), "XTZ-USD")
+        scenario += harbinger
+        oracle = Oracle.OracleContract(
+            harbingerContractAddress = harbinger.address
+        )
+        scenario += oracle
 
-    #     # AND an OvenProxy
-    #     ovenProxy = OvenProxyContract(
-    #         ovenRegistryContractAddress = ovenRegistry.address,
-    #         minterContractAddress = minter.address,
-    #         oracleContractAddress = oracle.address
-    #     )
-    #     scenario += ovenProxy
+        # AND an OvenProxy
+        ovenProxy = OvenProxyContract(
+            ovenRegistryContractAddress = ovenRegistry.address,
+            minterContractAddress = minter.address,
+            oracleContractAddress = oracle.address
+        )
+        scenario += ovenProxy
 
-    #     # WHEN borrow is called by someone other than an oven THEN the call fails.
-    #     ownerAddress = sp.address("tz1YfB2H1NoZVUq4heHqrVX4oVp99yz8gwNq")
-    #     ovenBalance = sp.nat(1)
-    #     borrowedTokens = sp.nat(2)
-    #     isLiquidated = False
-    #     stabilityFeeTokens = sp.int(3)
-    #     interestIndex = sp.int(4)
-    #     tokensToBorrow = sp.nat(5)
-    #     param = (ovenAddress, (ownerAddress, (ovenBalance, (borrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, tokensToBorrow)))))))
-    #     amount = sp.mutez(1)
-    #     scenario += ovenProxy.borrow(param).run(
-    #         sender = ownerAddress,
-    #         amount = amount,
-    #         valid = False
-    #     )   
+        # WHEN borrow is called by someone other than an oven THEN the call fails.
+        ownerAddress = sp.address("tz1YfB2H1NoZVUq4heHqrVX4oVp99yz8gwNq")
+        ovenBalance = sp.nat(1)
+        borrowedTokens = sp.nat(2)
+        isLiquidated = False
+        stabilityFeeTokens = sp.int(3)
+        interestIndex = sp.int(4)
+        tokensToBorrow = sp.nat(5)
+        param = (ovenAddress, (ownerAddress, (ovenBalance, (borrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, tokensToBorrow)))))))
+        amount = sp.mutez(1)
+        scenario += ovenProxy.borrow(param).run(
+            sender = ownerAddress,
+            amount = amount,
+            valid = False
+        )   
 
     @sp.add_test(name="borrow - fails when paused")
     def test():

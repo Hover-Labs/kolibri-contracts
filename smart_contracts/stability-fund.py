@@ -275,39 +275,37 @@ if __name__ == "__main__":
           valid = False,
       )
 
-    # TODO(keefertaylor): Enable when SmartPy supports handling `failwith` in other contracts with `valid = False`
-    # SEE: https://t.me/SmartPy_io/6538@sp.add_test(name="oven-factory-withdraw - fails when not called from oven")
-    # @sp.add_test(name="liquidate - fails if not a trusted oven")
-    # def test():
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="liquidate - fails if not a trusted oven")
+    def test():
+        scenario = sp.test_scenario()
 
-    #     # GIVEN an OvenRegistry contract
-    #     ovenFactoryAddress = Addresses.OVEN_FACTORY_ADDRESS
-    #     ovenRegistry = OvenRegistry.OvenRegistryContract(
-    #         ovenFactoryContractAddress = ovenFactoryAddress
-    #     )
-    #     scenario += ovenRegistry
+        # GIVEN an OvenRegistry contract
+        ovenFactoryAddress = Addresses.OVEN_FACTORY_ADDRESS
+        ovenRegistry = OvenRegistry.OvenRegistryContract(
+            ovenFactoryContractAddress = ovenFactoryAddress
+        )
+        scenario += ovenRegistry
 
-    #     # AND an oven which is registered
-    #     ovenAddress = Addresses.OVEN_ADDRESS
-    #     scenario += ovenRegistry.addOven((ovenAddress, ovenAddress)).run(
-    #         sender = ovenFactoryAddress
-    #     )
+        # AND an oven which is registered
+        ovenAddress = Addresses.OVEN_ADDRESS
+        scenario += ovenRegistry.addOven((ovenAddress, ovenAddress)).run(
+            sender = ovenFactoryAddress
+        )
 
-    #     # AND a StabilityFund contract
-    #     administrator = Addresses.FUND_ADMINISTRATOR_ADDRESS
-    #     fund = StabilityFundContract(
-    #         administratorContractAddress = administrator,
-    #         ovenRegistryContractAddress = ovenRegistry.address
-    #     )
-    #     scenario += fund
+        # AND a StabilityFund contract
+        administrator = Addresses.FUND_ADMINISTRATOR_ADDRESS
+        fund = StabilityFundContract(
+            administratorContractAddress = administrator,
+            ovenRegistryContractAddress = ovenRegistry.address
+        )
+        scenario += fund
 
-    #     # WHEN liquidate is passed an address which is not an oven THEN the call fails.
-    #     notOvenAddress = Addresses.NULL_ADDRESS
-    #     scenario += fund.liquidate(notOvenAddress).run(
-    #         sender = administrator,
-    #         valid = False,
-    #     )
+        # WHEN liquidate is passed an address which is not an oven THEN the call fails.
+        notOvenAddress = Addresses.NULL_ADDRESS
+        scenario += fund.liquidate(notOvenAddress).run(
+            sender = administrator,
+            valid = False,
+        )
 
     ################################################################
     # setOvenRegistryContract

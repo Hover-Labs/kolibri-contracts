@@ -1468,71 +1468,69 @@ if __name__ == "__main__":
         # THEN the liquidator received the collateral in the oven.
         scenario.verify(stabilityFund.balance == ovenBalanceMutez)                
 
-    # TODO(keefertaylor): Enable when SmartPy supports handling `failwith` in other contracts with `valid = False`
-    # SEE: https://t.me/SmartPy_io/6538
-    # @sp.add_test(name="liquidate - fails when liquidator has too few tokens")
-    # def test():
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="liquidate - fails when liquidator has too few tokens")
+    def test():
+        scenario = sp.test_scenario()
 
-    #     # GIVEN an OvenProxy contract
-    #     ovenProxy = MockOvenProxy.MockOvenProxyContract()
-    #     scenario += ovenProxy
+        # GIVEN an OvenProxy contract
+        ovenProxy = MockOvenProxy.MockOvenProxyContract()
+        scenario += ovenProxy
         
-    #     # AND a Token contract.
-        # governorAddress = Addresses.GOVERNOR_ADDRESS
-    #     token = Token.FA12(
-    #         admin = governorAddress
-    #     )
-    #     scenario += token
+        # AND a Token contract.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
 
-    #     # AND a Minter contract
-    #     minter = MinterContract(
-    #         ovenProxyContractAddress = ovenProxy.address,
-    #         tokenContractAddress = token.address
-    #     )
-    #     scenario += minter
+        # AND a Minter contract
+        minter = MinterContract(
+            ovenProxyContractAddress = ovenProxy.address,
+            tokenContractAddress = token.address
+        )
+        scenario += minter
 
-    #     # AND the Minter is the Token administrator
-    #     scenario += token.setAdministrator(minter.address).run(
-    #         sender = governorAddress
-    #     )    
+        # AND the Minter is the Token administrator
+        scenario += token.setAdministrator(minter.address).run(
+            sender = governorAddress
+        )    
 
-    #     # AND a dummy contract that acts as the liquidator.
-    #     liquidator = DummyContract.DummyContract()
-    #     scenario += liquidator
+        # AND a dummy contract that acts as the liquidator.
+        liquidator = DummyContract.DummyContract()
+        scenario += liquidator
 
-    #     # AND the liquidator has $1 of tokens.
-    #     ovenOwnerTokens = 1 * Constants.PRECISION 
-    #     mintForOvenOwnerParam = sp.record(address = liquidator.address, value = ovenOwnerTokens)
-    #     scenario += token.mint(mintForOvenOwnerParam).run(
-    #         sender = minter.address
-    #     )
+        # AND the liquidator has $1 of tokens.
+        ovenOwnerTokens = 1 * Constants.PRECISION 
+        mintForOvenOwnerParam = sp.record(address = liquidator.address, value = ovenOwnerTokens)
+        scenario += token.mint(mintForOvenOwnerParam).run(
+            sender = minter.address
+        )
 
-    #     # WHEN liquidating an undecollateralized requires more tokens than the liquidator has.
-    #     ovenBalance = Constants.PRECISION # 1 XTZ
-    #     ovenBalanceMutez = sp.mutez(1000000) # 1 XTZ
+        # WHEN liquidating an undecollateralized requires more tokens than the liquidator has.
+        ovenBalance = Constants.PRECISION # 1 XTZ
+        ovenBalanceMutez = sp.mutez(1000000) # 1 XTZ
 
-    #     xtzPrice = Constants.PRECISION # 1 XTZ / $1
+        xtzPrice = Constants.PRECISION # 1 XTZ / $1
 
-    #     ovenBorrowedTokens = 2 * Constants.PRECISION # $2 kUSD
+        ovenBorrowedTokens = 2 * Constants.PRECISION # $2 kUSD
 
-    #     ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
-    #     ovenAddress = Addresses.OVEN_ADDRESS
-    #     isLiquidated = False
+        ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
+        ovenAddress = Addresses.OVEN_ADDRESS
+        isLiquidated = False
 
-    #     stabilityFeeTokens = sp.to_int(Constants.PRECISION)
-    #     interestIndex = sp.to_int(Constants.PRECISION)
+        stabilityFeeTokens = sp.to_int(Constants.PRECISION)
+        interestIndex = sp.to_int(Constants.PRECISION)
 
-    #     liquidatorAddress = liquidator.address
+        liquidatorAddress = liquidator.address
 
-    #     # THEN the call fails.
-    #     param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
-    #     scenario += minter.liquidate(param).run(
-    #         sender = ovenProxy.address,
-    #         amount = ovenBalanceMutez,
-    #         now = sp.timestamp_from_utc_now(),
-    #         valid = False
-    #     )
+        # THEN the call fails.
+        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
+        scenario += minter.liquidate(param).run(
+            sender = ovenProxy.address,
+            amount = ovenBalanceMutez,
+            now = sp.timestamp_from_utc_now(),
+            valid = False
+        )
 
     @sp.add_test(name="liquidate - fails if oven is properly collateralized")
     def test():
@@ -1901,62 +1899,60 @@ if __name__ == "__main__":
         # AND the oven proxy received the balance of the oven.
         scenario.verify(ovenProxy.balance == ovenBalanceMutez)
 
-    # TODO(keefertaylor): Enable when SmartPy supports handling `failwith` in other contracts with `valid = False`
-    # SEE: https://t.me/SmartPy_io/6538
-    # @sp.add_test(name="repay - repays more tokens than owned")
-    # def test():
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="repay - repays more tokens than owned")
+    def test():
+        scenario = sp.test_scenario()
 
-    #     # GIVEN a governor, oven proxy and oven owner address.
-        # governorAddress = Addresses.GOVERNOR_ADDRESS
-    #     ovenProxyAddress = Addresses.OVEN_PROXY_ADDRESS
-    #     ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
+        # GIVEN a governor, oven proxy and oven owner address.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        ovenProxyAddress = Addresses.OVEN_PROXY_ADDRESS
+        ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
 
-    #     # AND a Token contract.
-    #     token = Token.FA12(
-    #         admin = governorAddress
-    #     )
-    #     scenario += token
+        # AND a Token contract.
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
 
-    #     # AND a Minter contract
-    #     minter = MinterContract(
-    #         ovenProxyContractAddress = ovenProxyAddress,
-    #         governorContractAddress = governorAddress,
-    #         tokenContractAddress = token.address,
-    #         stabilityFee = sp.nat(0),
-    #     )
-    #     scenario += minter
+        # AND a Minter contract
+        minter = MinterContract(
+            ovenProxyContractAddress = ovenProxyAddress,
+            governorContractAddress = governorAddress,
+            tokenContractAddress = token.address,
+            stabilityFee = sp.nat(0),
+        )
+        scenario += minter
 
-    #     # AND the Minter is the Token administrator
-    #     scenario += token.setAdministrator(minter.address).run(
-    #         sender = governorAddress
-    #     )
+        # AND the Minter is the Token administrator
+        scenario += token.setAdministrator(minter.address).run(
+            sender = governorAddress
+        )
 
-    #     # AND the oven owner has 1 tokens.
-    #     ovenOwnerTokens = sp.nat(1)
-    #     mintForOvenOwnerParam = sp.record(address = ovenOwnerAddress, value = ovenOwnerTokens)
-    #     scenario += token.mint(mintForOvenOwnerParam).run(
-    #         sender = minter.address
-    #     )
+        # AND the oven owner has 1 tokens.
+        ovenOwnerTokens = sp.nat(1)
+        mintForOvenOwnerParam = sp.record(address = ovenOwnerAddress, value = ovenOwnerTokens)
+        scenario += token.mint(mintForOvenOwnerParam).run(
+            sender = minter.address
+        )
 
-    #     # WHEN repay is called with for an amount greater than the amount owned THEN the call fails.
-    #     ovenAddress = Addresses.OVEN_ADDRESS
-    #     ovenBalance = Constants.PRECISION # 1 XTZ
-    #     ovenBalanceMutez = sp.mutez(1000000) # 1 XTZ
-    #     ovenBorrowedTokens = sp.nat(12)
-    #     isLiquidated = False
-    #     stabilityFeeTokens = sp.int(5)
-    #     interestIndex = sp.to_int(Constants.PRECISION)
+        # WHEN repay is called with for an amount greater than the amount owned THEN the call fails.
+        ovenAddress = Addresses.OVEN_ADDRESS
+        ovenBalance = Constants.PRECISION # 1 XTZ
+        ovenBalanceMutez = sp.mutez(1000000) # 1 XTZ
+        ovenBorrowedTokens = sp.nat(12)
+        isLiquidated = False
+        stabilityFeeTokens = sp.int(5)
+        interestIndex = sp.to_int(Constants.PRECISION)
 
-    #     tokensToRepay = 2 * ovenOwnerTokens
+        tokensToRepay = 2 * ovenOwnerTokens
 
-    #     param = (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, tokensToRepay)))))))
-    #     scenario += minter.repay(param).run(
-    #         sender = ovenProxyAddress,
-    #         amount = ovenBalanceMutez,
-    #         now = sp.timestamp_from_utc_now(),
-    #         valid = False
-    #     )
+        param = (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, tokensToRepay)))))))
+        scenario += minter.repay(param).run(
+            sender = ovenProxyAddress,
+            amount = ovenBalanceMutez,
+            now = sp.timestamp_from_utc_now(),
+            valid = False
+        )
 
     @sp.add_test(name="repay - repays greater amount than owed")
     def test():
