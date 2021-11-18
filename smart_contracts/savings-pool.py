@@ -483,18 +483,18 @@ if __name__ == "__main__":
   # Test Helpers
   ################################################################
 
-  # Tests sub_entry_points
+  # Tests the Accrue Interest sub_entry_point
   # See: https://t.me/SmartPy_io/9155
-  class Tester(sp.Contract):
+  class AccrueInterestTester(sp.Contract):
     def __init__(
       self,
-      contractEntrypoint,
+      poolContract,
       interestRate,
       lastInterestCompoundTime,
       stabilityFundContractAddress,
       underlyingBalance
     ):
-      self.contractEntrypoint = contractEntrypoint
+      self.contractEntrypoint = poolContract.accrueInterest
       self.init(
         result = sp.none, 
         interestRate = interestRate,
@@ -525,8 +525,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -556,8 +556,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -587,8 +587,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -618,8 +618,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -651,8 +651,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -684,8 +684,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -717,8 +717,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -750,8 +750,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -806,8 +806,8 @@ if __name__ == "__main__":
     )
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = stabilityFund.address,
@@ -879,8 +879,8 @@ if __name__ == "__main__":
     )
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = stabilityFund.address,
@@ -952,8 +952,8 @@ if __name__ == "__main__":
     )
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = stabilityFund.address,
@@ -1025,8 +1025,8 @@ if __name__ == "__main__":
     )
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = stabilityFund.address,
