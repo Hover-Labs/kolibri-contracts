@@ -1,9 +1,9 @@
 import smartpy as sp
 
-Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
-Constants = sp.import_script_from_url("file:common/constants.py")
-Errors = sp.import_script_from_url("file:common/errors.py")
-OvenApi = sp.import_script_from_url("file:common/oven-api.py")
+Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
+Constants = sp.io.import_script_from_url("file:common/constants.py")
+Errors = sp.io.import_script_from_url("file:common/errors.py")
+OvenApi = sp.io.import_script_from_url("file:common/oven-api.py")
 
 ################################################################
 # Contract
@@ -106,9 +106,7 @@ class OvenContract(sp.Contract):
 
     # Note this entrypoint is the 'default' point, but semantically it represents the 'deposit' function.
     @sp.entry_point
-    def default(self, unit):
-        sp.set_type(unit, sp.TUnit)
-
+    def default(self):
         # Convert mutez to 10^-18 scale.
         normalizedBalance = sp.fst(sp.ediv(sp.balance, sp.mutez(1)).open_some()) * Constants.MUTEZ_TO_KOLIBRI_CONVERSION
 
@@ -179,7 +177,7 @@ if __name__ == "__main__":
     ################################################################
     ################################################################
 
-    MockOvenProxy = sp.import_script_from_url("file:test-helpers/mock-oven-proxy.py")
+    MockOvenProxy = sp.io.import_script_from_url("file:test-helpers/mock-oven-proxy.py")
 
     ################################################################
     # Borrow
@@ -571,9 +569,10 @@ if __name__ == "__main__":
 
         # WHEN setDelegate is called by someone other than the owner THEN the invocation fails.
         notOwner = Addresses.NULL_ADDRESS
-        delegate = sp.some(sp.key_hash("tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf"))
+        delegate = sp.some(Addresses.BAKER_KEY_HASH)
         scenario += contract.setDelegate(delegate).run(
             sender = notOwner,
+            voting_powers = Addresses.VOTING_POWERS,
             valid = False
         )
 
@@ -589,9 +588,10 @@ if __name__ == "__main__":
         scenario += contract
 
         # WHEN setDelegate is called by the owner
-        delegate = sp.some(sp.key_hash("tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf"))
+        delegate = sp.some(Addresses.BAKER_KEY_HASH)
         scenario += contract.setDelegate(delegate).run(
             sender = owner,
+            voting_powers = Addresses.VOTING_POWERS
         )
 
         # THEN the delegate is updated.
@@ -664,3 +664,5 @@ if __name__ == "__main__":
         scenario.verify(contract.data.stabilityFeeTokens == stabilityFeeTokens)
         scenario.verify(contract.data.interestIndex == interestIndex)
         scenario.verify(contract.data.isLiquidated == isLiquidated)
+
+    sp.add_compilation_target("oven", OvenContract())

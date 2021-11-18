@@ -1,7 +1,7 @@
 import smartpy as sp
 
-Constants = sp.import_script_from_url("file:common/constants.py")
-Token = sp.import_script_from_url("file:token.py")
+Constants = sp.io.import_script_from_url("file:common/constants.py")
+Token = sp.io.import_script_from_url("file:token.py")
 
 ################################################################
 ################################################################
@@ -20,9 +20,9 @@ WAITING_DEPOSIT = 3
 ################################################################
 ################################################################
 
-Addresses = sp.import_script_from_url("file:./test-helpers/addresses.py")
-Errors = sp.import_script_from_url("file:./common/errors.py")
-FA12 = sp.import_script_from_url("file:./fa12.py")
+Addresses = sp.io.import_script_from_url("file:./test-helpers/addresses.py")
+Errors = sp.io.import_script_from_url("file:./common/errors.py")
+FA12 = sp.io.import_script_from_url("file:./fa12.py")
 
 class SavingsPoolContract(FA12.FA12):
   def __init__(
@@ -81,7 +81,7 @@ class SavingsPoolContract(FA12.FA12):
       tvalue = sp.TRecord(token_id = sp.TNat, token_info = sp.TMap(sp.TString, sp.TBytes))
     )
 
-    metadata_data = sp.bytes_of_string('{ "name": "Interest Bearing kUSD",  "description": "Interest Bearing kUSD",  "authors": ["Hover Labs <hello@hover.engineering>"],  "homepage":  "https://kolibri.finance", "interfaces": [ "TZIP-007-2021-01-29"] }')
+    metadata_data = sp.utils.bytes_of_string('{ "name": "Interest Bearing kUSD",  "description": "Interest Bearing kUSD",  "authors": ["Hover Labs <hello@hover.engineering>"],  "homepage":  "https://kolibri.finance", "interfaces": [ "TZIP-007-2021-01-29"] }')
     metadata = sp.big_map(
       l = {
         "": sp.bytes('0x74657a6f732d73746f726167653a64617461'), # "tezos-storage:data"
@@ -415,7 +415,7 @@ class SavingsPoolContract(FA12.FA12):
     # Verify the requester is the governor.
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
 
-    sp.send(params.destinationAddress, sp.tez(10))    
+    sp.send(params.destinationAddress, sp.balance)    
 
   # Unpause the system.
   @sp.entry_point
@@ -474,10 +474,10 @@ class SavingsPoolContract(FA12.FA12):
 # Only run tests if this file is main.
 if __name__ == "__main__":
 
-  Dummy = sp.import_script_from_url("file:./test-helpers/dummy-contract.py")
-  Oven = sp.import_script_from_url("file:./oven.py")
-  StabilityFund = sp.import_script_from_url("file:./stability-fund.py")
-  Token = sp.import_script_from_url("file:./token.py")
+  Dummy = sp.io.import_script_from_url("file:./test-helpers/dummy-contract.py")
+  Oven = sp.io.import_script_from_url("file:./oven.py")
+  StabilityFund = sp.io.import_script_from_url("file:./stability-fund.py")
+  Token = sp.io.import_script_from_url("file:./token.py")
 
   ################################################################
   # Test Helpers
@@ -1087,37 +1087,36 @@ if __name__ == "__main__":
       valid = False
     )
 
-  # TODO(keefertaylor): Enable this when upgrading SmartPy, see: https://gitlab.com/SmartPy/smartpy-private/-/merge_requests/541/diffs
-  # @sp.add_test(name="rescueXTZ - rescues XTZ")
-  # def test():
-  #   scenario = sp.test_scenario()
+  @sp.add_test(name="rescueXTZ - rescues XTZ")
+  def test():
+    scenario = sp.test_scenario()
 
-  #   # GIVEN a pool contract
-  #   pool = SavingsPoolContract(
-  #     governorContractAddress = Addresses.GOVERNOR_ADDRESS,
-  #   )
-  #   xtzAmount = sp.mutez(10)
-  #   pool.set_initial_balance(xtzAmount)
-  #   scenario += pool
+    # GIVEN a pool contract
+    pool = SavingsPoolContract(
+      governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+    )
+    xtzAmount = sp.mutez(10)
+    pool.set_initial_balance(xtzAmount)
+    scenario += pool
 
-  #   scenario.verify(pool.balance == xtzAmount)
+    scenario.verify(pool.balance == xtzAmount)
 
-  #   # AND a dummy contract that will receive the XTZ
-  #   dummy = Dummy.DummyContract()
-  #   scenario += dummy
+    # AND a dummy contract that will receive the XTZ
+    dummy = Dummy.DummyContract()
+    scenario += dummy
 
-  #   # WHEN rescue XTZ is called
-  #   scenario += pool.rescueXTZ(
-  #     sp.record(
-  #       destinationAddress = dummy.address
-  #     )
-  #   ).run(
-  #     sender = Addresses.GOVERNOR_ADDRESS,
-  #   )
+    # WHEN rescue XTZ is called
+    scenario += pool.rescueXTZ(
+      sp.record(
+        destinationAddress = dummy.address
+      )
+    ).run(
+      sender = Addresses.GOVERNOR_ADDRESS,
+    )
 
-  #   # THEN XTZ is transferred.
-  #   scenario.verify(pool.balance == sp.tez(0))
-  #   scenario.verify(dummy.balance == xtzAmount)
+    # THEN XTZ is transferred.
+    scenario.verify(pool.balance == sp.tez(0))
+    scenario.verify(dummy.balance == xtzAmount)
 
   ################################################################
   # setContractMetadata
@@ -4884,3 +4883,5 @@ if __name__ == "__main__":
 
     # AND the pool thinks it has 0 tokens
     scenario.verify(pool.data.underlyingBalance == sp.nat(0))
+
+  sp.add_compilation_target("savings-pool", SavingsPoolContract())

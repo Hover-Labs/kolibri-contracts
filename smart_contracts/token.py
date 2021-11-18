@@ -7,10 +7,10 @@
 import smartpy as sp
 
 # CHANGED: Import errors.
-Errors = sp.import_script_from_url("file:common/errors.py")
+Errors = sp.io.import_script_from_url("file:common/errors.py")
 
 # CHANGED: Import address helpers
-Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
+Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
 
 # CHANGED: Define a constant for the empty string in the metadata bigmap
 METADATA_KEY = ""
@@ -88,15 +88,15 @@ class FA12_core(sp.Contract):
         sp.if ~ self.data.balances.contains(address):
             self.data.balances[address] = sp.record(balance = 0, approvals = {})
 
-    @sp.view(sp.TNat)
+    @sp.utils.view(sp.TNat)
     def getBalance(self, params):
         sp.result(self.data.balances[params].balance)
 
-    @sp.view(sp.TNat)
+    @sp.utils.view(sp.TNat)
     def getAllowance(self, params):
         sp.result(self.data.balances[params.owner].approvals[params.spender])
 
-    @sp.view(sp.TNat)
+    @sp.utils.view(sp.TNat)
     def getTotalSupply(self, params):
         sp.set_type(params, sp.TUnit)
         sp.result(self.data.totalSupply)
@@ -141,7 +141,7 @@ class FA12_administrator(FA12_core):
         sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
         self.data.administrator = params
 
-    @sp.view(sp.TAddress)
+    @sp.utils.view(sp.TAddress)
     def getAdministrator(self, params):
         sp.set_type(params, sp.TUnit)
         sp.result(self.data.administrator)
@@ -219,7 +219,6 @@ class Viewer(sp.Contract):
     def target(self, params):
         self.data.last = sp.some(params)
 
-
 # Only run tests if this file is main.
 if __name__ == "__main__":
 
@@ -284,25 +283,25 @@ if __name__ == "__main__":
             scenario.h2("Balance")
             view_balance = Viewer(sp.TNat)
             scenario += view_balance
-            scenario += c1.getBalance((alice.address, view_balance.typed))
+            c1.getBalance((alice.address, view_balance.typed.target))
             scenario.verify_equal(view_balance.data.last, sp.some(8))
 
             scenario.h2("Administrator")
             view_administrator = Viewer(sp.TAddress)
             scenario += view_administrator
-            scenario += c1.getAdministrator((sp.unit, view_administrator.typed))
+            c1.getAdministrator((sp.unit, view_administrator.typed.target))
             scenario.verify_equal(view_administrator.data.last, sp.some(admin.address))
 
             scenario.h2("Total Supply")
             view_totalSupply = Viewer(sp.TNat)
             scenario += view_totalSupply
-            scenario += c1.getTotalSupply((sp.unit, view_totalSupply.typed))
+            c1.getTotalSupply((sp.unit, view_totalSupply.typed.target))
             scenario.verify_equal(view_totalSupply.data.last, sp.some(17))
 
             scenario.h2("Allowance")
             view_allowance = Viewer(sp.TNat)
             scenario += view_allowance
-            scenario += c1.getAllowance((sp.record(owner = alice.address, spender = bob.address), view_allowance.typed))
+            c1.getAllowance((sp.record(owner = alice.address, spender = bob.address), view_allowance.typed.target))
             scenario.verify_equal(view_allowance.data.last, sp.some(1))
     
     # CHANGED: Additional tests added below this line.
@@ -311,7 +310,7 @@ if __name__ == "__main__":
     # mint
     ################################################################
 
-    Dummy = sp.import_script_from_url("file:test-helpers/dummy-contract.py")
+    Dummy = sp.io.import_script_from_url("file:test-helpers/dummy-contract.py")
 
     @sp.add_test(name="mint - respects debt ceiling")
     def test():
@@ -571,3 +570,5 @@ if __name__ == "__main__":
             sender = Addresses.NULL_ADDRESS,
             valid = False
         )    
+
+    sp.add_compilation_target("token", FA12())
