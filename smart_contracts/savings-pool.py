@@ -438,17 +438,27 @@ class SavingsPoolContract(FA12.FA12):
   # Return: The newly accrued interest
   @sp.sub_entry_point
   def accrueInterest(self):
+    # Inline global lambdas for later use in the sub_entry_point.
+    # 
+    # This is necessary because sub_entry_points cannot call global_lambdas, and this functionality needs
+    # to be split into a global_lambda for reuse in offchain_view code.
+    # 
+    # This will duplicate the global lambda code. A more elegant solution and space efficient solution would
+    # be to pass these lambdas as parameters of the sub_entry_point, but this contract is not space constrained
+    # and that method is more prone to programmer error.
+    # For more details, see conversation between messages: https://t.me/SmartPy_io/17252 and https://t.me/SmartPy_io/17428 
+    getNumberOfElapsedInterestPeriods = sp.build_lambda(self.getNumberOfElapsedInterestPeriods.f)
+    
     # Calculate the number of periods that elapsed.
-    timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestCompoundTime)
-    numPeriods = sp.local('numPeriods', timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
+    numberOfElapsedInterestPeriods = sp.local('numberOfElapsedInterestPeriods', getNumberOfElapsedInterestPeriods(self.data.lastInterestCompoundTime))
 
     # Update the last updated time.
-    self.data.lastInterestCompoundTime = self.data.lastInterestCompoundTime.add_seconds(sp.to_int(numPeriods.value * Constants.SECONDS_PER_COMPOUND))
+    self.data.lastInterestCompoundTime = self.data.lastInterestCompoundTime.add_seconds(sp.to_int(numberOfElapsedInterestPeriods.value * Constants.SECONDS_PER_COMPOUND))
 
     # Determine the new amount of interest accrued.
     newUnderlyingBalance = sp.local(
       'newTotalUnderlying', 
-      self.data.underlyingBalance * (Constants.PRECISION + (numPeriods.value * self.data.interestRate)) // Constants.PRECISION
+      self.data.underlyingBalance * (Constants.PRECISION + (numberOfElapsedInterestPeriods.value * self.data.interestRate)) // Constants.PRECISION
     )
     accruedInterest = sp.local('accruedInterest', sp.as_nat(newUnderlyingBalance.value - self.data.underlyingBalance))
 
@@ -462,6 +472,27 @@ class SavingsPoolContract(FA12.FA12):
 
     # Return the number of newly accrued tokens.
     sp.result(accruedInterest.value)
+
+  # Helper lambda to calculate the number of elapsed interest periods between the current time and the `lastInterestCompoundTime`.
+  #
+  #
+  # This function is split into a global lambda that will be inlined into `sub_entry_point` and called from an offchain_view. This 
+  # is because:
+  # - offchain_view and sub_entry_point need to share this logic
+  # - sub_entry_points cannot call global_lambdas
+  # - offchain_views cannot call sub_entry_points but can call global lambdas
+  # For more details, see conversation between messages: https://t.me/SmartPy_io/17252 and https://t.me/SmartPy_io/17428 
+  #
+  # Params:
+  # - lastInterestCompoundTime (timestamp): The last interest compound time. `self.data.lastlastInterestCompoundTime` should
+  #                                         ALWAYS be passed as this argument.
+  # Returns: A nat specifying the number of elapsed periods 
+  @sp.global_lambda
+  def getNumberOfElapsedInterestPeriods(lastInterestCompoundTime):
+    sp.set_type(lastInterestCompoundTime, sp.TTimestamp)
+
+    timeDeltaSeconds = sp.as_nat(sp.now - lastInterestCompoundTime)
+    sp.result(timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
 
 ################################################################
 ################################################################
@@ -492,7 +523,14 @@ if __name__ == "__main__":
       stabilityFundContractAddress,
       underlyingBalance
     ):
+      # Entrypoint under test.
       self.contractEntrypoint = poolContract.accrueInterest
+
+      # The accrue interest entrypoint needs to inline lambdas from the following
+      # lambdas, so also grab reference to them. 
+      # For details, see comments in the `accrueInterest` sub_entry_point.
+      self.getNumberOfElapsedInterestPeriods = poolContract.getNumberOfElapsedInterestPeriods
+
       self.init(
         result = sp.none, 
         interestRate = interestRate,
