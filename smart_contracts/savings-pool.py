@@ -432,106 +432,157 @@ class SavingsPoolContract(FA12.FA12):
   # - Accrue interest using linear approximation
   # - Request funds
   #
-  # This functionality is split out for re-use and for testing.
+  # This functionality is split out for re-use across multiple entrypoints and for testing purposes.
   #
   # Param: unit
   # Return: The newly accrued interest
   @sp.sub_entry_point
   def accrueInterest(self):
-    # Inline global lambdas for later use in the sub_entry_point.
+    # Inline the `getInterestAccrualResults` `global_lambda` for later use in this `sub_entry_point`.
     # 
-    # This is necessary because sub_entry_points cannot call global_lambdas, and this functionality needs
-    # to be split into a global_lambda for reuse in offchain_view code.
-    # 
-    # This will duplicate the global lambda code. A more elegant solution and space efficient solution would
-    # be to pass these lambdas as parameters of the sub_entry_point, but this contract is not space constrained
+    # This is necessary because `sub_entry_point`s cannot call `global_lambda`, and this functionality needs
+    # to be split into a global_lambda for reuse in offchain_view code. See "Implementation Notes" in the
+    # `getInterestAccrualResults` documentation.
+    #  
+    # Implementation Note: `sp.build_lambda` will inline the code in the global lambda into this `sub_entry_point`,
+    # which effectively duplicates the code and increases contract size. A more elegant solution and space efficient
+    # solution would be to pass these lambdas as parameters of the sub_entry_point, but this contract is not space constrained
     # and that method is more prone to programmer error.
     # For more details, see conversation between messages: https://t.me/SmartPy_io/17252 and https://t.me/SmartPy_io/17428 
-    getNumberOfElapsedInterestPeriods = sp.build_lambda(self.getNumberOfElapsedInterestPeriods.f)
-    getNewlyAccruedInterest = sp.build_lambda(self.getNewlyAccruedInterest.f)
+    getInterestAccrualResults = sp.build_lambda(self.getInterestAccrualResults.f)
     
-    # Calculate the number of periods that elapsed.
-    numberOfElapsedInterestPeriods = sp.local('numberOfElapsedInterestPeriods', getNumberOfElapsedInterestPeriods(self.data.lastInterestCompoundTime))
-
-    # Update the last updated time.
-    self.data.lastInterestCompoundTime = self.data.lastInterestCompoundTime.add_seconds(sp.to_int(numberOfElapsedInterestPeriods.value * Constants.SECONDS_PER_COMPOUND))
-
-    # Determine the new amount of interest accrued.
-    accruedInterest = sp.local(
-      'accruedInterest', 
-      getNewlyAccruedInterest(
+    # Calculate the results of interest accrual via a pure `global_lambda`.
+    interestAccrualResults = sp.local(
+      'interestAccrualResults', 
+      getInterestAccrualResults(
         sp.record(
           interestRate = self.data.interestRate,
-          numberOfElapsedInterestPeriods = numberOfElapsedInterestPeriods.value,
+          lastInterestCompoundTime = self.data.lastInterestCompoundTime,
           underlyingBalance = self.data.underlyingBalance,
         )
       )
     )
 
-    # Transfer in accrued tokens
+    # Update the contracts state with the result of the `global_lambda`
+    self.data.lastInterestCompoundTime = self.data.lastInterestCompoundTime.add_seconds(
+      sp.to_int(
+        interestAccrualResults.value.numberOfElapsedInterestPeriods * Constants.SECONDS_PER_COMPOUND
+      )
+    )
+
+    # Transfer in the required number of tokens from the stability fund.
     stabilityFundHandle = sp.contract(
       sp.TNat,
       self.data.stabilityFundContractAddress,
       'accrueInterest'
     ).open_some()
-    sp.transfer(accruedInterest.value, sp.mutez(0), stabilityFundHandle)
+    sp.transfer(interestAccrualResults.value.accruedInterest, sp.mutez(0), stabilityFundHandle)
 
     # Return the number of newly accrued tokens.
-    sp.result(accruedInterest.value)
+    sp.result(interestAccrualResults.value.accruedInterest)
 
-  # Helper lambda to calculate the number of elapsed interest periods between the current time and the `lastInterestCompoundTime`.
+  # Helper lambda to calculate data about interest accrual.
   #
-  # This function is split into a global lambda that will be inlined into `sub_entry_point` and called from an offchain_view. This 
-  # is because:
-  # - offchain_view and sub_entry_point need to share this logic
-  # - sub_entry_points cannot call global_lambdas
-  # - offchain_views cannot call sub_entry_points but can call global lambdas
+  # =============================================================================================================================
+  # Values Calculated
+  # =============================================================================================================================
+  #
+  # This lambda calculates two pieces of data:
+  #
+  # 1. The number of interest periods that elapsed.
+  #    
+  #    If the `lastInterestCompoundTime` is set to `t` seconds, and the current time is `T` seconds, and a compound period is `c`
+  #    seconds long, then the number of elapsed interest periods is:
+  #      numberOfElapsedInterestPeriods = floor((T - t) / c)
+  #
+  #    In other words, this calculates the number of interest periods which have *fully* elapsed, discarding any partial periods. The
+  #    value of `lastInterestCompoundTime` should then be incremented by the number of periods elapsed and the seoncds per period:
+  #      newLastInterestCompoundTime = lastInterestCompoundTime + (numberOfElapsedInterestPeriods * c)
+  # 
+  # 2. The newly accrued interest over the current time.
+  #
+  #     If the current balance of the pool is `i`, and after `n` interest accrual periods at rate `r`, the balance of the pool will 
+  #     be `I`, then the accrued interest is:
+  #       accruedInterest = `I - i`
+  #     
+  #     In other words, this value will calculate the amount of interest that needs to be requested from the stability fund.
+  #    
+  # =============================================================================================================================
+  # Implementation Notes
+  # =============================================================================================================================
+  # 
+  # This functionality is split into a global lambda so that it can be shared between `sub_entry_point`s and `offchain_views`. By
+  # using a `global_lambda` functionality can be reused and shared, with some caveats. 
+  # 
+  # A `global_lambda` is required because:
+  # - `deposit` and `withdraw` both need to share logic which modifies contract state, necessitating the use of a shared 
+  #   `sub_entry_point` (And `global_lambda`s cannot modify state)
+  # - The values derived by the code in this lambda are needed in `offchain_view`s to calculate returnvalues
+  # - `offchain_view`s cannot call `sub_entry_point`s but can call `global_lambdas`
+  # - `sub_entry_point`s can inline functionality from global lambdas in order to reuse the code. 
   # For more details, see conversation between messages: https://t.me/SmartPy_io/17252 and https://t.me/SmartPy_io/17428 
   #
-  # Params:
-  # - lastInterestCompoundTime (timestamp): The last interest compound time. `self.data.lastlastInterestCompoundTime` should
-  #                                         ALWAYS be passed as this argument.
-  # Returns: A nat specifying the number of elapsed periods 
-  @sp.global_lambda
-  def getNumberOfElapsedInterestPeriods(lastInterestCompoundTime):
-    sp.set_type(lastInterestCompoundTime, sp.TTimestamp)
-
-    timeDeltaSeconds = sp.as_nat(sp.now - lastInterestCompoundTime)
-    sp.result(timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
-
-  # Helper lambda to calculate the newly accrued interest, given the number of elapsed periods. 
+  # Since this data must be a global lambda, the following rules apply:
+  # 1. The lambda is completely pure and cannot modify state, only return results. The caller is responsible for modifying contract 
+  #    state.
+  # 2. The lambda cannot access or modify smart contract storage. Therefore, the smart contract storage to be operated on must be 
+  #    in passed in as arguments, even though they should always be set to the same valuees. 
   #
-  # If the current balance of the pool is `i`, and after `n` interest accrual periods the balance of the pool will be `I`, then
-  # this function will return `I - i` (The difference in the new and old value). In other words, this lambda will calculate the 
-  # amount of interest that needs to be requested from the stability fund.
-  #
-  # This function is split into a global lambda that will be inlined into `sub_entry_point` and called from an offchain_view. This 
-  # is because:
-  # - offchain_view and sub_entry_point need to share this logic
-  # - sub_entry_points cannot call global_lambdas
-  # - offchain_views cannot call sub_entry_points but can call global lambdas
-  # For more details, see conversation between messages: https://t.me/SmartPy_io/17252 and https://t.me/SmartPy_io/17428 
+  # In practice, the above means:
+  # 1. This lambda should only ever be called from:
+  #   a) The `accrueInterest` sub_entry_point, which provides strong guarantees around contract state being updated correctly
+  #   b) A view, which does not modify state and simply returns the state of the world to a caller
+  # 2. This lambda should ALWAYS be called with the following parameter, which simply maps in the contract storage into the lambda:
+  #   ```
+  #   getInterestAccrualResults(
+  #     sp.record(
+  #       interestRate = self.data.interestRate,
+  #       lastInterestCompoundTime = self.data.lastInterestCompoundTime,
+  #       underlyingBalance = self.data.underlyingBalance,
+  #     )
+  #   )
+  #   ```
   #
   # Params:
   # - interestRate (nat): The current interest rate. `self.data.interestRate` should ALWAYS be passed as this argument.
-  # - numberOfElapsedInterestPeriods (nat): The number of interest periods that have passed.
-  # - underlyingBalance (nat): The value of the pool at current time. `self.data.underlyingBalance` should ALWAYS be 
-  #                            passed as this argument.
-  # Returns: A nat specifying the amount of interest the pool should accrue on `underlyingBalance` of value, after
-  #          `numberOfElapsedInterestPeriods`, when accruing at the rate given by `interestRate`.
+  # - lastInterestCompoundTime (timestamp): The last interest compound time. `self.data.lastlastInterestCompoundTime` should ALWAYS
+  #                                         be passed as this argument.
+  # - underlyingBalance (nat): The value of the pool at current time. `self.data.underlyingBalance` should ALWAYS be passed as this 
+  #                            argument.
+  #
+  # Returns: A record of type sp.TRecord(accruedInterest = sp.TNat, numberOfElapsedInterestPeriods = sp.TNat)
+  # - accruedInterest (nat): The amount of interest the pool should accrue on `underlyingBalance` of value, between 
+  #                          `lastInterestCompoundTime` and the current time, when accrued at `interestRate`.
+  #                          See: "Values Calculated", point 1.
+  # - numberOfElapsedInterestPeriods (nat): The amount of interest accrual periods which fully elapsed between 
+  #                                         `lastInterestCompoundTime` and the current time.
+  #                                         See: "Values Calculated", point 1.
   @sp.global_lambda
-  def getNewlyAccruedInterest(param):
+  def getInterestAccrualResults(param):
     sp.set_type(
       param,
       sp.TRecord(
         interestRate = sp.TNat,
-        numberOfElapsedInterestPeriods = sp.TNat,
+        lastInterestCompoundTime = sp.TTimestamp,
         underlyingBalance = sp.TNat        
       )
     )
+    
+    # Calculate the number of elapsed interest periods.
+    timeDeltaSeconds = sp.as_nat(sp.now - param.lastInterestCompoundTime)
+    numberOfElapsedInterestPeriods = sp.local('numberOfElapsedInterestPeriods', timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
 
-    newUnderlyingBalance = param.underlyingBalance * (Constants.PRECISION + (param.numberOfElapsedInterestPeriods * param.interestRate)) // Constants.PRECISION
-    sp.result(sp.as_nat(newUnderlyingBalance - param.underlyingBalance))
+    # Calculate the accrued interest.
+    newUnderlyingBalance = param.underlyingBalance * (Constants.PRECISION + (numberOfElapsedInterestPeriods.value * param.interestRate)) // Constants.PRECISION
+    accruedInterest = sp.local('accruedInterest', sp.as_nat(newUnderlyingBalance - param.underlyingBalance))
+
+    # Return a tuple containing the number of elapsed periods and the accrued interest
+    sp.result(
+      sp.record(
+        accruedInterest = accruedInterest.value,
+        numberOfElapsedInterestPeriods = numberOfElapsedInterestPeriods.value,
+      )
+    )
 
 ################################################################
 ################################################################
@@ -565,11 +616,10 @@ if __name__ == "__main__":
       # Entrypoint under test.
       self.contractEntrypoint = poolContract.accrueInterest
 
-      # The accrue interest entrypoint needs to inline lambdas from the following
-      # lambdas, so also grab reference to them. 
+      # The accrue interest entrypoint needs to inline the following lambdas, so the 
+      # Tester should also grab reference to them. 
       # For details, see comments in the `accrueInterest` sub_entry_point.
-      self.getNumberOfElapsedInterestPeriods = poolContract.getNumberOfElapsedInterestPeriods
-      self.getNewlyAccruedInterest = poolContract.getNewlyAccruedInterest
+      self.getInterestAccrualResults = poolContract.getInterestAccrualResults
 
       self.init(
         result = sp.none, 
