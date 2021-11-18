@@ -448,6 +448,7 @@ class SavingsPoolContract(FA12.FA12):
     # and that method is more prone to programmer error.
     # For more details, see conversation between messages: https://t.me/SmartPy_io/17252 and https://t.me/SmartPy_io/17428 
     getNumberOfElapsedInterestPeriods = sp.build_lambda(self.getNumberOfElapsedInterestPeriods.f)
+    getNewlyAccruedInterest = sp.build_lambda(self.getNewlyAccruedInterest.f)
     
     # Calculate the number of periods that elapsed.
     numberOfElapsedInterestPeriods = sp.local('numberOfElapsedInterestPeriods', getNumberOfElapsedInterestPeriods(self.data.lastInterestCompoundTime))
@@ -456,11 +457,16 @@ class SavingsPoolContract(FA12.FA12):
     self.data.lastInterestCompoundTime = self.data.lastInterestCompoundTime.add_seconds(sp.to_int(numberOfElapsedInterestPeriods.value * Constants.SECONDS_PER_COMPOUND))
 
     # Determine the new amount of interest accrued.
-    newUnderlyingBalance = sp.local(
-      'newTotalUnderlying', 
-      self.data.underlyingBalance * (Constants.PRECISION + (numberOfElapsedInterestPeriods.value * self.data.interestRate)) // Constants.PRECISION
+    accruedInterest = sp.local(
+      'accruedInterest', 
+      getNewlyAccruedInterest(
+        sp.record(
+          interestRate = self.data.interestRate,
+          numberOfElapsedInterestPeriods = numberOfElapsedInterestPeriods.value,
+          underlyingBalance = self.data.underlyingBalance,
+        )
+      )
     )
-    accruedInterest = sp.local('accruedInterest', sp.as_nat(newUnderlyingBalance.value - self.data.underlyingBalance))
 
     # Transfer in accrued tokens
     stabilityFundHandle = sp.contract(
@@ -474,7 +480,6 @@ class SavingsPoolContract(FA12.FA12):
     sp.result(accruedInterest.value)
 
   # Helper lambda to calculate the number of elapsed interest periods between the current time and the `lastInterestCompoundTime`.
-  #
   #
   # This function is split into a global lambda that will be inlined into `sub_entry_point` and called from an offchain_view. This 
   # is because:
@@ -493,6 +498,40 @@ class SavingsPoolContract(FA12.FA12):
 
     timeDeltaSeconds = sp.as_nat(sp.now - lastInterestCompoundTime)
     sp.result(timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
+
+  # Helper lambda to calculate the newly accrued interest, given the number of elapsed periods. 
+  #
+  # If the current balance of the pool is `i`, and after `n` interest accrual periods the balance of the pool will be `I`, then
+  # this function will return `I - i` (The difference in the new and old value). In other words, this lambda will calculate the 
+  # amount of interest that needs to be requested from the stability fund.
+  #
+  # This function is split into a global lambda that will be inlined into `sub_entry_point` and called from an offchain_view. This 
+  # is because:
+  # - offchain_view and sub_entry_point need to share this logic
+  # - sub_entry_points cannot call global_lambdas
+  # - offchain_views cannot call sub_entry_points but can call global lambdas
+  # For more details, see conversation between messages: https://t.me/SmartPy_io/17252 and https://t.me/SmartPy_io/17428 
+  #
+  # Params:
+  # - interestRate (nat): The current interest rate. `self.data.interestRate` should ALWAYS be passed as this argument.
+  # - numberOfElapsedInterestPeriods (nat): The number of interest periods that have passed.
+  # - underlyingBalance (nat): The value of the pool at current time. `self.data.underlyingBalance` should ALWAYS be 
+  #                            passed as this argument.
+  # Returns: A nat specifying the amount of interest the pool should accrue on `underlyingBalance` of value, after
+  #          `numberOfElapsedInterestPeriods`, when accruing at the rate given by `interestRate`.
+  @sp.global_lambda
+  def getNewlyAccruedInterest(param):
+    sp.set_type(
+      param,
+      sp.TRecord(
+        interestRate = sp.TNat,
+        numberOfElapsedInterestPeriods = sp.TNat,
+        underlyingBalance = sp.TNat        
+      )
+    )
+
+    newUnderlyingBalance = param.underlyingBalance * (Constants.PRECISION + (param.numberOfElapsedInterestPeriods * param.interestRate)) // Constants.PRECISION
+    sp.result(sp.as_nat(newUnderlyingBalance - param.underlyingBalance))
 
 ################################################################
 ################################################################
@@ -530,6 +569,7 @@ if __name__ == "__main__":
       # lambdas, so also grab reference to them. 
       # For details, see comments in the `accrueInterest` sub_entry_point.
       self.getNumberOfElapsedInterestPeriods = poolContract.getNumberOfElapsedInterestPeriods
+      self.getNewlyAccruedInterest = poolContract.getNewlyAccruedInterest
 
       self.init(
         result = sp.none, 
