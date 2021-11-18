@@ -165,7 +165,7 @@ class SavingsPoolContract(FA12.FA12):
     sp.verify(self.data.state == WAITING_DEPOSIT, Errors.BAD_STATE)
 
     # Calculate the newly accrued interest.
-    accruedInterest = self.accrueInterest(sp.unit)
+    accruedInterest = self.accrueInterest()
 
     # Calculate the tokens to issue.
     tokensToDeposit = sp.local('tokensToDeposit', self.data.savedState_tokensToDeposit.open_some())
@@ -246,7 +246,7 @@ class SavingsPoolContract(FA12.FA12):
     sp.verify(self.data.state == WAITING_REDEEM, Errors.BAD_STATE)
 
     # Calculate the newly accrued interest.
-    accruedInterest = self.accrueInterest(sp.unit)
+    accruedInterest = self.accrueInterest()
 
     # Calculate tokens to receive.
     tokensToRedeem = sp.local('tokensToRedeem', self.data.savedState_tokensToRedeem.open_some())
@@ -381,7 +381,7 @@ class SavingsPoolContract(FA12.FA12):
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
 
     # Accrue interest.
-    accruedInterest = self.accrueInterest(sp.unit) 
+    accruedInterest = self.accrueInterest() 
     self.data.underlyingBalance = self.data.underlyingBalance + accruedInterest
 
     # Adjust rate
@@ -437,9 +437,7 @@ class SavingsPoolContract(FA12.FA12):
   # Param: unit
   # Return: The newly accrued interest
   @sp.sub_entry_point
-  def accrueInterest(self, unit):
-    sp.set_type(unit, sp.TUnit)
-
+  def accrueInterest(self):
     # Calculate the number of periods that elapsed.
     timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestCompoundTime)
     numPeriods = sp.local('numPeriods', timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
@@ -504,8 +502,8 @@ if __name__ == "__main__":
       )
         
     @sp.entry_point
-    def testContractEntryPoint(self, params):
-      self.data.result = sp.some(self.contractEntrypoint(params))
+    def testContractEntryPoint(self):
+      self.data.result = sp.some(self.contractEntrypoint())
 
   ################################################################
   # accrueInterest
@@ -535,7 +533,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 1 compound period.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
     )
 
@@ -566,7 +564,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 2 compound periods.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND * 2)
     )
 
@@ -597,7 +595,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 1 compound period.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND * 2)
     )
 
@@ -628,7 +626,7 @@ if __name__ == "__main__":
     scenario += tester
     
     # WHEN interest is accrued after 2.5 periods
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(150) # 2.5 periods
     )
 
@@ -661,7 +659,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 1 compound period.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
     )
 
@@ -694,7 +692,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 2 compound periods.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND * 2)
     )
 
@@ -727,7 +725,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 1 compound period.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND * 2)
     )
 
@@ -760,7 +758,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 2.5 periods
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(150) # 2.5 periods
     )
 
@@ -833,7 +831,7 @@ if __name__ == "__main__":
     )
 
     # WHEN interest is accrued after 1 compound period.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
     )
 
@@ -906,7 +904,7 @@ if __name__ == "__main__":
     )
 
     # WHEN interest is accrued after 2 compound periods.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(2 * Constants.SECONDS_PER_COMPOUND)
     )
 
@@ -979,7 +977,7 @@ if __name__ == "__main__":
     )
 
     # WHEN interest is accrued after the second compound period.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(2 * Constants.SECONDS_PER_COMPOUND)
     )
 
@@ -1052,7 +1050,7 @@ if __name__ == "__main__":
     )
 
     # WHEN interest is accrued after 2 and a half compound periods.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(150) # 2.5 periods
     )
 
@@ -1454,7 +1452,7 @@ if __name__ == "__main__":
     # WHEN unpause is called by someone other than the governor
     # THEN the call will fail
     notGovernor = Addresses.NULL_ADDRESS
-    scenario += pool.unpause(sp.unit).run(
+    scenario += pool.unpause().run(
       sender = notGovernor,
       valid = False
     )
@@ -1470,7 +1468,7 @@ if __name__ == "__main__":
     scenario += pool
 
     # WHEN unpause is called
-    scenario += pool.unpause(sp.unit).run(
+    scenario += pool.unpause().run(
       sender = Addresses.GOVERNOR_ADDRESS,
     )    
 
@@ -1494,7 +1492,7 @@ if __name__ == "__main__":
     # WHEN pause is called by someone other than the pause guardian
     # THEN the call will fail
     notPauseGuardian = Addresses.NULL_ADDRESS
-    scenario += pool.unpause(sp.unit).run(
+    scenario += pool.unpause().run(
       sender = notPauseGuardian,
       valid = False
     )
@@ -1508,7 +1506,7 @@ if __name__ == "__main__":
     scenario += pool
 
     # WHEN pause is called
-    scenario += pool.pause(sp.unit).run(
+    scenario += pool.pause().run(
       sender = Addresses.PAUSE_GUARDIAN_ADDRESS,
     )    
 
@@ -2782,7 +2780,7 @@ if __name__ == "__main__":
     scenario.verify(token.data.balances[pool.address].balance == aliceTokens + bobTokens)
 
     # AND the pool is paused
-    scenario += pool.pause(sp.unit).run(
+    scenario += pool.pause().run(
       sender = Addresses.PAUSE_GUARDIAN_ADDRESS,
     )
     
@@ -4261,7 +4259,7 @@ if __name__ == "__main__":
     )
 
     # AND the pool is paused
-    scenario += pool.pause(sp.unit).run(
+    scenario += pool.pause().run(
       sender = Addresses.PAUSE_GUARDIAN_ADDRESS,
     )
 
