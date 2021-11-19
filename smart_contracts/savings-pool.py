@@ -508,13 +508,9 @@ class SavingsPoolContract(FA12.FA12):
       accountLPTokens = self.data.balances[address].balance
 
     # Return conversion rate of one LP token multipled the number of LP tokens owned.
-    # TODO(keefertaylor): The math you derived below doesn't work. Re-validate this.
     # NOTE: KSR is denominated in 36 digits, and kUSD uses 18 so we upscale the kUSD size to be 
-    #       the same precision. Remember that we need to divide by PRECISION (due to multiplying 
-    #       fixed point numbers, so the calculation would be)
-    # accountValue = (accountLPTokens * kUSD_conversion_rate_upscaled) // LP_TOKEN_PRECISION
-    #              = (accountLPTokens * kUSD_conversion_rate * PRECISION) // (PRECISION * PRECISION)
-    #              = (accountLPTokens * kUSD_conversion_rate) // PRECISION
+    #       the same precision. Then, two fixed point numbers with 36 digits of precision are
+    #       multiplied together, which means we need to divide by the LP_TOKEN_PRECISION.
     accountValue = accountLPTokens * conversionRate.value // Constants.LP_TOKEN_PRECISION
     sp.result(accountValue)
 
@@ -5159,17 +5155,17 @@ if __name__ == "__main__":
 
     # WHEN the view is called after one period
     # THEN the view returns one period of compounding
-    # TODO (keefertaylor): Enable this when SmartPy supports it. See: https://t.me/SmartPy_io/17542
+    # TODO (keefertaylor): Enable this when SmartPy supports it. See: https://t.me/SmartPy_io/17555
     # scenario.verify(pool.offchainView_poolSize() == expectedValueAfterOnePeriod)
 
     # WHEN the view is called after two periods
     # THEN the view returns two periods of compounding
-    # TODO (keefertaylor): Enable this when SmartPy supports it. See: https://t.me/SmartPy_io/17542
+    # TODO (keefertaylor): Enable this when SmartPy supports it. See: https://t.me/SmartPy_io/17555
     # scenario.verify(pool.offchainView_poolSize() == expectedValueAfterTwoPeriods)
 
     # WHEN the view is called after two and a half periods
     # THEN the view correctly floors and returns two periods of compounding
-    # TODO (keefertaylor): Enable this when SmartPy supports it. See: https://t.me/SmartPy_io/17542
+    # TODO (keefertaylor): Enable this when SmartPy supports it. See: https://t.me/SmartPy_io/17555
     # scenario.verify(pool.offchainView_poolSize() == expectedValueAfterTwoPeriods)
 
   ################################################################
