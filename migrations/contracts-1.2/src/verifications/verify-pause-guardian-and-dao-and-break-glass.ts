@@ -1,4 +1,11 @@
-import { verifyDAOIntegrationWithBreakGlass, getTezos, fetchFromCache, ContractOriginationResult, verifyBreakGlassIntegration } from "@hover-labs/tezos-utils";
+import {
+  verifyDAOIntegrationWithBreakGlass,
+  getTezos, fetchFromCache,
+  ContractOriginationResult,
+  verifyBreakGlassIntegration,
+  callThroughMultisig,
+  validateStorageValue
+} from "@hover-labs/tezos-utils";
 import CACHE_KEYS from '../cache-keys'
 import { NETWORK_CONFIG } from "../config"
 
@@ -21,25 +28,40 @@ const main = async () => {
   const stabilityFundBreakGlassAddress = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_BREAK_GLASS_DEPLOY) as ContractOriginationResult).contractAddress
   const savingsPoolBreakGlassAddress = (await fetchFromCache(CACHE_KEYS.SAVINGS_POOL_BREAK_GLASS_DEPLOY) as ContractOriginationResult).contractAddress
 
-  console.log("Testing a DAO proposal to set the interest rate of stability pool to zero.")
+  // TODO(keefertaylor):Consider pushing this into tezos-utils??
+  console.log("Testing Pause Guardian can pause the contract")
+  await callThroughMultisig(
+    NETWORK_CONFIG,
+    NETWORK_CONFIG.contracts.PAUSE_GUARDIAN!,
+    savingsPoolContractAddress,
+    'pause',
+    'sp.unit',
+    tezos
+  )
+  await validateStorageValue(savingsPoolContractAddress, 'paused', true, tezos)
+  console.log("   / Passed")
+  console.log("")
+  
+  console.log("Testing a DAO proposal to unpause the pool")
   await verifyDAOIntegrationWithBreakGlass(
     vestingVault,
     savingsPoolBreakGlassAddress,
     savingsPoolContractAddress,
-    'setInterestRate',
-    'sp.nat(0)',
-    'sp.TNat',
+    'unpause',
+    'sp.unit',
+    'sp.TUnit',
     daoAddress,
-    'interestRate',
-    0,
+    'paused',
+    false,
     tezos,
     NETWORK_CONFIG
   )
   console.log("   / Passed")
   console.log("")
 
-
-  console.log("Testing a DAO proposal to set the savings account on the stability pool to signer.")
+  // NOTE: Since we mess with savings pool storage in this call, this should come after any savings
+  //       pool validations. 
+  console.log("Testing a DAO Proposal to set the savings contract to the signer")
   await verifyDAOIntegrationWithBreakGlass(
     vestingVault,
     stabilityFundBreakGlassAddress,
@@ -55,6 +77,8 @@ const main = async () => {
   )
   console.log("   / Passed")
   console.log("")
+
+  // Break glasses must go last, otherwise governance calls above will fail
 
   console.log("Testing break glass can control Stability fund")
   await verifyBreakGlassIntegration(

@@ -57,6 +57,7 @@ const main = async () => {
   // 4. Token address should be the same as in the stability fund and the old contract
   // 5. Underlying balance and last interest update time are set to zero
   // 6. Saved states should be set to none, with state = 0 (IDLE)
+  // 7. Pause guardian should be the pause guardian.
   console.log(`Validating new savings pool storage... (${savingsPoolContractAddress})`)
   await validateStorageValue(savingsPoolContractAddress, 'governorContractAddress', savingsPoolBreakGlassAddress, tezos)
 
@@ -80,6 +81,8 @@ const main = async () => {
   await validateStorageValue(savingsPoolContractAddress, 'savedState_redeemer', null, tezos)
   await validateStorageValue(savingsPoolContractAddress, 'savedState_tokensToDeposit', null, tezos)
   await validateStorageValue(savingsPoolContractAddress, 'savedState_depositor', null, tezos)
+
+  await validateStorageValue(savingsPoolContractAddress, 'pauseGuardianContractAddress', NETWORK_CONFIG.contracts.PAUSE_GUARDIAN, tezos)
 
   console.log("   / passed")
 

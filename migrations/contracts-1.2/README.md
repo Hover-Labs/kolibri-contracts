@@ -46,7 +46,7 @@ ts-node src/verifications/verify-storage.ts
 Note that these interactions will break glass and thus make the contracts inoperable. 
 
 ```
-ts-node src/verifications/verify-dao-and-break-glass.ts
+ts-node src/verifications/verify-pause-guardian-and-dao-and-break-glass
 ```
 
 **Generate Governance Lambda**
@@ -65,6 +65,7 @@ ts-node src/verifications/post-proposal-tests.ts
 
 TODO
 - Test Pause Guardian
+- Write mainnet
 
 ### Mainnet
 TODO
