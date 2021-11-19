@@ -1,7 +1,13 @@
 import { initConseil, loadContract } from "./utils";
 import { initOracleLib, Utils } from "@tacoinfra/harbinger-lib";
+import { KeyStore } from "conseiljs";
 
-export default async function crosscheck(config: any) {
+type CrossCheckResult = {
+    keystore: KeyStore,
+    contractSources: object
+}
+
+export default async function crosscheck(config: any): Promise<CrossCheckResult> {
     console.log('>>> [1/4] Input params:')
     console.log(`Tezos Node: ${config.NODE_URL}`)
     console.log(`Indexer URL: ${config.BETTER_CALL_DEV_BASE_URL}`)

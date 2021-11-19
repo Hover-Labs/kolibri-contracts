@@ -1,11 +1,6 @@
 name: Build
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-
+on: push
 jobs:
   notify_init:
     runs-on: ubuntu-latest
@@ -27,13 +22,17 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
     - uses: actions/setup-python@v2
+    - name: "Install Dependencies"
+      run: |
+        sudo apt-get update && sudo apt-get install make
     - name: "Install SmartPy"
       run: |
-        curl -s https://smartpy.io/releases/20201222-65067da80037a151c726ae887cc2a24d02eca2b0/cli/install.sh | sh -s -- local-install ~/smartpy-cli
+        curl -s https://smartpy.io/releases/20211106-51985c20a6a77e31b6de0d3b0400cccce74e38ad/cli/install.sh | sh -s -- local-install ~/smartpy-cli
     - name: "Build and Test Smart Contracts"
       run: |
         cd smart_contracts
         ./compile.sh
+        make all
 
   lint_and_build_deploy_scripts:
     runs-on: ubuntu-latest
@@ -49,6 +48,19 @@ jobs:
         npm i
         npm run lint
         npm run build
+
+  build_contracts_1_1_migration:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+    - name: "Install Dependencies"
+      run: |
+        sudo apt-get update && sudo apt-get install build-essential git libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+    - name: "Build and lint deploy scripts"
+      run: |
+        cd migrations/contracts-1.1
+        npm i
 
   notify_complete:
     runs-on: ubuntu-latest

@@ -1,7 +1,7 @@
 import smartpy as sp
 
-Constants = sp.import_script_from_url("file:common/constants.py")
-Token = sp.import_script_from_url("file:token.py")
+Constants = sp.io.import_script_from_url("file:common/constants.py")
+Token = sp.io.import_script_from_url("file:token.py")
 
 ################################################################
 ################################################################
@@ -20,9 +20,9 @@ WAITING_DEPOSIT = 3
 ################################################################
 ################################################################
 
-Addresses = sp.import_script_from_url("file:./test-helpers/addresses.py")
-Errors = sp.import_script_from_url("file:./common/errors.py")
-FA12 = sp.import_script_from_url("file:./fa12.py")
+Addresses = sp.io.import_script_from_url("file:./test-helpers/addresses.py")
+Errors = sp.io.import_script_from_url("file:./common/errors.py")
+FA12 = sp.io.import_script_from_url("file:./fa12.py")
 
 class SavingsPoolContract(FA12.FA12):
   def __init__(
@@ -37,6 +37,9 @@ class SavingsPoolContract(FA12.FA12):
     # The address of the stability fund.
     stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
 
+    # The address of the pause guardian
+    pauseGuardianContractAddress = Addresses.PAUSE_GUARDIAN_ADDRESS,
+
     # The interest rate.
     interestRate = sp.nat(123),
 
@@ -46,6 +49,9 @@ class SavingsPoolContract(FA12.FA12):
     # The initial token balance.
     underlyingBalance = sp.nat(0),
 
+    # Whether the savings rate is paused
+    paused = False,
+
     # The initial state of the state machine.
     state = IDLE,
 
@@ -54,6 +60,10 @@ class SavingsPoolContract(FA12.FA12):
     savedState_redeemer = sp.none,
     savedState_tokensToDeposit = sp.none,
     savedState_depositor = sp.none,
+
+    # Parent class fields
+    balances = sp.big_map(tvalue = sp.TRecord(approvals = sp.TMap(sp.TAddress, sp.TNat), balance = sp.TNat)),
+    totalSupply = sp.nat(0),
   ):
     token_id = sp.nat(0)
 
@@ -75,7 +85,7 @@ class SavingsPoolContract(FA12.FA12):
       tvalue = sp.TRecord(token_id = sp.TNat, token_info = sp.TMap(sp.TString, sp.TBytes))
     )
 
-    metadata_data = sp.bytes_of_string('{ "name": "Interest Bearing kUSD",  "description": "Interest Bearing kUSD",  "authors": ["Hover Labs <hello@hover.engineering>"],  "homepage":  "https://kolibri.finance", "interfaces": [ "TZIP-007-2021-01-29"] }')
+    metadata_data = sp.utils.bytes_of_string('{ "name": "Interest Bearing kUSD",  "description": "Interest Bearing kUSD",  "authors": ["Hover Labs <hello@hover.engineering>"],  "homepage":  "https://kolibri.finance", "interfaces": [ "TZIP-007-2021-01-29"] }')
     metadata = sp.big_map(
       l = {
         "": sp.bytes('0x74657a6f732d73746f726167653a64617461'), # "tezos-storage:data"
@@ -89,8 +99,8 @@ class SavingsPoolContract(FA12.FA12):
 
     self.init(
       # Parent class fields
-      balances = sp.big_map(tvalue = sp.TRecord(approvals = sp.TMap(sp.TAddress, sp.TNat), balance = sp.TNat)), 
-      totalSupply = 0,
+      balances = balances, 
+      totalSupply = totalSupply,
 
       # Metadata
       metadata = metadata,
@@ -100,6 +110,7 @@ class SavingsPoolContract(FA12.FA12):
       governorContractAddress = governorContractAddress,
       stabilityFundContractAddress = stabilityFundContractAddress,
       tokenContractAddress = tokenContractAddress,
+      pauseGuardianContractAddress = pauseGuardianContractAddress,
 
       # Configuration
       interestRate = interestRate,
@@ -107,8 +118,9 @@ class SavingsPoolContract(FA12.FA12):
       # Internal State
       underlyingBalance = underlyingBalance,
       lastInterestCompoundTime = lastInterestCompoundTime,
-      
-      # State machinge
+      paused = paused,
+
+      # State machine
       state = state,
       savedState_tokensToRedeem = savedState_tokensToRedeem, # Amount of tokens to redeem, populated when state = WAITING_REDEEM
       savedState_redeemer = savedState_redeemer, # Account redeeming tokens, populated when state = WAITING_REDEEM
@@ -128,6 +140,9 @@ class SavingsPoolContract(FA12.FA12):
     # Validate state
     sp.verify(self.data.state == IDLE, Errors.BAD_STATE)
 
+    # Validate not paused
+    sp.verify(self.data.paused == False, Errors.PAUSED)
+
     # Save state
     self.data.state = WAITING_DEPOSIT
     self.data.savedState_tokensToDeposit = sp.some(tokensToDeposit)
@@ -142,7 +157,7 @@ class SavingsPoolContract(FA12.FA12):
     ).open_some()
     sp.transfer(param, sp.mutez(0), contractHandle)
 
-  # Private callback for redeem.
+  # Private callback for deposit.
   @sp.entry_point
   def deposit_callback(self, updatedBalance):
     sp.set_type(updatedBalance, sp.TNat)
@@ -154,7 +169,7 @@ class SavingsPoolContract(FA12.FA12):
     sp.verify(self.data.state == WAITING_DEPOSIT, Errors.BAD_STATE)
 
     # Calculate the newly accrued interest.
-    accruedInterest = self.accrueInterest(sp.unit)
+    accruedInterest = self.accrueInterest()
 
     # Calculate the tokens to issue.
     tokensToDeposit = sp.local('tokensToDeposit', self.data.savedState_tokensToDeposit.open_some())
@@ -206,6 +221,9 @@ class SavingsPoolContract(FA12.FA12):
     # Validate state
     sp.verify(self.data.state == IDLE, Errors.BAD_STATE)
 
+    # Validate not paused
+    sp.verify(self.data.paused == False, Errors.PAUSED)
+
     # Save state
     self.data.state = WAITING_REDEEM
     self.data.savedState_tokensToRedeem = sp.some(tokensToRedeem)
@@ -232,7 +250,7 @@ class SavingsPoolContract(FA12.FA12):
     sp.verify(self.data.state == WAITING_REDEEM, Errors.BAD_STATE)
 
     # Calculate the newly accrued interest.
-    accruedInterest = self.accrueInterest(sp.unit)
+    accruedInterest = self.accrueInterest()
 
     # Calculate tokens to receive.
     tokensToRedeem = sp.local('tokensToRedeem', self.data.savedState_tokensToRedeem.open_some())
@@ -280,7 +298,8 @@ class SavingsPoolContract(FA12.FA12):
   #
   # This entry point does *not* accrue interest for the underlying balance. Using this entrypoint
   # means that the calling LP will forego some of their rewards. This entry point is useful in the 
-  # case that the stability fund will not or cannot pay rewards and LPs want to extract their collateral.
+  # case that the stability fund will not or cannot pay rewards and LPs want to extract their collateral. This entrypoint
+  # is also not subject to the pause guardian, ensuring that users can always retrieve assets without interest.
   @sp.entry_point
   def UNSAFE_redeem(self, tokensToRedeem):
     sp.set_type(tokensToRedeem, sp.TNat)
@@ -321,27 +340,14 @@ class SavingsPoolContract(FA12.FA12):
     sp.transfer(tokenTransferParam, sp.mutez(0), transferHandle)
 
   ################################################################
-  # State Management
+  # Pause Guardian
   ################################################################
 
-  # Accrue interest.
-  # This entrypoint is only useful if you require interest to be pulled from
-  # the stability fund before you can redeem LP tokens.
-  #
-  # Because of BFS call ordering, when `redeem` is called, transaction will occur
-  # in the following order:
-  # 1) tokens that are redeemed for are transferred to redeemer
-  # 2) tokens accrued in interest are transferred to the pool from the stability fund
-  #
-  #
-  # If the tokens transferred to the redeemer are greater that the tokens currently in the pool, 
-  # the call will fail. Users should call `manuallyAccrueInterest` first, then `redeem` in this case.
-  #
-  # If / when DFS call orders are adopted, this method is no longer needed. 
+  # Pause the system
   @sp.entry_point
-  def manuallyAccrueInterest(self, unit):
-    sp.set_type(unit, sp.TUnit)
-    self.data.underlyingBalance = self.data.underlyingBalance + self.accrueInterest(sp.unit)
+  def pause(self):
+    sp.verify(sp.sender == self.data.pauseGuardianContractAddress, message = Errors.NOT_PAUSE_GUARDIAN)
+    self.data.paused = True
 
   ################################################################
   # Governance
@@ -363,6 +369,14 @@ class SavingsPoolContract(FA12.FA12):
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
     self.data.stabilityFundContractAddress = newStabilityFundContractAddress   
 
+  # Update the pause guardian address.
+  @sp.entry_point
+  def setPauseGuardianContract(self, newPauseGuardianContractAddress):
+    sp.set_type(newPauseGuardianContractAddress, sp.TAddress)
+
+    sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
+    self.data.pauseGuardianContractAddress = newPauseGuardianContractAddress
+
   # Update the interest rate.
   @sp.entry_point
   def setInterestRate(self, newInterestRate):
@@ -371,7 +385,7 @@ class SavingsPoolContract(FA12.FA12):
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
 
     # Accrue interest.
-    accruedInterest = self.accrueInterest(sp.unit) 
+    accruedInterest = self.accrueInterest() 
     self.data.underlyingBalance = self.data.underlyingBalance + accruedInterest
 
     # Adjust rate
@@ -405,7 +419,100 @@ class SavingsPoolContract(FA12.FA12):
     # Verify the requester is the governor.
     sp.verify(sp.sender == self.data.governorContractAddress, Errors.NOT_GOVERNOR)
 
-    sp.send(params.destinationAddress, sp.tez(10))    
+    sp.send(params.destinationAddress, sp.balance)    
+
+  # Unpause the system.
+  @sp.entry_point
+  def unpause(self):
+    sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+    self.data.paused = False
+
+  ###############################################################
+  # Views
+  ###############################################################
+
+  # Get the total number of kUSD that will be in the pool next time interest accrues.
+  @sp.offchain_view(pure = True)
+  def offchainView_poolSize(self):
+    getInterestAccrualResults = sp.build_lambda(self.getInterestAccrualResults.f)
+
+    interestAccrualResults = getInterestAccrualResults(
+      sp.record(
+        interestRate = self.data.interestRate,
+        lastInterestCompoundTime = self.data.lastInterestCompoundTime,
+        underlyingBalance = self.data.underlyingBalance,
+      )
+    )
+    totalPoolSize = self.data.underlyingBalance + interestAccrualResults.accruedInterest
+    
+    sp.result(totalPoolSize)
+
+  # Get the conversion rate of one LP token to kUSD. Results are denominated in kUSD, with 18 digits
+  # of precision.
+  @sp.offchain_view(pure = True)
+  def offchainView_getLPTokenConversionRate(self):
+    # Tabulate the total pool size.
+    # TODO(keefertaylor): This is a re-implementation of the logic in `offchainView_poolSize`, attempt to code share
+    getInterestAccrualResults = sp.build_lambda(self.getInterestAccrualResults.f)
+    interestAccrualResults = getInterestAccrualResults(
+      sp.record(
+        interestRate = self.data.interestRate,
+        lastInterestCompoundTime = self.data.lastInterestCompoundTime,
+        underlyingBalance = self.data.underlyingBalance,
+      )
+    )
+    totalPoolSize = self.data.underlyingBalance + interestAccrualResults.accruedInterest
+
+    # Avoid divide by 0 errors if no LP tokens are issued.
+    conversionRate = sp.local('conversionRate', sp.nat(0))
+    sp.if self.data.totalSupply != sp.nat(0):
+      # NOTE: KSR is denominated in 36 digits, and kUSD uses 18 so we upscale the kUSD size to be 
+      #       the same precision.
+      conversionRate.value = ((totalPoolSize * Constants.PRECISION * Constants.PRECISION) / self.data.totalSupply)
+    
+    sp.result(conversionRate.value)
+    
+  # Get the balance of an account in kUSD, if the account redeemed all their LP tokens. Results are 
+  # denominated in kUSD, with 18 digits of precision.
+  # Get the conversion rate of one LP token to kUSD. Results are denominated in kUSD, with 18 digits
+  # of precision.
+  @sp.offchain_view(pure = True)
+  def offchainView_getAccountValue(self, address):
+    sp.set_type(address, sp.TAddress)
+
+
+    # Tabulate the total pool size.
+    # TODO(keefertaylor): This is a re-implementation of the logic in `offchainView_poolSize`, attempt to code share
+    getInterestAccrualResults = sp.build_lambda(self.getInterestAccrualResults.f)
+    interestAccrualResults = getInterestAccrualResults(
+      sp.record(
+        interestRate = self.data.interestRate,
+        lastInterestCompoundTime = self.data.lastInterestCompoundTime,
+        underlyingBalance = self.data.underlyingBalance,
+      )
+    )
+    totalPoolSize = self.data.underlyingBalance + interestAccrualResults.accruedInterest
+
+    # Avoid divide by 0 errors if no LP tokens are issued.
+    # TODO(keefertaylor): This is a re-implementation of the logic in `offchainView_poolSize`, attempt to code share
+    conversionRate = sp.local('conversionRate', sp.nat(0))
+    sp.if self.data.totalSupply != sp.nat(0):
+      # NOTE: KSR is denominated in 36 digits, and kUSD uses 18 so we upscale the kUSD size to be 
+      #       the same precision.
+      conversionRate.value = ((totalPoolSize * Constants.PRECISION * Constants.PRECISION) / self.data.totalSupply)
+
+    # Get account balance.
+    # Default to 0 to avoid a bad map access.
+    accountLPTokens = sp.nat(0)
+    sp.if self.data.balances.contains(address):
+      accountLPTokens = self.data.balances[address].balance
+
+    # Return conversion rate of one LP token multipled the number of LP tokens owned.
+    # NOTE: KSR is denominated in 36 digits, and kUSD uses 18 so we upscale the kUSD size to be 
+    #       the same precision. Then, two fixed point numbers with 36 digits of precision are
+    #       multiplied together, which means we need to divide by the LP_TOKEN_PRECISION.
+    accountValue = accountLPTokens * conversionRate.value // Constants.LP_TOKEN_PRECISION
+    sp.result(accountValue)
 
   ################################################################
   # Helpers
@@ -416,38 +523,180 @@ class SavingsPoolContract(FA12.FA12):
   # - Accrue interest using linear approximation
   # - Request funds
   #
-  # This functionality is split out for re-use and for testing.
+  # This functionality is split out for re-use across multiple entrypoints and for testing purposes.
   #
   # Param: unit
   # Return: The newly accrued interest
   @sp.sub_entry_point
-  def accrueInterest(self, unit):
-    sp.set_type(unit, sp.TUnit)
-
-    # Calculate the number of periods that elapsed.
-    timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestCompoundTime)
-    numPeriods = sp.local('numPeriods', timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
-
-    # Update the last updated time.
-    self.data.lastInterestCompoundTime = self.data.lastInterestCompoundTime.add_seconds(sp.to_int(numPeriods.value * Constants.SECONDS_PER_COMPOUND))
-
-    # Determine the new amount of interest accrued.
-    newUnderlyingBalance = sp.local(
-      'newTotalUnderlying', 
-      self.data.underlyingBalance * (Constants.PRECISION + (numPeriods.value * self.data.interestRate)) // Constants.PRECISION
+  def accrueInterest(self):
+    # Inline the `getInterestAccrualResults` `global_lambda` for later use in this 
+    # `sub_entry_point`.
+    # 
+    # This is necessary because `sub_entry_point`s cannot call `global_lambda`, and this 
+    # functionality needs to be split into a global_lambda for reuse in offchain_view code. See 
+    # "Implementation Notes" in the `getInterestAccrualResults` documentation.
+    #  
+    # Implementation Note: 
+    # `sp.build_lambda` will inline the code in the global lambda into this `sub_entry_point`, which
+    # effectively duplicates the code and increases contract size. A more elegant solution and space
+    # efficient solution would be to pass these lambdas as parameters of the sub_entry_point, but 
+    # this contract is not space constrained and that method is more prone to programmer error.
+    # For more details, see conversation between messages: 
+    #   https://t.me/SmartPy_io/17252 and https://t.me/SmartPy_io/17428 
+    getInterestAccrualResults = sp.build_lambda(self.getInterestAccrualResults.f)
+    
+    # Calculate the results of interest accrual via a pure `global_lambda`.
+    interestAccrualResults = sp.local(
+      'interestAccrualResults', 
+      getInterestAccrualResults(
+        sp.record(
+          interestRate = self.data.interestRate,
+          lastInterestCompoundTime = self.data.lastInterestCompoundTime,
+          underlyingBalance = self.data.underlyingBalance,
+        )
+      )
     )
-    accruedInterest = sp.local('accruedInterest', sp.as_nat(newUnderlyingBalance.value - self.data.underlyingBalance))
 
-    # Transfer in accrued tokens
+    # Update the contracts state with the result of the `global_lambda`
+    self.data.lastInterestCompoundTime = self.data.lastInterestCompoundTime.add_seconds(
+      sp.to_int(
+        interestAccrualResults.value.numberOfElapsedInterestPeriods * Constants.SECONDS_PER_COMPOUND
+      )
+    )
+
+    # Transfer in the required number of tokens from the stability fund.
     stabilityFundHandle = sp.contract(
       sp.TNat,
       self.data.stabilityFundContractAddress,
       'accrueInterest'
     ).open_some()
-    sp.transfer(accruedInterest.value, sp.mutez(0), stabilityFundHandle)
+    sp.transfer(interestAccrualResults.value.accruedInterest, sp.mutez(0), stabilityFundHandle)
 
     # Return the number of newly accrued tokens.
-    sp.result(accruedInterest.value)
+    sp.result(interestAccrualResults.value.accruedInterest)
+
+  # Helper lambda to calculate data about interest accrual.
+  #
+  # ================================================================================================
+  # Values Calculated
+  # ================================================================================================
+  #
+  # This lambda calculates two pieces of data:
+  #
+  # 1. The number of interest periods that elapsed.
+  #    
+  #    If the `lastInterestCompoundTime` is set to `t` seconds, and the current time is `T` seconds,
+  #    and a compound period is `c` seconds long, then the number of elapsed interest periods is:
+  #      numberOfElapsedInterestPeriods = floor((T - t) / c)
+  #
+  #    In other words, this calculates the number of interest periods which have *fully* elapsed, 
+  #    discarding any partial periods. The value of `lastInterestCompoundTime` should then be 
+  #    incremented by the number of periods elapsed and the seconds per period:
+  #      newLastInterestCompoundTime = 
+  #         lastInterestCompoundTime + (numberOfElapsedInterestPeriods * c)
+  # 
+  # 2. The newly accrued interest over the current time.
+  #
+  #     If the current balance of the pool is `i`, and after `n` interest accrual periods at rate 
+  #     `r`, the balance of the pool will be `I`, then the accrued interest is:
+  #       accruedInterest = `I - i`
+  #     
+  #     In other words, this value will calculate the amount of interest that needs to be requested 
+  #     from the stability fund.
+  #    
+  # ================================================================================================
+  # Implementation Notes
+  # ================================================================================================
+  # 
+  # This functionality is split into a global lambda so that it can be shared between 
+  # `sub_entry_point`s and `offchain_views`. By using a `global_lambda` functionality can be reused 
+  # and shared, with some caveats. 
+  # 
+  # A `global_lambda` is required because:
+  # - `deposit` and `withdraw` both need to share logic which modifies contract state, necessitating
+  #    the use of a shared `sub_entry_point` (And `global_lambda`s cannot modify state)
+  # - The values derived by the code in this lambda are needed in `offchain_view`s to calculate 
+  #   return values
+  # - `offchain_view`s cannot call `sub_entry_point`s but can call `global_lambdas`
+  # - `sub_entry_point`s can inline functionality from global lambdas in order to reuse the code. 
+  # For more details, see conversation between messages: 
+  #     https://t.me/SmartPy_io/17252 and https://t.me/SmartPy_io/17428 
+  #
+  # Since this data must be a global lambda, the following rules apply:
+  # 1. The lambda is completely pure and cannot modify state, only return results. The caller is 
+  #    responsible for modifying contract state.
+  # 2. The lambda cannot access or modify smart contract storage. Therefore, the smart contract 
+  #    storage to be operated on must bein passed in as arguments, even though they should always be
+  #    set to the same valuees. 
+  #
+  # In practice, the above means:
+  # 1. This lambda should only ever be called from:
+  #   a) The `accrueInterest` sub_entry_point, which provides strong guarantees around contract 
+  #      state being updated correctly
+  #   b) A view, which does not modify state and simply returns the state of the world to a caller
+  # 2. This lambda should ALWAYS be called with the following parameter, which simply maps in the 
+  #    contract storage into the lambda:
+  #       ```
+  #       getInterestAccrualResults(
+  #         sp.record(
+  #           interestRate = self.data.interestRate,
+  #           lastInterestCompoundTime = self.data.lastInterestCompoundTime,
+  #           underlyingBalance = self.data.underlyingBalance,
+  #         )
+  #       )
+  #       ```
+  #
+  # Params:
+  # - interestRate (nat): The current interest rate. `self.data.interestRate` should ALWAYS be 
+  #                       passed as this argument.
+  # - lastInterestCompoundTime (timestamp): The last interest compound time. 
+  #                                        `self.data.lastlastInterestCompoundTime` should ALWAYS be
+  #                                         passed as this argument.
+  # - underlyingBalance (nat): The value of the pool at current time. `self.data.underlyingBalance` 
+  #                            should ALWAYS be passed as this argument.
+  #
+  # Returns: A record of type
+  #          `sp.TRecord(accruedInterest = sp.TNat, numberOfElapsedInterestPeriods = sp.TNat)`
+  # - accruedInterest (nat): The amount of interest the pool should accrue on `underlyingBalance` of
+  #                          value, between `lastInterestCompoundTime` and the current time, when 
+  #                          accrued at `interestRate`.
+  #                          See: "Values Calculated", point 2.
+  # - numberOfElapsedInterestPeriods (nat): The amount of interest accrual periods which fully 
+  #                                         elapsed between `lastInterestCompoundTime` and the 
+  #                                         current time.
+  #                                         See: "Values Calculated", point 1.
+  @sp.global_lambda
+  def getInterestAccrualResults(param):
+    sp.set_type(
+      param,
+      sp.TRecord(
+        interestRate = sp.TNat,
+        lastInterestCompoundTime = sp.TTimestamp,
+        underlyingBalance = sp.TNat        
+      )
+    )
+    
+    # Calculate the number of elapsed interest periods.
+    timeDeltaSeconds = sp.as_nat(sp.now - param.lastInterestCompoundTime)
+    numberOfElapsedInterestPeriods = sp.local(
+      'numberOfElapsedInterestPeriods', 
+      timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
+    )
+
+    # Calculate the accrued interest.
+    newUnderlyingBalance = param.underlyingBalance * (Constants.PRECISION + (numberOfElapsedInterestPeriods.value * param.interestRate)) // Constants.PRECISION
+    accruedInterest = sp.local(
+      'accruedInterest', 
+      sp.as_nat(newUnderlyingBalance - param.underlyingBalance)
+    )
+
+    # Return a tuple containing the number of elapsed periods and the accrued interest
+    sp.result(
+      sp.record(
+        accruedInterest = accruedInterest.value,
+        numberOfElapsedInterestPeriods = numberOfElapsedInterestPeriods.value,
+      )
+    )
 
 ################################################################
 ################################################################
@@ -458,27 +707,34 @@ class SavingsPoolContract(FA12.FA12):
 # Only run tests if this file is main.
 if __name__ == "__main__":
 
-  Dummy = sp.import_script_from_url("file:./test-helpers/dummy-contract.py")
-  Oven = sp.import_script_from_url("file:./oven.py")
-  StabilityFund = sp.import_script_from_url("file:./stability-fund.py")
-  Token = sp.import_script_from_url("file:./token.py")
+  Dummy = sp.io.import_script_from_url("file:./test-helpers/dummy-contract.py")
+  Oven = sp.io.import_script_from_url("file:./oven.py")
+  StabilityFund = sp.io.import_script_from_url("file:./stability-fund.py")
+  Token = sp.io.import_script_from_url("file:./token.py")
 
   ################################################################
   # Test Helpers
   ################################################################
 
-  # Tests sub_entry_points
+  # Tests the Accrue Interest sub_entry_point
   # See: https://t.me/SmartPy_io/9155
-  class Tester(sp.Contract):
+  class AccrueInterestTester(sp.Contract):
     def __init__(
       self,
-      contractEntrypoint,
+      poolContract,
       interestRate,
       lastInterestCompoundTime,
       stabilityFundContractAddress,
       underlyingBalance
     ):
-      self.contractEntrypoint = contractEntrypoint
+      # Entrypoint under test.
+      self.contractEntrypoint = poolContract.accrueInterest
+
+      # The accrue interest entrypoint needs to inline the following lambdas, so the 
+      # Tester should also grab reference to them. 
+      # For details, see comments in the `accrueInterest` sub_entry_point.
+      self.getInterestAccrualResults = poolContract.getInterestAccrualResults
+
       self.init(
         result = sp.none, 
         interestRate = interestRate,
@@ -488,8 +744,8 @@ if __name__ == "__main__":
       )
         
     @sp.entry_point
-    def testContractEntryPoint(self, params):
-      self.data.result = sp.some(self.contractEntrypoint(params))
+    def testContractEntryPoint(self):
+      self.data.result = sp.some(self.contractEntrypoint())
 
   ################################################################
   # accrueInterest
@@ -509,8 +765,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -519,7 +775,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 1 compound period.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
     )
 
@@ -540,8 +796,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -550,7 +806,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 2 compound periods.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND * 2)
     )
 
@@ -571,8 +827,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -581,7 +837,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 1 compound period.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND * 2)
     )
 
@@ -602,8 +858,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -612,7 +868,7 @@ if __name__ == "__main__":
     scenario += tester
     
     # WHEN interest is accrued after 2.5 periods
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(150) # 2.5 periods
     )
 
@@ -635,8 +891,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -645,7 +901,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 1 compound period.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
     )
 
@@ -668,8 +924,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -678,7 +934,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 2 compound periods.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND * 2)
     )
 
@@ -701,8 +957,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -711,7 +967,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 1 compound period.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND * 2)
     )
 
@@ -734,8 +990,8 @@ if __name__ == "__main__":
     scenario += pool
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
@@ -744,7 +1000,7 @@ if __name__ == "__main__":
     scenario += tester
 
     # WHEN interest is accrued after 2.5 periods
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(150) # 2.5 periods
     )
 
@@ -790,8 +1046,8 @@ if __name__ == "__main__":
     )
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = stabilityFund.address,
@@ -817,7 +1073,7 @@ if __name__ == "__main__":
     )
 
     # WHEN interest is accrued after 1 compound period.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
     )
 
@@ -863,8 +1119,8 @@ if __name__ == "__main__":
     )
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = stabilityFund.address,
@@ -890,7 +1146,7 @@ if __name__ == "__main__":
     )
 
     # WHEN interest is accrued after 2 compound periods.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(2 * Constants.SECONDS_PER_COMPOUND)
     )
 
@@ -936,8 +1192,8 @@ if __name__ == "__main__":
     )
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = stabilityFund.address,
@@ -963,7 +1219,7 @@ if __name__ == "__main__":
     )
 
     # WHEN interest is accrued after the second compound period.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(2 * Constants.SECONDS_PER_COMPOUND)
     )
 
@@ -1009,8 +1265,8 @@ if __name__ == "__main__":
     )
 
     # AND a tester.
-    tester = Tester(
-      pool.accrueInterest,
+    tester = AccrueInterestTester(
+      pool,
       interestRate = interestRate,
       lastInterestCompoundTime = lastInterestCompoundTime,
       stabilityFundContractAddress = stabilityFund.address,
@@ -1036,84 +1292,12 @@ if __name__ == "__main__":
     )
 
     # WHEN interest is accrued after 2 and a half compound periods.
-    scenario += tester.testContractEntryPoint(sp.unit).run(
+    scenario += tester.testContractEntryPoint().run(
       now = sp.timestamp(150) # 2.5 periods
     )
 
     # THEN the contract has the right number of tokens.
     scenario.verify(token.data.balances[tester.address].balance == 1200000000000000000)    
-
-  ################################################################
-  # manuallyAccrueInterest
-  ################################################################
-
-  @sp.add_test(name="manuallyAccrueInterest - accrues interest for one period")
-  def test():
-    scenario = sp.test_scenario()
-    
-    # GIVEN a token contract.
-    token = Token.FA12(
-      admin = Addresses.TOKEN_ADMIN_ADDRESS
-    )
-    scenario += token
-
-    # AND a Pool contract
-    interestRate = sp.nat(100000000000000000)
-    lastInterestCompoundTime = sp.timestamp(0)
-    initialBalance = Constants.PRECISION
-    pool = SavingsPoolContract(
-      interestRate = interestRate,
-      lastInterestCompoundTime = lastInterestCompoundTime,
-      underlyingBalance = initialBalance,
-      tokenContractAddress = token.address
-    )
-    scenario += pool
-
-    # AND a stability fund contract.
-    stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
-      tokenContractAddress = token.address,
-    )
-    scenario += stabilityFund
-
-    # AND the stability fund has many tokens
-    scenario += token.mint(
-      sp.record(
-        address = stabilityFund.address,
-        value = 1000000 * Constants.PRECISION
-      )
-    ).run(
-      sender = Addresses.TOKEN_ADMIN_ADDRESS
-    )
-
-    # AND the pool has the initial balance
-    scenario += token.mint(
-      sp.record(
-        address = pool.address,
-        value = initialBalance
-      )
-    ).run(
-      sender = Addresses.TOKEN_ADMIN_ADDRESS
-    )
-
-    # AND the pool is wired to the stabiility fund.
-    scenario += pool.setStabilityFundContract(stabilityFund.address).run(
-      sender = Addresses.GOVERNOR_ADDRESS
-    )
-
-    # WHEN interest is manually accrued after one compound period
-    scenario += pool.manuallyAccrueInterest(sp.unit).run(
-      now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
-    )
-
-    # THEN the underlying balance is updated.
-    scenario.verify(pool.data.underlyingBalance == initialBalance + (initialBalance // 10))
-
-    # AND the last compound time is updated.
-    scenario.verify(pool.data.lastInterestCompoundTime == sp.timestamp(Constants.SECONDS_PER_COMPOUND))
-
-    # AND tokens are transferred to the pool.
-    scenario.verify(token.data.balances[pool.address].balance == initialBalance + (initialBalance // 10))
 
   ################################################################
   # rescueXTZ
@@ -1143,37 +1327,36 @@ if __name__ == "__main__":
       valid = False
     )
 
-  # TODO(keefertaylor): Enable this when upgrading SmartPy, see: https://gitlab.com/SmartPy/smartpy-private/-/merge_requests/541/diffs
-  # @sp.add_test(name="rescueXTZ - rescues XTZ")
-  # def test():
-  #   scenario = sp.test_scenario()
+  @sp.add_test(name="rescueXTZ - rescues XTZ")
+  def test():
+    scenario = sp.test_scenario()
 
-  #   # GIVEN a pool contract
-  #   pool = SavingsPoolContract(
-  #     governorContractAddress = Addresses.GOVERNOR_ADDRESS,
-  #   )
-  #   xtzAmount = sp.mutez(10)
-  #   pool.set_initial_balance(xtzAmount)
-  #   scenario += pool
+    # GIVEN a pool contract
+    pool = SavingsPoolContract(
+      governorContractAddress = Addresses.GOVERNOR_ADDRESS,
+    )
+    xtzAmount = sp.mutez(10)
+    pool.set_initial_balance(xtzAmount)
+    scenario += pool
 
-  #   scenario.verify(pool.balance == xtzAmount)
+    scenario.verify(pool.balance == xtzAmount)
 
-  #   # AND a dummy contract that will receive the XTZ
-  #   dummy = Dummy.DummyContract()
-  #   scenario += dummy
+    # AND a dummy contract that will receive the XTZ
+    dummy = Dummy.DummyContract()
+    scenario += dummy
 
-  #   # WHEN rescue XTZ is called
-  #   scenario += pool.rescueXTZ(
-  #     sp.record(
-  #       destinationAddress = dummy.address
-  #     )
-  #   ).run(
-  #     sender = Addresses.GOVERNOR_ADDRESS,
-  #   )
+    # WHEN rescue XTZ is called
+    scenario += pool.rescueXTZ(
+      sp.record(
+        destinationAddress = dummy.address
+      )
+    ).run(
+      sender = Addresses.GOVERNOR_ADDRESS,
+    )
 
-  #   # THEN XTZ is transferred.
-  #   scenario.verify(pool.balance == sp.tez(0))
-  #   scenario.verify(dummy.balance == xtzAmount)
+    # THEN XTZ is transferred.
+    scenario.verify(pool.balance == sp.tez(0))
+    scenario.verify(dummy.balance == xtzAmount)
 
   ################################################################
   # setContractMetadata
@@ -1357,6 +1540,42 @@ if __name__ == "__main__":
     scenario.verify(pool.data.stabilityFundContractAddress == Addresses.ROTATED_ADDRESS)
 
   ################################################################
+  # setPauseGuardianContract
+  ################################################################
+
+  @sp.add_test(name="setPauseGuardianContract - fails if sender is not governor")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a pool contract
+    pool = SavingsPoolContract()
+    scenario += pool
+
+    # WHEN setPauseGuardianContract is called by someone other than the governor
+    # THEN the call will fail
+    notGovernor = Addresses.NULL_ADDRESS
+    scenario += pool.setPauseGuardianContract(Addresses.ROTATED_ADDRESS).run(
+      sender = notGovernor,
+      valid = False,      
+    )
+
+  @sp.add_test(name="setPauseGuardianContract - can rotate pause guardian")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a pool contract
+    pool = SavingsPoolContract()
+    scenario += pool
+
+    # WHEN setPauseGuardianContract is called
+    scenario += pool.setPauseGuardianContract(Addresses.ROTATED_ADDRESS).run(
+      sender = Addresses.GOVERNOR_ADDRESS,
+    )    
+
+    # THEN the pause guardian is rotated.
+    scenario.verify(pool.data.pauseGuardianContractAddress == Addresses.ROTATED_ADDRESS)
+
+  ################################################################
   # setInterestRate
   ################################################################
 
@@ -1457,6 +1676,84 @@ if __name__ == "__main__":
 
     # THEN the interest rate is updated.
     scenario.verify(pool.data.interestRate == newInterestRate)
+
+  ################################################################
+  # unpause
+  ################################################################
+
+  @sp.add_test(name="unpause - fails if sender is not governor")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a pool contract which is paused
+    pool = SavingsPoolContract(
+      paused = True
+    )
+    scenario += pool
+
+    # WHEN unpause is called by someone other than the governor
+    # THEN the call will fail
+    notGovernor = Addresses.NULL_ADDRESS
+    scenario += pool.unpause().run(
+      sender = notGovernor,
+      valid = False
+    )
+
+  @sp.add_test(name="unpause - can unpause contract")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a pool contract which is paused
+    pool = SavingsPoolContract(
+      paused = True,
+    )
+    scenario += pool
+
+    # WHEN unpause is called
+    scenario += pool.unpause().run(
+      sender = Addresses.GOVERNOR_ADDRESS,
+    )    
+
+    # THEN the contract is unpaused
+    scenario.verify(pool.data.paused == False)
+
+  ################################################################
+  # pause
+  ################################################################
+
+  @sp.add_test(name="unpause - fails if sender is not pause guardian")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a pool contract
+    pool = SavingsPoolContract(
+      paused = True
+    )
+    scenario += pool
+
+    # WHEN pause is called by someone other than the pause guardian
+    # THEN the call will fail
+    notPauseGuardian = Addresses.NULL_ADDRESS
+    scenario += pool.unpause().run(
+      sender = notPauseGuardian,
+      valid = False
+    )
+
+  @sp.add_test(name="pause - can pause contract")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a pool contract
+    pool = SavingsPoolContract()
+    scenario += pool
+
+    # WHEN pause is called
+    scenario += pool.pause().run(
+      sender = Addresses.PAUSE_GUARDIAN_ADDRESS,
+    )    
+
+    # THEN the contract is paused
+    scenario.verify(pool.data.paused == True)    
 
   ################################################################
   # deposit
@@ -1569,6 +1866,65 @@ if __name__ == "__main__":
     scenario.verify(pool.data.state == IDLE)
     scenario.verify(pool.data.savedState_tokensToDeposit.is_some() == False)
     scenario.verify(pool.data.savedState_depositor.is_some() == False)
+
+  @sp.add_test(name="deposit - fails when paused")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a token contract
+    token = Token.FA12(
+      admin = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+    scenario += token
+
+    # AND a pool contract that is paused
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address,
+      paused = True,
+    )
+    scenario += pool
+
+    # AND Alice has tokens
+    aliceTokens = sp.nat(10)
+    scenario += token.mint(
+      sp.record(
+        address = Addresses.ALICE_ADDRESS,
+        value = aliceTokens
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND Alice has given the pool an allowance
+    scenario += token.approve(
+      sp.record(
+        spender = pool.address,
+        value = aliceTokens
+      )
+    ).run(
+      sender = Addresses.ALICE_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # WHEN Alice deposits tokens in the contract
+    # THEN the call fails because the contract is paused.
+    scenario += pool.deposit(
+      aliceTokens
+    ).run(
+      sender = Addresses.ALICE_ADDRESS,
+      valid = False,
+    )
 
   @sp.add_test(name="deposit - can deposit from one account")
   def test():
@@ -2550,6 +2906,136 @@ if __name__ == "__main__":
     scenario.verify(pool.data.savedState_tokensToRedeem.is_some() == False)
     scenario.verify(pool.data.savedState_redeemer.is_some() == False)
 
+  @sp.add_test(name="redeem - fails when paused")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a token contract
+    token = Token.FA12(
+      admin = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+    scenario += token
+
+    # AND a pool contract
+    pool = SavingsPoolContract(
+      interestRate = sp.nat(100000000000000000),
+      lastInterestCompoundTime = sp.timestamp(0),
+      underlyingBalance = sp.nat(0),
+      tokenContractAddress = token.address,
+    )
+    scenario += pool
+
+    # AND a stability fund contract
+    stabilityFund = StabilityFund.StabilityFundContract(
+      savingsAccountContractAddress = pool.address,
+      tokenContractAddress = token.address,
+    )
+    scenario += stabilityFund
+
+    # AND the stability fund has many tokens
+    scenario += token.mint(
+      sp.record(
+        address = stabilityFund.address,
+        value = 1000000000000 * Constants.PRECISION
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND the pool is wired to the stability fund.
+    scenario += pool.setStabilityFundContract(stabilityFund.address).run(
+      sender = Addresses.GOVERNOR_ADDRESS
+    )
+
+    # AND Alice has tokens
+    aliceTokens = 10 * Constants.PRECISION  
+    scenario += token.mint(
+      sp.record(
+        address = Addresses.ALICE_ADDRESS,
+        value = aliceTokens
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND Alice has given the pool an allowance
+    scenario += token.approve(
+      sp.record(
+        spender = pool.address,
+        value = aliceTokens
+      )
+    ).run(
+      sender = Addresses.ALICE_ADDRESS
+    )
+
+    # AND BOB has tokens
+    bobTokens = 10 * Constants.PRECISION  
+    scenario += token.mint(
+      sp.record(
+        address = Addresses.BOB_ADDRESS,
+        value = bobTokens
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND Bob has given the pool an allowance
+    scenario += token.approve(
+      sp.record(
+        spender = pool.address,
+        value = bobTokens
+      )
+    ).run(
+      sender = Addresses.BOB_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND Alice and Bob deposit tokens into the pool
+    scenario += pool.deposit(
+      aliceTokens
+    ).run(
+      now = sp.timestamp(1),
+      sender = Addresses.ALICE_ADDRESS
+    )
+
+    scenario += pool.deposit(
+      bobTokens
+    ).run(
+      now = sp.timestamp(2),
+      sender = Addresses.BOB_ADDRESS
+    )
+
+    # Sanity check, both Bob and Alice own equal chunks of the pool and the
+    # pool is the sum of their tokens.
+    scenario.verify(pool.data.balances[Addresses.ALICE_ADDRESS].balance == pool.data.balances[Addresses.BOB_ADDRESS].balance)
+    scenario.verify(token.data.balances[pool.address].balance == aliceTokens + bobTokens)
+
+    # AND the pool is paused
+    scenario += pool.pause().run(
+      sender = Addresses.PAUSE_GUARDIAN_ADDRESS,
+    )
+    
+    # WHEN Alice withdraws her tokens after one compound period
+    # THEN the call fails because the pool is paused.
+    scenario += pool.redeem(
+      pool.data.balances[Addresses.ALICE_ADDRESS].balance 
+    ).run(
+      now = sp.timestamp(Constants.SECONDS_PER_COMPOUND),
+      sender = Addresses.ALICE_ADDRESS, 
+      valid = False,
+    )
+
   @sp.add_test(name="redeem - accrues interest on redeem")
   def test():
     scenario = sp.test_scenario()
@@ -2782,13 +3268,9 @@ if __name__ == "__main__":
       sender = Addresses.ALICE_ADDRESS
     )
 
-    # WHEN alice calls accrue interest and then withdraw
+    # WHEN alice calls withdraw
     # THEN it will succeed.
     now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
-    scenario += pool.manuallyAccrueInterest(sp.unit).run(
-      now = now,
-      sender = Addresses.ALICE_ADDRESS,      
-    )
     scenario += pool.redeem(
       pool.data.balances[Addresses.ALICE_ADDRESS].balance 
     ).run(
@@ -3962,6 +4444,85 @@ if __name__ == "__main__":
       valid = False
     )
 
+  @sp.add_test(name="UNSAFE_redeem - can deposit and withdraw from one account when paused")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a token contract
+    token = Token.FA12(
+      admin = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+    scenario += token
+
+    # AND a pool contract
+    pool = SavingsPoolContract(
+      tokenContractAddress = token.address
+    )
+    scenario += pool
+
+    # AND Alice has tokens
+    aliceTokens = sp.nat(10)
+    scenario += token.mint(
+      sp.record(
+        address = Addresses.ALICE_ADDRESS,
+        value = aliceTokens
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND Alice has given the pool an allowance
+    scenario += token.approve(
+      sp.record(
+        spender = pool.address,
+        value = aliceTokens
+      )
+    ).run(
+      sender = Addresses.ALICE_ADDRESS
+    )
+
+    # And the pool is initialized to a zero balance in the token contract
+    # NOTE: This is a workaround for a bug in the kUSD contract where `getBalance` will failwith if called for an address that wasn't
+    #       previously initialized.
+    scenario += token.mint(
+      sp.record(
+        address = pool.address,
+        value = 0
+      )
+    ).run(
+      sender = Addresses.TOKEN_ADMIN_ADDRESS
+    )
+
+    # AND Alice deposits tokens in the contract.
+    scenario += pool.deposit(
+      aliceTokens
+    ).run(
+      sender = Addresses.ALICE_ADDRESS
+    )
+
+    # AND the pool is paused
+    scenario += pool.pause().run(
+      sender = Addresses.PAUSE_GUARDIAN_ADDRESS,
+    )
+
+    # WHEN Alice withdraws from the contract.
+    scenario += pool.UNSAFE_redeem(
+      aliceTokens * Constants.PRECISION
+    ).run(
+      sender = Addresses.ALICE_ADDRESS
+    )
+
+    # THEN Alice trades her LP tokens for her original tokens
+    scenario.verify(token.data.balances[Addresses.ALICE_ADDRESS].balance == aliceTokens)
+    scenario.verify(pool.data.balances[Addresses.ALICE_ADDRESS].balance == sp.nat(0))
+
+    # AND the total supply of tokens is as expected
+    scenario.verify(pool.data.totalSupply == sp.nat(0))
+
+    # AND the pool has possession of the correct number of tokens.
+    scenario.verify(token.data.balances[pool.address].balance == sp.nat(0))
+    scenario.verify(pool.data.underlyingBalance == sp.nat(0))
+
   @sp.add_test(name="UNSAFE_redeem - can deposit and withdraw from one account")
   def test():
     scenario = sp.test_scenario()
@@ -4562,3 +5123,255 @@ if __name__ == "__main__":
 
     # AND the pool thinks it has 0 tokens
     scenario.verify(pool.data.underlyingBalance == sp.nat(0))
+
+  ################################################################
+  # offchainView_poolSize
+  ################################################################
+
+  @sp.add_test(name="offchainView_poolSize - calculates values correctly")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract
+    interestRate = sp.nat(100000000000000000)
+    initialValue = Constants.PRECISION
+    lastInterestCompoundTime = sp.timestamp(0)
+    pool = SavingsPoolContract(
+      interestRate = interestRate,
+      underlyingBalance = initialValue,
+      lastInterestCompoundTime = lastInterestCompoundTime,
+    )
+    scenario += pool
+
+    # AND some the expected values after one and two interest periods
+    # NOTE: Compounding is done via linear approximation:
+    #   Expected = (initial_value * (1 + (number_periods * interest_rate)))
+    expectedValueAfterOnePeriod = 1100000000000000000  # = (1 * (1 + (1 * .10))) * PRECISION
+    expectedValueAfterTwoPeriods = 1200000000000000000 # = (1 * (1 + (2 * .10))) * PRECISION
+
+    # WHEN the view is called
+    # THEN then the initial value is returned
+    scenario.verify(pool.offchainView_poolSize() == initialValue)
+
+    # WHEN the view is called after one period
+    # THEN the view returns one period of compounding
+    # TODO (keefertaylor): Enable this when SmartPy supports it. See: https://t.me/SmartPy_io/17555
+    # scenario.verify(pool.offchainView_poolSize() == expectedValueAfterOnePeriod)
+
+    # WHEN the view is called after two periods
+    # THEN the view returns two periods of compounding
+    # TODO (keefertaylor): Enable this when SmartPy supports it. See: https://t.me/SmartPy_io/17555
+    # scenario.verify(pool.offchainView_poolSize() == expectedValueAfterTwoPeriods)
+
+    # WHEN the view is called after two and a half periods
+    # THEN the view correctly floors and returns two periods of compounding
+    # TODO (keefertaylor): Enable this when SmartPy supports it. See: https://t.me/SmartPy_io/17555
+    # scenario.verify(pool.offchainView_poolSize() == expectedValueAfterTwoPeriods)
+
+  ################################################################
+  # offchainView_poolSize
+  ################################################################
+
+  @sp.add_test(name="offchainView_getLPTokenConversionRate - Calculates conversion rate with one LP token issued")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 100 kUSD and 1 LP token issued
+    pool = SavingsPoolContract(
+      underlyingBalance = 100 * Constants.PRECISION,
+      totalSupply = 1 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool
+
+    # THEN the conversion rate is 1 LP token = 100 kUSD
+    scenario.verify(pool.offchainView_getLPTokenConversionRate() == 100 * Constants.PRECISION)
+
+  @sp.add_test(name="offchainView_getLPTokenConversionRate - Calculates conversion rate with many LP tokens issued")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 100 kUSD and 5 LP token issued
+    pool = SavingsPoolContract(
+      underlyingBalance = 100 * Constants.PRECISION,
+      totalSupply = 5 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool
+
+    # THEN the conversion rate is 1 LP token = 20 kUSD (100 kUSD / 5 LP tokens)
+    scenario.verify(pool.offchainView_getLPTokenConversionRate() == 20 * Constants.PRECISION)
+
+  @sp.add_test(name="offchainView_getLPTokenConversionRate - Calculates conversion rate when conversion rate is less than 1")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 1 kUSD and 100 LP tokens issued
+    pool = SavingsPoolContract(
+      underlyingBalance = 1 * Constants.PRECISION,
+      totalSupply = 100 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool
+
+    # THEN the conversion rate is 1 LP token = .01 kUSD
+    scenario.verify(pool.offchainView_getLPTokenConversionRate() == Constants.PRECISION // 100)
+
+  @sp.add_test(name="offchainView_getLPTokenConversionRate - Calculates conversion rate with 0 LP tokens")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 1 kUSD and 0 LP tokens issued
+    pool = SavingsPoolContract(
+      underlyingBalance = 1 * Constants.PRECISION,
+      totalSupply = 0,
+    )
+    scenario += pool
+
+    # THEN the conversion rate is 0
+    scenario.verify(pool.offchainView_getLPTokenConversionRate() == 0)    
+
+  # NOTE: This can logically never happen (if there are LP tokens there should be kUSD). 
+  @sp.add_test(name="offchainView_getLPTokenConversionRate - Calculates conversion rate with 0 kUSD tokens")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 10 kUSD and 1 LP tokens issued
+    pool = SavingsPoolContract(
+      underlyingBalance = 0,
+      totalSupply = 1 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool
+
+    # THEN the conversion rate is 0
+    scenario.verify(pool.offchainView_getLPTokenConversionRate() == 0)   
+
+  ################################################################
+  # offchainView_getAccountValue
+  ################################################################
+
+  @sp.add_test(name="offchainView_getAccountValue - Calculates account value with one token issued")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 100 kUSD and 1 LP tokens issued to Alice
+    pool = SavingsPoolContract(
+      balances = sp.big_map(
+        l = {
+          Addresses.ALICE_ADDRESS: sp.record(approvals = {}, balance = 1 * Constants.LP_TOKEN_PRECISION)
+        }
+      ),
+      underlyingBalance = 100 * Constants.PRECISION,      
+      totalSupply = 1 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool
+
+    # THEN her account value is 100
+    scenario.verify(pool.offchainView_getAccountValue(Addresses.ALICE_ADDRESS) == 100 * Constants.PRECISION)   
+
+  @sp.add_test(name="offchainView_getAccountValue - Calculates account value with many token issued")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 100 kUSD and 5 LP tokens issued to Alice
+    pool = SavingsPoolContract(
+      balances = sp.big_map(
+        l = {
+          Addresses.ALICE_ADDRESS: sp.record(approvals = {}, balance = 5 * Constants.LP_TOKEN_PRECISION)
+        }
+      ),
+      underlyingBalance = 100 * Constants.PRECISION,      
+      totalSupply = 5 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool
+
+    # THEN her account value is 100
+    scenario.verify(pool.offchainView_getAccountValue(Addresses.ALICE_ADDRESS) == 100 * Constants.PRECISION)   
+
+  @sp.add_test(name="offchainView_getAccountValue - Calculates account value with multiple holders having multiple tokens")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 100 kUSD and 1 LP tokens issued to Alice, and 3 issued to Bob (4 total)
+    pool = SavingsPoolContract(
+      balances = sp.big_map(
+        l = {
+          Addresses.ALICE_ADDRESS: sp.record(approvals = {}, balance = 1 * Constants.LP_TOKEN_PRECISION),
+          Addresses.BOB_ADDRESS: sp.record(approvals = {}, balance = 3 * Constants.LP_TOKEN_PRECISION)
+        }
+      ),
+      underlyingBalance = 100 * Constants.PRECISION,      
+      totalSupply = 4 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool
+
+    # THEN Alice has 25 kUSD in value (100 underlying / 4 LP tokens * 1 LP token owned by Alice)
+    scenario.verify(pool.offchainView_getAccountValue(Addresses.ALICE_ADDRESS) == 25 * Constants.PRECISION)       
+    
+    # AND Bob has 75 kUSD in value (100 underlying / 4 LP tokens * 3 LP tokens owned by Bob)
+    scenario.verify(pool.offchainView_getAccountValue(Addresses.BOB_ADDRESS) == 75 * Constants.PRECISION)
+  
+  @sp.add_test(name="offchainView_getAccountValue - Calculates account value with multiple holders having multiple tokens when conversion rate is less than 1")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 1 kUSD and 100 LP tokens issued to Alice, and 300 issued to Bob (400 total)
+    pool = SavingsPoolContract(
+      balances = sp.big_map(
+        l = {
+          Addresses.ALICE_ADDRESS: sp.record(approvals = {}, balance = 100 * Constants.LP_TOKEN_PRECISION),
+          Addresses.BOB_ADDRESS: sp.record(approvals = {}, balance = 300 * Constants.LP_TOKEN_PRECISION)
+        }
+      ),
+      underlyingBalance = 1 * Constants.PRECISION,      
+      totalSupply = 400 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool
+
+    # THEN Alice has .25 kUSD in value (1 underlying / 400 LP tokens * 100 LP token owned by Alice)
+    scenario.verify(pool.offchainView_getAccountValue(Addresses.ALICE_ADDRESS) == 25 * Constants.PRECISION // 100)       
+    
+    # AND Bob has .75 kUSD in value (1 underlying / 400 LP tokens * 300 LP tokens owned by Bob)
+    scenario.verify(pool.offchainView_getAccountValue(Addresses.BOB_ADDRESS) == 75 * Constants.PRECISION // 100)
+
+  @sp.add_test(name="offchainView_getAccountValue - Calculates account value when no LP tokoens are issued")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with no LP tokens issued
+    pool = SavingsPoolContract(
+      balances = sp.big_map(
+        l = {
+          Addresses.ALICE_ADDRESS: sp.record(approvals = {}, balance = 0),
+          Addresses.BOB_ADDRESS: sp.record(approvals = {}, balance = 0)
+        }
+      ),
+      underlyingBalance = 100 * Constants.PRECISION,      
+      totalSupply = 0,
+    )
+    scenario += pool
+
+    # THEN Alice's account value is reported as 0
+    scenario.verify(pool.offchainView_getAccountValue(Addresses.ALICE_ADDRESS) == 0)       
+   
+  # NOTE: This can logically never happen (if there are LP tokens there should be kUSD). 
+  @sp.add_test(name="offchainView_getAccountValue - Calculates conversion rate with 0 kUSD tokens")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with no kUSD and 1 LP tokens issued to Alice, and 3 issued to Bob (4 total)
+    pool = SavingsPoolContract(
+      balances = sp.big_map(
+        l = {
+          Addresses.ALICE_ADDRESS: sp.record(approvals = {}, balance = 1 * Constants.LP_TOKEN_PRECISION),
+          Addresses.BOB_ADDRESS: sp.record(approvals = {}, balance = 3 * Constants.LP_TOKEN_PRECISION)
+        }
+      ),
+      underlyingBalance = 0,      
+      totalSupply = 4 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool
+
+    # THEN both Alice and Bob have no account value.
+    scenario.verify(pool.offchainView_getAccountValue(Addresses.ALICE_ADDRESS) == 0 * Constants.PRECISION)       
+    scenario.verify(pool.offchainView_getAccountValue(Addresses.BOB_ADDRESS) == 0 * Constants.PRECISION) 
+
+
+  sp.add_compilation_target("savings-pool", SavingsPoolContract())

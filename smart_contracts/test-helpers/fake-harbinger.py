@@ -1,6 +1,6 @@
 import smartpy as sp
 
-Constants = sp.import_script_from_url("file:common/constants.py")
+Constants = sp.io.import_script_from_url("file:common/constants.py")
 
 # A contract which fakes a Harbinger oracle.
 class FakeHarbingerContract(sp.Contract):
@@ -23,7 +23,7 @@ class FakeHarbingerContract(sp.Contract):
 
     # Update - Not implemented
     @sp.entry_point
-    def update(self, updateMap):
+    def update(self):
         pass
 
     # Get - Returns the static value in the initializer

@@ -10,7 +10,7 @@ class FakeLiquidityPoolContract(sp.Contract):
 
     # Accept and do nothing with any XTZ sent.
     @sp.entry_point
-    def default(self, param):
+    def default(self):
         pass        
 
     # Liquidate an oven.

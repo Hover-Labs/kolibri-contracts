@@ -1,9 +1,9 @@
 import smartpy as sp
 
-Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
-Constants = sp.import_script_from_url("file:common/constants.py")
-DevFund = sp.import_script_from_url("file:dev-fund.py")
-Errors = sp.import_script_from_url("file:common/errors.py")
+Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
+Constants = sp.io.import_script_from_url("file:common/constants.py")
+DevFund = sp.io.import_script_from_url("file:dev-fund.py")
+Errors = sp.io.import_script_from_url("file:common/errors.py")
 
 ################################################################
 # Contract
@@ -94,6 +94,7 @@ class StabilityFundContract(DevFund.DevFundContract):
         self.data.ovenRegistryContractAddress = newOvenRegistryContractAddress        
 
     # Update the savings account contract.
+    # TODO(keefertaylor): Use `SavingsPool` here for consistency, and audit codebase for other uses.
     @sp.entry_point
     def setSavingsAccountContract(self, newSavingsAccountContractAddress):
         sp.set_type(newSavingsAccountContractAddress, sp.TAddress)
@@ -110,11 +111,11 @@ if __name__ == "__main__":
     ################################################################
     ################################################################
 
-    DummyContract = sp.import_script_from_url("file:test-helpers/dummy-contract.py")
-    MockOvenProxy = sp.import_script_from_url("file:test-helpers/mock-oven-proxy.py")
-    Oven = sp.import_script_from_url("file:oven.py")
-    OvenRegistry = sp.import_script_from_url("file:oven-registry.py")
-    Token = sp.import_script_from_url("file:token.py")
+    DummyContract = sp.io.import_script_from_url("file:test-helpers/dummy-contract.py")
+    MockOvenProxy = sp.io.import_script_from_url("file:test-helpers/mock-oven-proxy.py")
+    Oven = sp.io.import_script_from_url("file:oven.py")
+    OvenRegistry = sp.io.import_script_from_url("file:oven-registry.py")
+    Token = sp.io.import_script_from_url("file:token.py")
 
     ################################################################
     # accrueInterest
@@ -274,39 +275,37 @@ if __name__ == "__main__":
           valid = False,
       )
 
-    # TODO(keefertaylor): Enable when SmartPy supports handling `failwith` in other contracts with `valid = False`
-    # SEE: https://t.me/SmartPy_io/6538@sp.add_test(name="oven-factory-withdraw - fails when not called from oven")
-    # @sp.add_test(name="liquidate - fails if not a trusted oven")
-    # def test():
-    #     scenario = sp.test_scenario()
+    @sp.add_test(name="liquidate - fails if not a trusted oven")
+    def test():
+        scenario = sp.test_scenario()
 
-    #     # GIVEN an OvenRegistry contract
-    #     ovenFactoryAddress = Addresses.OVEN_FACTORY_ADDRESS
-    #     ovenRegistry = OvenRegistry.OvenRegistryContract(
-    #         ovenFactoryContractAddress = ovenFactoryAddress
-    #     )
-    #     scenario += ovenRegistry
+        # GIVEN an OvenRegistry contract
+        ovenFactoryAddress = Addresses.OVEN_FACTORY_ADDRESS
+        ovenRegistry = OvenRegistry.OvenRegistryContract(
+            ovenFactoryContractAddress = ovenFactoryAddress
+        )
+        scenario += ovenRegistry
 
-    #     # AND an oven which is registered
-    #     ovenAddress = Addresses.OVEN_ADDRESS
-    #     scenario += ovenRegistry.addOven((ovenAddress, ovenAddress)).run(
-    #         sender = ovenFactoryAddress
-    #     )
+        # AND an oven which is registered
+        ovenAddress = Addresses.OVEN_ADDRESS
+        scenario += ovenRegistry.addOven((ovenAddress, ovenAddress)).run(
+            sender = ovenFactoryAddress
+        )
 
-    #     # AND a StabilityFund contract
-    #     administrator = Addresses.FUND_ADMINISTRATOR_ADDRESS
-    #     fund = StabilityFundContract(
-    #         administratorContractAddress = administrator,
-    #         ovenRegistryContractAddress = ovenRegistry.address
-    #     )
-    #     scenario += fund
+        # AND a StabilityFund contract
+        administrator = Addresses.FUND_ADMINISTRATOR_ADDRESS
+        fund = StabilityFundContract(
+            administratorContractAddress = administrator,
+            ovenRegistryContractAddress = ovenRegistry.address
+        )
+        scenario += fund
 
-    #     # WHEN liquidate is passed an address which is not an oven THEN the call fails.
-    #     notOvenAddress = Addresses.NULL_ADDRESS
-    #     scenario += fund.liquidate(notOvenAddress).run(
-    #         sender = administrator,
-    #         valid = False,
-    #     )
+        # WHEN liquidate is passed an address which is not an oven THEN the call fails.
+        notOvenAddress = Addresses.NULL_ADDRESS
+        scenario += fund.liquidate(notOvenAddress).run(
+            sender = administrator,
+            valid = False,
+        )
 
     ################################################################
     # setOvenRegistryContract
@@ -392,3 +391,4 @@ if __name__ == "__main__":
             valid = False
         )        
         
+    sp.add_compilation_target("stability-fund", StabilityFundContract())
