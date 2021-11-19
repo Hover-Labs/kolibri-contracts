@@ -1,7 +1,10 @@
 import smartpy as sp
 
 # The fixed point number representing 1 in the system, 10^18
-PRECISION     = sp.nat(1000000000000000000)
+PRECISION = sp.nat(1000000000000000000)
+
+# The precision of LP tokens - twice as many decimals as PRECISION
+LP_TOKEN_PRECISION = PRECISION * PRECISION
 
 # The number of seconds to pass before interest is compounded.
 SECONDS_PER_COMPOUND = 60

@@ -60,6 +60,10 @@ class SavingsPoolContract(FA12.FA12):
     savedState_redeemer = sp.none,
     savedState_tokensToDeposit = sp.none,
     savedState_depositor = sp.none,
+
+    # Parent class fields
+    balances = sp.big_map(tvalue = sp.TRecord(approvals = sp.TMap(sp.TAddress, sp.TNat), balance = sp.TNat)),
+    totalSupply = sp.nat(0),
   ):
     token_id = sp.nat(0)
 
@@ -95,8 +99,8 @@ class SavingsPoolContract(FA12.FA12):
 
     self.init(
       # Parent class fields
-      balances = sp.big_map(tvalue = sp.TRecord(approvals = sp.TMap(sp.TAddress, sp.TNat), balance = sp.TNat)), 
-      totalSupply = 0,
+      balances = balances, 
+      totalSupply = totalSupply,
 
       # Metadata
       metadata = metadata,
@@ -423,6 +427,99 @@ class SavingsPoolContract(FA12.FA12):
     sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
     self.data.paused = False
 
+  ###############################################################
+  # Views
+  ###############################################################
+
+  # Get the total number of kUSD that will be in the pool next time interest accrues.
+  @sp.offchain_view(pure = True)
+  def offchainView_poolSize(self):
+    getInterestAccrualResults = sp.build_lambda(self.getInterestAccrualResults.f)
+
+    interestAccrualResults = getInterestAccrualResults(
+      sp.record(
+        interestRate = self.data.interestRate,
+        lastInterestCompoundTime = self.data.lastInterestCompoundTime,
+        underlyingBalance = self.data.underlyingBalance,
+      )
+    )
+    totalPoolSize = self.data.underlyingBalance + interestAccrualResults.accruedInterest
+    
+    sp.result(totalPoolSize)
+
+  # Get the conversion rate of one LP token to kUSD. Results are denominated in kUSD, with 18 digits
+  # of precision.
+  @sp.offchain_view(pure = True)
+  def offchainView_getLPTokenConversionRate(self):
+    # Tabulate the total pool size.
+    # TODO(keefertaylor): This is a re-implementation of the logic in `offchainView_poolSize`, attempt to code share
+    getInterestAccrualResults = sp.build_lambda(self.getInterestAccrualResults.f)
+    interestAccrualResults = getInterestAccrualResults(
+      sp.record(
+        interestRate = self.data.interestRate,
+        lastInterestCompoundTime = self.data.lastInterestCompoundTime,
+        underlyingBalance = self.data.underlyingBalance,
+      )
+    )
+    totalPoolSize = self.data.underlyingBalance + interestAccrualResults.accruedInterest
+
+    # Avoid divide by 0 errors if no LP tokens are issued.
+    conversionRate = sp.local('conversionRate', sp.nat(0))
+    sp.if self.data.totalSupply != sp.nat(0):
+      # NOTE: KSR is denominated in 36 digits, and kUSD uses 18 so we upscale the kUSD size to be 
+      #       the same precision.
+      conversionRate.value = ((totalPoolSize * Constants.PRECISION * Constants.PRECISION) / self.data.totalSupply)
+    
+    sp.result(conversionRate.value)
+    
+  # Get the balance of an account in kUSD, if the account redeemed all their LP tokens. Results are 
+  # denominated in kUSD, with 18 digits of precision.
+  # Get the conversion rate of one LP token to kUSD. Results are denominated in kUSD, with 18 digits
+  # of precision.
+  @sp.offchain_view(pure = True)
+  def offchainView_getAccountValue(self, address):
+    sp.set_type(address, sp.TAddress)
+
+
+    # Tabulate the total pool size.
+    # TODO(keefertaylor): This is a re-implementation of the logic in `offchainView_poolSize`, attempt to code share
+    getInterestAccrualResults = sp.build_lambda(self.getInterestAccrualResults.f)
+    interestAccrualResults = getInterestAccrualResults(
+      sp.record(
+        interestRate = self.data.interestRate,
+        lastInterestCompoundTime = self.data.lastInterestCompoundTime,
+        underlyingBalance = self.data.underlyingBalance,
+      )
+    )
+    totalPoolSize = self.data.underlyingBalance + interestAccrualResults.accruedInterest
+
+    # Avoid divide by 0 errors if no LP tokens are issued.
+    # TODO(keefertaylor): This is a re-implementation of the logic in `offchainView_poolSize`, attempt to code share
+    conversionRate = sp.local('conversionRate', sp.nat(0))
+    sp.if self.data.totalSupply != sp.nat(0):
+      # NOTE: KSR is denominated in 36 digits, and kUSD uses 18 so we upscale the kUSD size to be 
+      #       the same precision.
+      conversionRate.value = ((totalPoolSize * Constants.PRECISION * Constants.PRECISION) / self.data.totalSupply)
+
+    # Get account balance.
+    # Default to 0 to avoid a bad map access.
+    accountLPTokens = sp.nat(0)
+    sp.if self.data.balances.contains(address):
+      accountLPTokens = self.data.balances[address].balance
+
+    # Return conversion rate of one LP token multipled the number of LP tokens owned.
+    # TODO(keefertaylor): The math you derived below doesn't work. Re-validate this.
+    # NOTE: KSR is denominated in 36 digits, and kUSD uses 18 so we upscale the kUSD size to be 
+    #       the same precision. Remember that we need to divide by PRECISION (due to multiplying 
+    #       fixed point numbers, so the calculation would be)
+    # accountValue = (accountLPTokens * kUSD_conversion_rate_upscaled) // LP_TOKEN_PRECISION
+    #              = (accountLPTokens * kUSD_conversion_rate * PRECISION) // (PRECISION * PRECISION)
+    #              = (accountLPTokens * kUSD_conversion_rate) // PRECISION
+    accountValue = accountLPTokens * conversionRate.value // Constants.LP_TOKEN_PRECISION
+    sp.trace("Account value")
+    sp.trace(accountValue)
+    sp.result(accountValue)
+
   ################################################################
   # Helpers
   ################################################################
@@ -593,12 +690,7 @@ class SavingsPoolContract(FA12.FA12):
     )
 
     # Calculate the accrued interest.
-    newUnderlyingBalance = 
-      param.underlyingBalance * (
-        Constants.PRECISION + (
-          numberOfElapsedInterestPeriods.value * param.interestRate
-        )
-      ) // Constants.PRECISION
+    newUnderlyingBalance = param.underlyingBalance * (Constants.PRECISION + (numberOfElapsedInterestPeriods.value * param.interestRate)) // Constants.PRECISION
     accruedInterest = sp.local(
       'accruedInterest', 
       sp.as_nat(newUnderlyingBalance - param.underlyingBalance)
@@ -5037,5 +5129,256 @@ if __name__ == "__main__":
 
     # AND the pool thinks it has 0 tokens
     scenario.verify(pool.data.underlyingBalance == sp.nat(0))
+
+  ################################################################
+  # offchainView_poolSize
+  ################################################################
+
+  @sp.add_test(name="offchainView_poolSize - calculates values correctly")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract
+    interestRate = sp.nat(100000000000000000)
+    initialValue = Constants.PRECISION
+    lastInterestCompoundTime = sp.timestamp(0)
+    pool = SavingsPoolContract(
+      interestRate = interestRate,
+      underlyingBalance = initialValue,
+      lastInterestCompoundTime = lastInterestCompoundTime,
+    )
+    scenario += pool
+
+    # AND some the expected values after one and two interest periods
+    # NOTE: Compounding is done via linear approximation:
+    #   Expected = (initial_value * (1 + (number_periods * interest_rate)))
+    expectedValueAfterOnePeriod = 1100000000000000000  # = (1 * (1 + (1 * .10))) * PRECISION
+    expectedValueAfterTwoPeriods = 1200000000000000000 # = (1 * (1 + (2 * .10))) * PRECISION
+
+    # WHEN the view is called
+    # THEN then the initial value is returned
+    scenario.verify(pool.offchainView_poolSize() == initialValue)
+
+    # WHEN the view is called after one period
+    # THEN the view returns one period of compounding
+    # TODO (keefertaylor): Enable this when SmartPy supports it. See: https://t.me/SmartPy_io/17542
+    # scenario.verify(pool.offchainView_poolSize() == expectedValueAfterOnePeriod)
+
+    # WHEN the view is called after two periods
+    # THEN the view returns two periods of compounding
+    # TODO (keefertaylor): Enable this when SmartPy supports it. See: https://t.me/SmartPy_io/17542
+    # scenario.verify(pool.offchainView_poolSize() == expectedValueAfterTwoPeriods)
+
+    # WHEN the view is called after two and a half periods
+    # THEN the view correctly floors and returns two periods of compounding
+    # TODO (keefertaylor): Enable this when SmartPy supports it. See: https://t.me/SmartPy_io/17542
+    # scenario.verify(pool.offchainView_poolSize() == expectedValueAfterTwoPeriods)
+
+  ################################################################
+  # offchainView_poolSize
+  ################################################################
+
+  # TODO(keefertaylor): s/pool1/pool
+  @sp.add_test(name="offchainView_getLPTokenConversionRate - Calculates conversion rate with one LP token issued")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 100 kUSD and 1 LP token issued
+    pool1 = SavingsPoolContract(
+      underlyingBalance = 100 * Constants.PRECISION,
+      totalSupply = 1 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool1
+
+    # THEN the conversion rate is 1 LP token = 100 kUSD
+    scenario.verify(pool1.offchainView_getLPTokenConversionRate() == 100 * Constants.PRECISION)
+
+  @sp.add_test(name="offchainView_getLPTokenConversionRate - Calculates conversion rate with many LP tokens issued")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 100 kUSD and 5 LP token issued
+    pool1 = SavingsPoolContract(
+      underlyingBalance = 100 * Constants.PRECISION,
+      totalSupply = 5 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool1
+
+    # THEN the conversion rate is 1 LP token = 20 kUSD (100 kUSD / 5 LP tokens)
+    scenario.verify(pool1.offchainView_getLPTokenConversionRate() == 20 * Constants.PRECISION)
+
+  @sp.add_test(name="offchainView_getLPTokenConversionRate - Calculates conversion rate when conversion rate is less than 1")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 1 kUSD and 100 LP tokens issued
+    pool1 = SavingsPoolContract(
+      underlyingBalance = 1 * Constants.PRECISION,
+      totalSupply = 100 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool1
+
+    # THEN the conversion rate is 1 LP token = .01 kUSD
+    scenario.verify(pool1.offchainView_getLPTokenConversionRate() == Constants.PRECISION // 100)
+
+  @sp.add_test(name="offchainView_getLPTokenConversionRate - Calculates conversion rate with 0 LP tokens")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 1 kUSD and 0 LP tokens issued
+    pool1 = SavingsPoolContract(
+      underlyingBalance = 1 * Constants.PRECISION,
+      totalSupply = 0,
+    )
+    scenario += pool1
+
+    # THEN the conversion rate is 0
+    scenario.verify(pool1.offchainView_getLPTokenConversionRate() == 0)    
+
+  # NOTE: This can logically never happen (if there are LP tokens there should be kUSD). 
+  @sp.add_test(name="offchainView_getLPTokenConversionRate - Calculates conversion rate with 0 kUSD tokens")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 10 kUSD and 1 LP tokens issued
+    pool1 = SavingsPoolContract(
+      underlyingBalance = 0,
+      totalSupply = 1 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool1
+
+    # THEN the conversion rate is 0
+    scenario.verify(pool1.offchainView_getLPTokenConversionRate() == 0)   
+
+  ################################################################
+  # offchainView_getAccountValue
+  ################################################################
+
+  @sp.add_test(name="offchainView_getAccountValue - Calculates account value with one token issued")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 100 kUSD and 1 LP tokens issued to Alice
+    pool1 = SavingsPoolContract(
+      balances = sp.big_map(
+        l = {
+          Addresses.ALICE_ADDRESS: sp.record(approvals = {}, balance = 1 * Constants.LP_TOKEN_PRECISION)
+        }
+      ),
+      underlyingBalance = 100 * Constants.PRECISION,      
+      totalSupply = 1 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool1
+
+    # THEN her account value is 100
+    scenario.verify(pool1.offchainView_getAccountValue(Addresses.ALICE_ADDRESS) == 100 * Constants.PRECISION)   
+
+  @sp.add_test(name="offchainView_getAccountValue - Calculates account value with many token issued")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 100 kUSD and 5 LP tokens issued to Alice
+    pool1 = SavingsPoolContract(
+      balances = sp.big_map(
+        l = {
+          Addresses.ALICE_ADDRESS: sp.record(approvals = {}, balance = 5 * Constants.LP_TOKEN_PRECISION)
+        }
+      ),
+      underlyingBalance = 100 * Constants.PRECISION,      
+      totalSupply = 5 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool1
+
+    # THEN her account value is 100
+    scenario.verify(pool1.offchainView_getAccountValue(Addresses.ALICE_ADDRESS) == 100 * Constants.PRECISION)   
+
+  @sp.add_test(name="offchainView_getAccountValue - Calculates account value with multiple holders having multiple tokens")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 100 kUSD and 1 LP tokens issued to Alice, and 3 issued to Bob (4 total)
+    pool1 = SavingsPoolContract(
+      balances = sp.big_map(
+        l = {
+          Addresses.ALICE_ADDRESS: sp.record(approvals = {}, balance = 1 * Constants.LP_TOKEN_PRECISION),
+          Addresses.BOB_ADDRESS: sp.record(approvals = {}, balance = 3 * Constants.LP_TOKEN_PRECISION)
+        }
+      ),
+      underlyingBalance = 100 * Constants.PRECISION,      
+      totalSupply = 4 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool1
+
+    # THEN Alice has 25 kUSD in value (100 underlying / 4 LP tokens * 1 LP token owned by Alice)
+    scenario.verify(pool1.offchainView_getAccountValue(Addresses.ALICE_ADDRESS) == 25 * Constants.PRECISION)       
+    
+    # AND Bob has 75 kUSD in value (100 underlying / 4 LP tokens * 3 LP tokens owned by Bob)
+    scenario.verify(pool1.offchainView_getAccountValue(Addresses.BOB_ADDRESS) == 75 * Constants.PRECISION)
+  
+  @sp.add_test(name="offchainView_getAccountValue - Calculates account value with multiple holders having multiple tokens when conversion rate is less than 1")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with 1 kUSD and 100 LP tokens issued to Alice, and 300 issued to Bob (400 total)
+    pool1 = SavingsPoolContract(
+      balances = sp.big_map(
+        l = {
+          Addresses.ALICE_ADDRESS: sp.record(approvals = {}, balance = 100 * Constants.LP_TOKEN_PRECISION),
+          Addresses.BOB_ADDRESS: sp.record(approvals = {}, balance = 300 * Constants.LP_TOKEN_PRECISION)
+        }
+      ),
+      underlyingBalance = 1 * Constants.PRECISION,      
+      totalSupply = 400 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool1
+
+    # THEN Alice has .25 kUSD in value (1 underlying / 400 LP tokens * 100 LP token owned by Alice)
+    scenario.verify(pool1.offchainView_getAccountValue(Addresses.ALICE_ADDRESS) == 25 * Constants.PRECISION // 100)       
+    
+    # AND Bob has .75 kUSD in value (1 underlying / 400 LP tokens * 300 LP tokens owned by Bob)
+    scenario.verify(pool1.offchainView_getAccountValue(Addresses.BOB_ADDRESS) == 75 * Constants.PRECISION // 100)
+
+  @sp.add_test(name="offchainView_getAccountValue - Calculates account value when no LP tokoens are issued")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with no LP tokens issued
+    pool1 = SavingsPoolContract(
+      balances = sp.big_map(
+        l = {
+          Addresses.ALICE_ADDRESS: sp.record(approvals = {}, balance = 0),
+          Addresses.BOB_ADDRESS: sp.record(approvals = {}, balance = 0)
+        }
+      ),
+      underlyingBalance = 100 * Constants.PRECISION,      
+      totalSupply = 0,
+    )
+    scenario += pool1
+
+    # THEN Alice's account value is reported as 0
+    scenario.verify(pool1.offchainView_getAccountValue(Addresses.ALICE_ADDRESS) == 0)       
+   
+  # NOTE: This can logically never happen (if there are LP tokens there should be kUSD). 
+  @sp.add_test(name="offchainView_getAccountValue - Calculates conversion rate with 0 kUSD tokens")
+  def test():
+    scenario = sp.test_scenario()
+
+    # GIVEN a Pool contract with no kUSD and 1 LP tokens issued to Alice, and 3 issued to Bob (4 total)
+    pool1 = SavingsPoolContract(
+      balances = sp.big_map(
+        l = {
+          Addresses.ALICE_ADDRESS: sp.record(approvals = {}, balance = 1 * Constants.LP_TOKEN_PRECISION),
+          Addresses.BOB_ADDRESS: sp.record(approvals = {}, balance = 3 * Constants.LP_TOKEN_PRECISION)
+        }
+      ),
+      underlyingBalance = 0,      
+      totalSupply = 4 * Constants.LP_TOKEN_PRECISION,
+    )
+    scenario += pool1
+
+    # THEN both Alice and Bob have no account value.
+    scenario.verify(pool1.offchainView_getAccountValue(Addresses.ALICE_ADDRESS) == 0 * Constants.PRECISION)       
+    scenario.verify(pool1.offchainView_getAccountValue(Addresses.BOB_ADDRESS) == 0 * Constants.PRECISION) 
+
 
   sp.add_compilation_target("savings-pool", SavingsPoolContract())
