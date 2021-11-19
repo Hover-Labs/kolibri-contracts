@@ -63,6 +63,7 @@ const main = async () => {
     const params = {
       governorAddress: await tezos.signer.publicKeyHash(),
       interestRate: MIGRATION_CONFIG.initialInterestRate.toNumber(),
+      pauseGuardianAddress: NETWORK_CONFIG.contracts.PAUSE_GUARDIAN!,
       stabilityFundAddress: stabilityFundDeployResult.contractAddress,
       tokenAddress: NETWORK_CONFIG.contracts.TOKEN!
     }

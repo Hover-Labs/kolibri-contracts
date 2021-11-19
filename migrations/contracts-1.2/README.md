@@ -64,8 +64,7 @@ ts-node src/verifications/post-proposal-tests.ts
 ```
 
 TODO
-- Go accrue some interest
-
+- Test Pause Guardian
 
 ### Mainnet
 TODO

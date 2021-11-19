@@ -480,7 +480,6 @@ class SavingsPoolContract(FA12.FA12):
   def offchainView_getAccountValue(self, address):
     sp.set_type(address, sp.TAddress)
 
-
     # Tabulate the total pool size.
     # TODO(keefertaylor): This is a re-implementation of the logic in `offchainView_poolSize`, attempt to code share
     getInterestAccrualResults = sp.build_lambda(self.getInterestAccrualResults.f)
