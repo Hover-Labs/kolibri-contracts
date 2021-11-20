@@ -46,7 +46,7 @@ ts-node src/verifications/verify-storage.ts
 Note that these interactions will break glass and thus make the contracts inoperable. 
 
 ```
-ts-node src/verifications/verify-pause-guardian-and-dao-and-break-glass
+ts-node src/verifications/verify-pause-guardian-and-dao-and-break-glass.ts
 ```
 
 **Generate Governance Lambda**

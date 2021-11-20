@@ -1,14 +1,13 @@
-import { checkConfirmed, ContractOriginationResult, fetchFromCache, getTezos, validateBreakGlass, validateStorageValue, sleep, getSigner, getTokenBalanceFromDefaultSmartPyContract, CONSTANTS } from "@hover-labs/tezos-utils"
+import { approveToken, checkConfirmed, ContractOriginationResult, fetchFromCache, getTezos, validateBreakGlass, validateStorageValue, sleep, getSigner, getTokenBalanceFromDefaultSmartPyContract, CONSTANTS } from "@hover-labs/tezos-utils"
 import CACHE_KEYS from "../cache-keys"
 import { NETWORK_CONFIG } from "../config"
 import BigNumber from 'bignumber.js'
-import { OvenClient, StableCoinClient, Network, HarbingerClient } from "@hover-labs/kolibri-js"
+import { OvenClient, StableCoinClient, Network, HarbingerClient, deriveOvenAddress } from "@hover-labs/kolibri-js"
 import _ from "lodash";
 import { OperationContentsAndResult, OperationContentsAndResultTransaction, InternalOperationResultEnum, OperationResultTransaction, } from '@taquito/rpc'
 import { InMemorySigner } from '@taquito/signer'
 import { TezosOperationError, TransactionWalletOperation } from '@taquito/taquito'
 import SavingsPoolClient from "../savings-pool-client"
-import { approveToken } from "../token-utils"
 
 const main = async () => {
   console.log("Validating end state is correct")
@@ -100,17 +99,7 @@ const main = async () => {
   const ovenDeployResult: TransactionWalletOperation = (await stablecoinClient.deployOven(signer)) as TransactionWalletOperation
   await checkConfirmed(NETWORK_CONFIG, ovenDeployResult.opHash)
   console.log(`...Operation confirmed in hash ${ovenDeployResult.opHash}`)
-
-  // Derive an oven address
-  // TODO(keefertaylor): Push this down into @hover-labs/kolibri-js or @hover-labs/tezos-util
-  const ovenCreationResults: OperationContentsAndResult[] = await ovenDeployResult.operationResults()
-  const transactionResult: OperationContentsAndResultTransaction = _.find(ovenCreationResults, (result) => {
-    return result.kind === 'transaction'
-  }) as OperationContentsAndResultTransaction
-  const ovenResult: InternalOperationResultEnum = _.find(transactionResult.metadata.internal_operation_results, (operation) => {
-    return operation.kind === "origination"
-  })!.result
-  const ovenAddress = (ovenResult as OperationResultTransaction).originated_contracts![0]
+  const ovenAddress = await deriveOvenAddress(ovenDeployResult)
   console.log(`...Oven Address: ${ovenAddress}`)
 
   console.log("...Depositing to the oven")

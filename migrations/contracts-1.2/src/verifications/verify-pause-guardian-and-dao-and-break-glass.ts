@@ -4,7 +4,8 @@ import {
   ContractOriginationResult,
   verifyBreakGlassIntegration,
   callThroughMultisig,
-  validateStorageValue
+  validateStorageValue,
+  pauseContractAndVerify,
 } from "@hover-labs/tezos-utils";
 import CACHE_KEYS from '../cache-keys'
 import { NETWORK_CONFIG } from "../config"
@@ -28,20 +29,11 @@ const main = async () => {
   const stabilityFundBreakGlassAddress = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_BREAK_GLASS_DEPLOY) as ContractOriginationResult).contractAddress
   const savingsPoolBreakGlassAddress = (await fetchFromCache(CACHE_KEYS.SAVINGS_POOL_BREAK_GLASS_DEPLOY) as ContractOriginationResult).contractAddress
 
-  // TODO(keefertaylor):Consider pushing this into tezos-utils??
   console.log("Testing Pause Guardian can pause the contract")
-  await callThroughMultisig(
-    NETWORK_CONFIG,
-    NETWORK_CONFIG.contracts.PAUSE_GUARDIAN!,
-    savingsPoolContractAddress,
-    'pause',
-    'sp.unit',
-    tezos
-  )
-  await validateStorageValue(savingsPoolContractAddress, 'paused', true, tezos)
+  await pauseContractAndVerify(NETWORK_CONFIG, savingsPoolContractAddress, tezos)
   console.log("   / Passed")
   console.log("")
-  
+
   console.log("Testing a DAO proposal to unpause the pool")
   await verifyDAOIntegrationWithBreakGlass(
     vestingVault,
