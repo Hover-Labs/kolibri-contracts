@@ -1,6 +1,6 @@
-import { validateBreakGlass, validateStorageValue, validateMetadata, fetchFromCache, ContractOriginationResult, getTezos, getStorageValue } from "@hover-labs/tezos-utils";
+import { validateBreakGlass, validateStorageValue, validateMetadata, fetchFromCache, ContractOriginationResult, getTezos, getStorageValue, validateTokenMetadata } from "@hover-labs/tezos-utils";
 import CACHE_KEYS from '../cache-keys'
-import { MIGRATION_CONFIG, NETWORK_CONFIG } from "../config"
+import { KOLIBRI_CONFIG, MIGRATION_CONFIG, NETWORK_CONFIG } from "../config"
 
 const main = async () => {
   console.log("Validating contract storage")
@@ -9,10 +9,10 @@ const main = async () => {
   const tezos = await getTezos(NETWORK_CONFIG)
 
   // Name old / existing artifacts for convenience
-  const oldStabilityFundAddress = NETWORK_CONFIG.contracts.STABILITY_FUND!
-  const breakGlassMultisigAddress = NETWORK_CONFIG.contracts.BREAK_GLASS_MULTISIG!
-  const daoAddress = NETWORK_CONFIG.contracts.DAO!
-  const tokenAddress = NETWORK_CONFIG.contracts.TOKEN!
+  const oldStabilityFundAddress = KOLIBRI_CONFIG.contracts.STABILITY_FUND!
+  const breakGlassMultisigAddress = KOLIBRI_CONFIG.contracts.BREAK_GLASS_MULTISIG!
+  const daoAddress = KOLIBRI_CONFIG.contracts.DAO!
+  const tokenAddress = KOLIBRI_CONFIG.contracts.TOKEN!
 
   // Load new artifacts
   const stabilityFundContractAddress = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_DEPLOY) as ContractOriginationResult).contractAddress
@@ -82,7 +82,7 @@ const main = async () => {
   await validateStorageValue(savingsPoolContractAddress, 'savedState_tokensToDeposit', null, tezos)
   await validateStorageValue(savingsPoolContractAddress, 'savedState_depositor', null, tezos)
 
-  await validateStorageValue(savingsPoolContractAddress, 'pauseGuardianContractAddress', NETWORK_CONFIG.contracts.PAUSE_GUARDIAN, tezos)
+  await validateStorageValue(savingsPoolContractAddress, 'pauseGuardianContractAddress', KOLIBRI_CONFIG.contracts.PAUSE_GUARDIAN, tezos)
 
   console.log("   / passed")
 
@@ -114,7 +114,11 @@ const main = async () => {
 
   // Validate Metadata
   console.log(`Validating Metadata on Savings Pool... `)
+  console.log("")
   await validateMetadata(savingsPoolContractAddress, tezos)
+  console.log("")
+  await validateTokenMetadata(savingsPoolContractAddress, tezos)
+  console.log("")
   console.log("   / passed")
   console.log("")
 

@@ -1,17 +1,17 @@
 import { fetchFromCache, compileLambda, ContractOriginationResult, getTezos, getTokenBalanceFromDefaultSmartPyContract } from '@hover-labs/tezos-utils'
-import { NETWORK_CONFIG } from '../config'
+import { KOLIBRI_CONFIG, NETWORK_CONFIG } from '../config'
 import CACHE_KEYS from '../cache-keys'
 import BigNumber from 'bignumber.js'
 
 const main = async () => {
     // Contracts
-    const minterContract = NETWORK_CONFIG.contracts.MINTER!
-    const stabilityFundContract = NETWORK_CONFIG.contracts.STABILITY_FUND!
-    const tokenContract = NETWORK_CONFIG.contracts.TOKEN!
+    const minterContract = KOLIBRI_CONFIG.contracts.MINTER!
+    const stabilityFundContract = KOLIBRI_CONFIG.contracts.STABILITY_FUND!
+    const tokenContract = KOLIBRI_CONFIG.contracts.TOKEN!
 
     // Break Glasses
-    const minterBreakGlassContract = NETWORK_CONFIG.contracts.BREAK_GLASS_CONTRACTS.MINTER
-    const stabilityFundBreakGlassContract = NETWORK_CONFIG.contracts.BREAK_GLASS_CONTRACTS.STABILITY_FUND
+    const minterBreakGlassContract = KOLIBRI_CONFIG.contracts.BREAK_GLASS_CONTRACTS.MINTER
+    const stabilityFundBreakGlassContract = KOLIBRI_CONFIG.contracts.BREAK_GLASS_CONTRACTS.STABILITY_FUND
 
     // New Stability fund contract
     const newStabilityFundContract = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_DEPLOY) as ContractOriginationResult).contractAddress

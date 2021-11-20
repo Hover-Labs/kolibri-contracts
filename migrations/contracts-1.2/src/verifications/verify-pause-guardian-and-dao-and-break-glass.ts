@@ -3,12 +3,10 @@ import {
   getTezos, fetchFromCache,
   ContractOriginationResult,
   verifyBreakGlassIntegration,
-  callThroughMultisig,
-  validateStorageValue,
   pauseContractAndVerify,
 } from "@hover-labs/tezos-utils";
 import CACHE_KEYS from '../cache-keys'
-import { NETWORK_CONFIG } from "../config"
+import { KOLIBRI_CONFIG, NETWORK_CONFIG } from "../config"
 
 
 const main = async () => {
@@ -18,9 +16,9 @@ const main = async () => {
   const tezos = await getTezos(NETWORK_CONFIG)
 
   // Name old / existing artifacts for convenience
-  const daoAddress = NETWORK_CONFIG.contracts.DAO!
-  const vestingVault = NETWORK_CONFIG.contracts.VESTING_CONTRACTS[(await tezos.signer.publicKeyHash())]!
-  const breakGlassMultisigAddress = NETWORK_CONFIG.contracts.BREAK_GLASS_MULTISIG!
+  const daoAddress = KOLIBRI_CONFIG.contracts.DAO!
+  const vestingVault = KOLIBRI_CONFIG.contracts.VESTING_CONTRACTS[(await tezos.signer.publicKeyHash())]!
+  const breakGlassMultisigAddress = KOLIBRI_CONFIG.contracts.BREAK_GLASS_MULTISIG!
 
   // Load new artifacts
   const stabilityFundContractAddress = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_DEPLOY) as ContractOriginationResult).contractAddress
@@ -30,7 +28,7 @@ const main = async () => {
   const savingsPoolBreakGlassAddress = (await fetchFromCache(CACHE_KEYS.SAVINGS_POOL_BREAK_GLASS_DEPLOY) as ContractOriginationResult).contractAddress
 
   console.log("Testing Pause Guardian can pause the contract")
-  await pauseContractAndVerify(NETWORK_CONFIG, savingsPoolContractAddress, tezos)
+  await pauseContractAndVerify(NETWORK_CONFIG, KOLIBRI_CONFIG, savingsPoolContractAddress, tezos)
   console.log("   / Passed")
   console.log("")
 
@@ -46,7 +44,8 @@ const main = async () => {
     'paused',
     false,
     tezos,
-    NETWORK_CONFIG
+    NETWORK_CONFIG,
+    KOLIBRI_CONFIG
   )
   console.log("   / Passed")
   console.log("")
@@ -65,7 +64,8 @@ const main = async () => {
     'savingsAccountContractAddress',
     await tezos.signer.publicKeyHash(),
     tezos,
-    NETWORK_CONFIG
+    NETWORK_CONFIG,
+    KOLIBRI_CONFIG
   )
   console.log("   / Passed")
   console.log("")

@@ -4,10 +4,9 @@ import { NETWORK_CONFIG } from "../config"
 import BigNumber from 'bignumber.js'
 import { OvenClient, StableCoinClient, Network, HarbingerClient, deriveOvenAddress } from "@hover-labs/kolibri-js"
 import _ from "lodash";
-import { OperationContentsAndResult, OperationContentsAndResultTransaction, InternalOperationResultEnum, OperationResultTransaction, } from '@taquito/rpc'
-import { InMemorySigner } from '@taquito/signer'
-import { TezosOperationError, TransactionWalletOperation } from '@taquito/taquito'
+import { TransactionWalletOperation } from '@taquito/taquito'
 import SavingsPoolClient from "../savings-pool-client"
+import { KOLIBRI_CONFIG } from "../config"
 
 const main = async () => {
   console.log("Validating end state is correct")
@@ -20,14 +19,14 @@ const main = async () => {
   const stabilityFundBreakGlass = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_BREAK_GLASS_DEPLOY) as ContractOriginationResult).contractAddress
   const savingsPoolBreakGlass = (await fetchFromCache(CACHE_KEYS.SAVINGS_POOL_BREAK_GLASS_DEPLOY) as ContractOriginationResult).contractAddress
 
-  const minter = NETWORK_CONFIG.contracts.MINTER!
-  const breakGlassMsig = NETWORK_CONFIG.contracts.BREAK_GLASS_MULTISIG!
-  const dao = NETWORK_CONFIG.contracts.DAO!
-  const oldStabilityFund = NETWORK_CONFIG.contracts.STABILITY_FUND!
-  const token = NETWORK_CONFIG.contracts.TOKEN!
-  const ovenRegistry = NETWORK_CONFIG.contracts.OVEN_REGISTRY!
-  const ovenFactory = NETWORK_CONFIG.contracts.OVEN_FACTORY!
-  const harbingerNormalizer = NETWORK_CONFIG.contracts.HARBINGER_NORMALIZER!
+  const minter = KOLIBRI_CONFIG.contracts.MINTER!
+  const breakGlassMsig = KOLIBRI_CONFIG.contracts.BREAK_GLASS_MULTISIG!
+  const dao = KOLIBRI_CONFIG.contracts.DAO!
+  const oldStabilityFund = KOLIBRI_CONFIG.contracts.STABILITY_FUND!
+  const token = KOLIBRI_CONFIG.contracts.TOKEN!
+  const ovenRegistry = KOLIBRI_CONFIG.contracts.OVEN_REGISTRY!
+  const ovenFactory = KOLIBRI_CONFIG.contracts.OVEN_FACTORY!
+  const harbingerNormalizer = KOLIBRI_CONFIG.contracts.HARBINGER_NORMALIZER!
 
   // Time to wait for interest to accrue.
   const minutesToWait = 5

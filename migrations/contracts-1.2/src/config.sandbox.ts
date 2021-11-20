@@ -1,4 +1,4 @@
-import { NetworkConfig } from '@hover-labs/tezos-utils'
+import { KolibriConfig, NetworkConfig } from '@hover-labs/tezos-utils'
 import { CONTRACTS } from '@hover-labs/kolibri-js'
 import BigNumber from "bignumber.js";
 
@@ -9,8 +9,10 @@ export const NETWORK_CONFIG: NetworkConfig = {
   requiredConfirmations: 2,
   maxConfirmationPollingRetries: 10,
   operationDelaySecs: 10,
-  contracts: CONTRACTS.SANDBOX,
+}
 
+export const KOLIBRI_CONFIG: KolibriConfig = {
+  contracts: CONTRACTS.SANDBOX,
   escrowAmount: 3000000000000000000000,
   governanceVoteLength: 15,
   governanceTimelockLength: 11,
