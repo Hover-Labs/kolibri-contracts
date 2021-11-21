@@ -1,19 +1,19 @@
 import smartpy as sp
 
-Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
-Constants = sp.import_script_from_url("file:common/constants.py")
-DevFund = sp.import_script_from_url("file:dev-fund.py")
-Dummy = sp.import_script_from_url("file:test-helpers/dummy-contract.py")
-FakeHarbinger = sp.import_script_from_url("file:test-helpers/fake-harbinger.py")
-FakeLiquidityPool = sp.import_script_from_url("file:test-helpers/fake-liquidity-pool.py")
-Minter = sp.import_script_from_url("file:minter.py")
-Oracle = sp.import_script_from_url("file:oracle.py")
-Oven = sp.import_script_from_url("file:oven.py")
-OvenFactory = sp.import_script_from_url("file:oven-factory.py")
-OvenProxy = sp.import_script_from_url("file:oven-proxy.py")
-OvenRegistry = sp.import_script_from_url("file:oven-registry.py")
-StabilityFund = sp.import_script_from_url("file:stability-fund.py")
-Token= sp.import_script_from_url("file:token.py")
+Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
+Constants = sp.io.import_script_from_url("file:common/constants.py")
+DevFund = sp.io.import_script_from_url("file:dev-fund.py")
+Dummy = sp.io.import_script_from_url("file:test-helpers/dummy-contract.py")
+FakeHarbinger = sp.io.import_script_from_url("file:test-helpers/fake-harbinger.py")
+FakeLiquidityPool = sp.io.import_script_from_url("file:test-helpers/fake-liquidity-pool.py")
+Minter = sp.io.import_script_from_url("file:minter.py")
+Oracle = sp.io.import_script_from_url("file:oracle.py")
+Oven = sp.io.import_script_from_url("file:oven.py")
+OvenFactory = sp.io.import_script_from_url("file:oven-factory.py")
+OvenProxy = sp.io.import_script_from_url("file:oven-proxy.py")
+OvenRegistry = sp.io.import_script_from_url("file:oven-registry.py")
+StabilityFund = sp.io.import_script_from_url("file:stability-fund.py")
+Token= sp.io.import_script_from_url("file:token.py")
 
 @sp.add_test(name="End to End Tests - Alice can deposit and withdraw from oven")
 def test():
@@ -518,114 +518,112 @@ def test():
   # Alice's oven is now liquidated.
   scenario.verify(aliceOven.data.isLiquidated == True)
 
-# TODO(keefertaylor): Enable this test when SmartPy can detect failures in other contracts.
-# SEE: https://t.me/SmartPy_io/6538
-# @sp.add_test(name="End to End Tests - Private Liquidator Cannot Liquidate an Oven Above Private Liquidation Threshold")
-# def test():
-#   scenario = sp.test_scenario()
+@sp.add_test(name="End to End Tests - Private Liquidator Cannot Liquidate an Oven Above Private Liquidation Threshold")
+def test():
+  scenario = sp.test_scenario()
 
-#   # GIVEN the beginning of time itself
-#   currentTime = sp.timestamp(0)
+  # GIVEN the beginning of time itself
+  currentTime = sp.timestamp(0)
 
-#   # AND a fake harbinger contract.
-#   fakeHarbinger = FakeHarbinger.FakeHarbingerContract(
-#     harbingerValue = sp.nat(2 * 1000000), # $2
-#     harbingerUpdateTime = currentTime
-#   )
-#   scenario += fakeHarbinger
+  # AND a fake harbinger contract.
+  fakeHarbinger = FakeHarbinger.FakeHarbingerContract(
+    harbingerValue = sp.nat(2 * 1000000), # $2
+    harbingerUpdateTime = currentTime
+  )
+  scenario += fakeHarbinger
 
-#   # AND a universe of Stablecoin contracts
-#   devFundSplit = sp.nat(100000000000000000) # 10%
-#   liquidationFeePercent = sp.nat(100000000000000000) # 10%
-#   administrator = Dummy.DummyContract()
-#   developerFund = DevFund.DevFundContract(
-#     administratorContractAddress = administrator.address
-#   )
-#   stabilityFund = StabilityFund.StabilityFundContract(
-#     administratorContractAddress = administrator.address
-#   )
-#   oracle = Oracle.OracleContract(harbingerContractAddress = fakeHarbinger.address)
-#   ovenFactory = OvenFactory.OvenFactoryContract()
-#   ovenProxy = OvenProxy.OvenProxyContract()
-#   ovenRegistry = OvenRegistry.OvenRegistryContract()
-#   token = Token.FA12()
-#   liquidityPool = FakeLiquidityPool.FakeLiquidityPoolContract()
-#   minter = Minter.MinterContract(
-#     collateralizationPercentage = sp.nat(200000000000000000000), # 200%
-#     privateOwnerLiquidationThreshold = sp.nat(25000000000000000000), # 25%
-#     lastInterestIndexUpdateTime = currentTime,
-#     devFundSplit = devFundSplit,
-#     liquidationFeePercent = liquidationFeePercent,
-#   )
+  # AND a universe of Stablecoin contracts
+  devFundSplit = sp.nat(100000000000000000) # 10%
+  liquidationFeePercent = sp.nat(100000000000000000) # 10%
+  administrator = Dummy.DummyContract()
+  developerFund = DevFund.DevFundContract(
+    administratorContractAddress = administrator.address
+  )
+  stabilityFund = StabilityFund.StabilityFundContract(
+    administratorContractAddress = administrator.address
+  )
+  oracle = Oracle.OracleContract(harbingerContractAddress = fakeHarbinger.address)
+  ovenFactory = OvenFactory.OvenFactoryContract()
+  ovenProxy = OvenProxy.OvenProxyContract()
+  ovenRegistry = OvenRegistry.OvenRegistryContract()
+  token = Token.FA12()
+  liquidityPool = FakeLiquidityPool.FakeLiquidityPoolContract()
+  minter = Minter.MinterContract(
+    collateralizationPercentage = sp.nat(200000000000000000000), # 200%
+    privateOwnerLiquidationThreshold = sp.nat(25000000000000000000), # 25%
+    lastInterestIndexUpdateTime = currentTime,
+    devFundSplit = devFundSplit,
+    liquidationFeePercent = liquidationFeePercent,
+  )
 
-#   scenario += administrator
-#   scenario += developerFund
-#   scenario += stabilityFund
-#   scenario += minter
-#   scenario += oracle
-#   scenario += ovenFactory
-#   scenario += ovenProxy
-#   scenario += ovenRegistry
-#   scenario += token
-#   scenario += liquidityPool
+  scenario += administrator
+  scenario += developerFund
+  scenario += stabilityFund
+  scenario += minter
+  scenario += oracle
+  scenario += ovenFactory
+  scenario += ovenProxy
+  scenario += ovenRegistry
+  scenario += token
+  scenario += liquidityPool
 
-#   # AND a user, Alice.
-#   alice = Dummy.DummyContract()
-#   scenario += alice
+  # AND a user, Alice.
+  alice = Dummy.DummyContract()
+  scenario += alice
 
-#   # And a liquidator, Bob.
-#   bob = Dummy.DummyContract()
-#   scenario += bob
+  # And a liquidator, Bob.
+  bob = Dummy.DummyContract()
+  scenario += bob
 
-#   # AND the contracts are wired together
-#   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-#   scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
-#   scenario += minter.setLiquidityPoolContract(liquidityPool.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-#   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-#   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-#   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-#   scenario += ovenProxy.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-#   scenario += ovenProxy.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-#   scenario += ovenProxy.setOracleContract(oracle.address).run(sender= Addresses.GOVERNOR_ADDRESS)
-#   scenario += ovenRegistry.setOvenFactoryContract(ovenFactory.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-#   scenario += token.setAdministrator(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  # AND the contracts are wired together
+  scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setLiquidityPoolContract(liquidityPool.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += ovenProxy.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += ovenProxy.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += ovenProxy.setOracleContract(oracle.address).run(sender= Addresses.GOVERNOR_ADDRESS)
+  scenario += ovenRegistry.setOvenFactoryContract(ovenFactory.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += token.setAdministrator(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
 
-#   # AND alice has an oven.
-#   aliceOven = Oven.OvenContract(owner = alice.address, ovenProxyContractAddress = ovenProxy.address)
-#   scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
-#   scenario += aliceOven
+  # AND alice has an oven.
+  aliceOven = Oven.OvenContract(owner = alice.address, ovenProxyContractAddress = ovenProxy.address)
+  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
+  scenario += aliceOven
 
-#   # VERIFY the StabilityFund can liquidate an oven.
-#   # Alice deposits $40 of XTZ and mints $11 of kUSD
-#   currentTime = currentTime.add_seconds(1)
-#   amount = sp.tez(20)
-#   scenario += aliceOven.default(sp.unit).run(sender = alice.address, amount = amount, now = currentTime)
-#   currentTime = currentTime.add_seconds(1)
-#   borrowAmount = 11 * Constants.PRECISION
-#   scenario += aliceOven.borrow(borrowAmount).run(sender = alice.address, now = currentTime)
+  # VERIFY the StabilityFund can liquidate an oven.
+  # Alice deposits $40 of XTZ and mints $11 of kUSD
+  currentTime = currentTime.add_seconds(1)
+  amount = sp.tez(20)
+  scenario += aliceOven.default(sp.unit).run(sender = alice.address, amount = amount, now = currentTime)
+  currentTime = currentTime.add_seconds(1)
+  borrowAmount = 11 * Constants.PRECISION
+  scenario += aliceOven.borrow(borrowAmount).run(sender = alice.address, now = currentTime)
 
-#   scenario.verify(token.data.balances[alice.address].balance == 11 * Constants.PRECISION)
-#   scenario.verify(aliceOven.balance == sp.tez(20))
+  scenario.verify(token.data.balances[alice.address].balance == 11 * Constants.PRECISION)
+  scenario.verify(aliceOven.balance == sp.tez(20))
 
-#   # The price of XTZ crashes to $1, XTZ is now worth $20 and kUSD is worth $11
-#   # Implicitly, collateralization is $20 / 11 = ~181%.
-#   # This is *higher* than the privateOwnerLiquidationThreshold
-#   scenario += fakeHarbinger.setNewPrice(100000)
+  # The price of XTZ crashes to $1, XTZ is now worth $20 and kUSD is worth $11
+  # Implicitly, collateralization is $20 / 11 = ~181%.
+  # This is *higher* than the privateOwnerLiquidationThreshold
+  scenario += fakeHarbinger.setNewPrice(100000)
 
-#   # The liquidity pool has many tokens
-#   liquidatorTokenAmount = 100 * Constants.PRECISION
-#   scenario += token.mint(sp.record(address = stabilityFund.address, value = liquidatorTokenAmount)).run(sender = minter.address)
-#   scenario.verify(token.data.balances[stabilityFund.address].balance == liquidatorTokenAmount)
+  # The liquidity pool has many tokens
+  liquidatorTokenAmount = 100 * Constants.PRECISION
+  scenario += token.mint(sp.record(address = stabilityFund.address, value = liquidatorTokenAmount)).run(sender = minter.address)
+  scenario.verify(token.data.balances[stabilityFund.address].balance == liquidatorTokenAmount)
 
-#   # Bob, as a private account, tries to initiate a liquidation
-#   # THEN the call fails.
-#   currentTime = currentTime.add_seconds(1)
-#   initiator = bob.address
-#   scenario += aliceOven.liquidate(sp.unit).run(
-#     sender = initiator,
-#     now = currentTime,
-#     valid = False,
-#   )
+  # Bob, as a private account, tries to initiate a liquidation
+  # THEN the call fails.
+  currentTime = currentTime.add_seconds(1)
+  initiator = bob.address
+  scenario += aliceOven.liquidate(sp.unit).run(
+    sender = initiator,
+    now = currentTime,
+    valid = False,
+  )
 
 @sp.add_test(name="End to End Tests - Stability Fund can liquidate Alices oven")
 def test():

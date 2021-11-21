@@ -1,4 +1,12 @@
-migrations/*/src/config.ts
+# Build artifacts from migrations
+migrations/*/build
+
+# Deploy artifacts from migrations
 migrations/*/deploy-data.json
+migrations/*/src/config.ts
+
+# Node dependencies
 node_modules/
-smart_contracts/smartpy_out
+
+# Smart contract build artifacts
+smart_contracts/.smartpy_out

@@ -9,7 +9,7 @@
 
 import smartpy as sp
 
-Addresses = sp.import_script_from_url("file:./test-helpers/addresses.py")
+Addresses = sp.io.import_script_from_url("file:./test-helpers/addresses.py")
 
 class FA12(sp.Contract):
     def __init__(
@@ -57,7 +57,7 @@ class FA12(sp.Contract):
         sp.if ~ self.data.balances.contains(address):
             self.data.balances[address] = sp.record(balance = 0, approvals = {})
 
-    @sp.view(sp.TNat)
+    @sp.utils.view(sp.TNat)
     def getBalance(self, params):
         # CHANGED: Add address if needed. This fixes a bug in our tests where  you can't
         # get a balance when balance is implicitly zero.
@@ -65,7 +65,7 @@ class FA12(sp.Contract):
 
         sp.result(self.data.balances[params].balance)
 
-    @sp.view(sp.TNat)
+    @sp.utils.view(sp.TNat)
     def getAllowance(self, params):
         # CHANGED: Add address if needed.
         self.addAddressIfNecessary(params.owner)
@@ -73,7 +73,7 @@ class FA12(sp.Contract):
         # CHANGED: Default to zero.
         sp.result(self.data.balances[params.owner].approvals.get(params.spender, sp.nat(0)))
 
-    @sp.view(sp.TNat)
+    @sp.utils.view(sp.TNat)
     def getTotalSupply(self, params):
         sp.set_type(params, sp.TUnit)
         sp.result(self.data.totalSupply)
@@ -173,3 +173,5 @@ if "templates" not in __name__:
         scenario.verify(c1.data.totalSupply == 17)
         scenario.verify(c1.data.balances[alice.address].balance == 8)
         scenario.verify(c1.data.balances[bob.address].balance == 9)
+
+    sp.add_compilation_target("fa12", FA12())

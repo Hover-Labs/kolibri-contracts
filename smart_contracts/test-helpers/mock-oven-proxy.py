@@ -2,8 +2,8 @@
 
 import smartpy as sp
 
-Addresses = sp.import_script_from_url("file:./test-helpers/addresses.py")
-OvenApi = sp.import_script_from_url("file:./common/oven-api.py")
+Addresses = sp.io.import_script_from_url("file:./test-helpers/addresses.py")
+OvenApi = sp.io.import_script_from_url("file:./common/oven-api.py")
 
 class MockOvenProxyContract(sp.Contract):
     def __init__(

@@ -1,8 +1,8 @@
 import smartpy as sp
 
-Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
-Constants = sp.import_script_from_url("file:common/constants.py")
-Errors = sp.import_script_from_url("file:common/errors.py")
+Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
+Constants = sp.io.import_script_from_url("file:common/constants.py")
+Errors = sp.io.import_script_from_url("file:common/errors.py")
 
 ################################################################
 # Contract
@@ -31,7 +31,7 @@ class DevFundContract(sp.Contract):
 
     # Allow transfers into the fund as a consequence of liquidation.
     @sp.entry_point
-    def default(self, param):
+    def default(self):
         pass
 
     ################################################################
@@ -109,11 +109,11 @@ if __name__ == "__main__":
     ################################################################
     ################################################################
 
-    DummyContract = sp.import_script_from_url("file:test-helpers/dummy-contract.py")
-    MockOvenProxy = sp.import_script_from_url("file:test-helpers/mock-oven-proxy.py")
-    Oven = sp.import_script_from_url("file:oven.py")
-    OvenRegistry = sp.import_script_from_url("file:oven-registry.py")
-    Token = sp.import_script_from_url("file:token.py")
+    DummyContract = sp.io.import_script_from_url("file:test-helpers/dummy-contract.py")
+    MockOvenProxy = sp.io.import_script_from_url("file:test-helpers/mock-oven-proxy.py")
+    Oven = sp.io.import_script_from_url("file:oven.py")
+    OvenRegistry = sp.io.import_script_from_url("file:oven-registry.py")
+    Token = sp.io.import_script_from_url("file:token.py")
 
     ################################################################
     # default
@@ -153,9 +153,10 @@ if __name__ == "__main__":
 
         # WHEN setDelegate is called by someone other than the administrator THEN the invocation fails.
         notAdministrator = Addresses.NULL_ADDRESS
-        delegate = sp.some(sp.key_hash("tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf"))
+        delegate = sp.some(Addresses.BAKER_KEY_HASH)
         scenario += fund.setDelegate(delegate).run(
             sender = notAdministrator,
+            voting_powers = Addresses.VOTING_POWERS,
             valid = False
         )
 
@@ -171,9 +172,10 @@ if __name__ == "__main__":
         scenario += fund
 
         # WHEN setDelegate is called by the administrator
-        delegate = sp.some(sp.key_hash("tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf"))
+        delegate = sp.some(Addresses.BAKER_KEY_HASH)
         scenario += fund.setDelegate(delegate).run(
             sender = administrator,
+            voting_powers = Addresses.VOTING_POWERS
         )
 
         # THEN the delegate is updated.
@@ -393,3 +395,5 @@ if __name__ == "__main__":
             sender = Addresses.NULL_ADDRESS,
             valid = False
         )    
+
+    sp.add_compilation_target("dev-fund", DevFundContract())
