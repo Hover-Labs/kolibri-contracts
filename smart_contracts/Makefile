@@ -100,7 +100,7 @@ compile-oven-proxy:
 compile-savings-pool:
 	$(SMART_PY_CLI) compile savings-pool.py $(OUT_DIR)
 	cp $(OUT_DIR)/savings-pool/step_000_cont_1_contract.tz savings-pool.tz
-# rm -rf $(OUT_DIR)
+	rm -rf $(OUT_DIR)
 
 # Compile the Stability Fund
 compile-stability-fund:
