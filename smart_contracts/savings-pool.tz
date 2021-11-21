@@ -2079,3 +2079,294 @@ code
       }; # list operation : pair (pair (pair (pair (big_map address (pair (map address nat) nat)) address) (pair nat timestamp)) (pair (pair (big_map string bytes) address) (pair bool (option address)))) (pair (pair (pair (option address) (option nat)) (pair (option nat) address)) (pair (pair int address) (pair (big_map nat (pair nat (map string bytes))) (pair nat nat))))
     PAIR;       # pair (list operation) (pair (pair (pair (pair (big_map address (pair (map address nat) nat)) address) (pair nat timestamp)) (pair (pair (big_map string bytes) address) (pair bool (option address)))) (pair (pair (pair (option address) (option nat)) (pair (option nat) address)) (pair (pair int address) (pair (big_map nat (pair nat (map string bytes))) (pair nat nat)))))
   };
+view
+  "offchainView_getAccountValue" address nat
+  {
+    UNPAIR;     # @parameter : @storage
+    # conversionRate = sp.local("conversionRate", 0) # @parameter : @storage
+    PUSH nat 0; # nat : @parameter : @storage
+    # if self.data.totalSupply != 0: # nat : @parameter : @storage
+    PUSH nat 0; # nat : nat : @parameter : @storage
+    DUP 4;      # @storage : nat : nat : @parameter : @storage
+    GET 9;      # nat : nat : nat : @parameter : @storage
+    COMPARE;    # int : nat : @parameter : @storage
+    NEQ;        # bool : nat : @parameter : @storage
+    IF
+      {
+        DROP;       # @parameter : @storage
+        SWAP;       # @storage : @parameter
+        # def f_x3(_x3):
+        #   sp.set_type(_x3, sp.TRecord(interestRate = sp.TNat, lastInterestCompoundTime = sp.TTimestamp, underlyingBalance = sp.TNat).layout(("interestRate", ("lastInterestCompoundTime", "underlyingBalance"))))
+        #   numberOfElapsedInterestPeriods = sp.local("numberOfElapsedInterestPeriods", sp.as_nat(sp.now - _x3.lastInterestCompoundTime) // 60)
+        #   accruedInterest = sp.local("accruedInterest", sp.as_nat(((_x3.underlyingBalance * (1000000000000000000 + (numberOfElapsedInterestPeriods.value * _x3.interestRate))) // 1000000000000000000) - _x3.underlyingBalance))
+        #   sp.result(sp.record(accruedInterest = accruedInterest.value, numberOfElapsedInterestPeriods = numberOfElapsedInterestPeriods.value))
+        # conversionRate.value = (((self.data.underlyingBalance + sp.build_lambda(f_x3)(sp.record(interestRate = self.data.interestRate, lastInterestCompoundTime = self.data.lastInterestCompoundTime, underlyingBalance = self.data.underlyingBalance)).accruedInterest) * 1000000000000000000) * 1000000000000000000) // self.data.totalSupply # @storage : @parameter
+        DUP;        # @storage : @storage : @parameter
+        DUG 2;      # @storage : @parameter : @storage
+        GET 9;      # nat : @parameter : @storage
+        PUSH nat 1000000000000000000; # nat : nat : @parameter : @storage
+        DUP;        # nat : nat : nat : @parameter : @storage
+        LAMBDA
+          (pair nat (pair timestamp nat))
+          (pair nat nat)
+          {
+            # numberOfElapsedInterestPeriods = sp.local("numberOfElapsedInterestPeriods", sp.as_nat(sp.now - _x3.lastInterestCompoundTime) // 60) # pair nat (pair timestamp nat)
+            DUP;        # pair nat (pair timestamp nat) : pair nat (pair timestamp nat)
+            GET 3;      # timestamp : pair nat (pair timestamp nat)
+            PUSH nat 60; # nat : timestamp : pair nat (pair timestamp nat)
+            SWAP;       # timestamp : nat : pair nat (pair timestamp nat)
+            NOW;        # @now : timestamp : nat : pair nat (pair timestamp nat)
+            SUB;        # int : nat : pair nat (pair timestamp nat)
+            ISNAT;      # option nat : nat : pair nat (pair timestamp nat)
+            IF_NONE
+              {
+                UNIT;       # unit : nat : pair nat (pair timestamp nat)
+                FAILWITH;   # FAILED
+              }
+              {}; # @some : nat : pair nat (pair timestamp nat)
+            EDIV;       # option (pair nat nat) : pair nat (pair timestamp nat)
+            IF_NONE
+              {
+                UNIT;       # unit : pair nat (pair timestamp nat)
+                FAILWITH;   # FAILED
+              }
+              {
+                CAR;        # nat : pair nat (pair timestamp nat)
+              }; # nat : pair nat (pair timestamp nat)
+            SWAP;       # pair nat (pair timestamp nat) : nat
+            # accruedInterest = sp.local("accruedInterest", sp.as_nat(((_x3.underlyingBalance * (1000000000000000000 + (numberOfElapsedInterestPeriods.value * _x3.interestRate))) // 1000000000000000000) - _x3.underlyingBalance)) # pair nat (pair timestamp nat) : nat
+            DUP;        # pair nat (pair timestamp nat) : pair nat (pair timestamp nat) : nat
+            DUG 2;      # pair nat (pair timestamp nat) : nat : pair nat (pair timestamp nat)
+            GET 4;      # nat : nat : pair nat (pair timestamp nat)
+            PUSH nat 1000000000000000000; # nat : nat : nat : pair nat (pair timestamp nat)
+            DUP 4;      # pair nat (pair timestamp nat) : nat : nat : nat : pair nat (pair timestamp nat)
+            CAR;        # nat : nat : nat : nat : pair nat (pair timestamp nat)
+            DUP 4;      # nat : nat : nat : nat : nat : pair nat (pair timestamp nat)
+            MUL;        # nat : nat : nat : nat : pair nat (pair timestamp nat)
+            PUSH nat 1000000000000000000; # nat : nat : nat : nat : nat : pair nat (pair timestamp nat)
+            ADD;        # nat : nat : nat : nat : pair nat (pair timestamp nat)
+            DIG 4;      # pair nat (pair timestamp nat) : nat : nat : nat : nat
+            GET 4;      # nat : nat : nat : nat : nat
+            MUL;        # nat : nat : nat : nat
+            EDIV;       # option (pair nat nat) : nat : nat
+            IF_NONE
+              {
+                UNIT;       # unit : nat : nat
+                FAILWITH;   # FAILED
+              }
+              {
+                CAR;        # nat : nat : nat
+              }; # nat : nat : nat
+            SUB;        # int : nat
+            ISNAT;      # option nat : nat
+            IF_NONE
+              {
+                UNIT;       # unit : nat
+                FAILWITH;   # FAILED
+              }
+              {}; # @some : nat
+            # sp.result(sp.record(accruedInterest = accruedInterest.value, numberOfElapsedInterestPeriods = numberOfElapsedInterestPeriods.value)) # @some : nat
+            PAIR;       # pair @some nat
+          }; # lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter : @storage
+        DIG 5;      # @storage : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter
+        DUP;        # @storage : @storage : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter
+        GET 10;     # nat : @storage : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter
+        SWAP;       # @storage : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter
+        DUP;        # @storage : @storage : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter
+        CAR;        # pair (pair (pair (big_map %balances address (pair (map %approvals address nat) (nat %balance))) (address %governorContractAddress)) (pair (nat %interestRate) (timestamp %lastInterestCompoundTime))) (pair (pair (big_map %metadata string bytes) (address %pauseGuardianContractAddress)) (pair (bool %paused) (option %savedState_depositor address))) : @storage : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter
+        CAR;        # pair (pair (big_map %balances address (pair (map %approvals address nat) (nat %balance))) (address %governorContractAddress)) (pair (nat %interestRate) (timestamp %lastInterestCompoundTime)) : @storage : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter
+        GET 4;      # timestamp : @storage : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter
+        SWAP;       # @storage : timestamp : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter
+        DUP;        # @storage : @storage : timestamp : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter
+        DUG 8;      # @storage : timestamp : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter : @storage
+        CAR;        # pair (pair (pair (big_map %balances address (pair (map %approvals address nat) (nat %balance))) (address %governorContractAddress)) (pair (nat %interestRate) (timestamp %lastInterestCompoundTime))) (pair (pair (big_map %metadata string bytes) (address %pauseGuardianContractAddress)) (pair (bool %paused) (option %savedState_depositor address))) : timestamp : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter : @storage
+        CAR;        # pair (pair (big_map %balances address (pair (map %approvals address nat) (nat %balance))) (address %governorContractAddress)) (pair (nat %interestRate) (timestamp %lastInterestCompoundTime)) : timestamp : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter : @storage
+        GET 3;      # nat : timestamp : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter : @storage
+        PAIR 3;     # pair nat (pair timestamp nat) : lambda (pair nat (pair timestamp nat)) (pair nat nat) : nat : nat : nat : @parameter : @storage
+        EXEC;       # pair nat nat : nat : nat : nat : @parameter : @storage
+        CAR;        # nat : nat : nat : nat : @parameter : @storage
+        DUP 6;      # @storage : nat : nat : nat : nat : @parameter : @storage
+        GET 10;     # nat : nat : nat : nat : nat : @parameter : @storage
+        ADD;        # nat : nat : nat : nat : @parameter : @storage
+        MUL;        # nat : nat : nat : @parameter : @storage
+        MUL;        # nat : nat : @parameter : @storage
+        EDIV;       # option (pair nat nat) : @parameter : @storage
+        IF_NONE
+          {
+            UNIT;       # unit : @parameter : @storage
+            FAILWITH;   # FAILED
+          }
+          {
+            CAR;        # nat : @parameter : @storage
+          }; # nat : @parameter : @storage
+      }
+      {}; # nat : @parameter : @storage
+    # if self.data.balances.contains(params):
+    # sp.result((self.data.balances[params].balance * conversionRate.value) // (1000000000000000000 * 1000000000000000000)) # nat : @parameter : @storage
+    PUSH nat 1000000000000000000; # nat : nat : @parameter : @storage
+    DUP;        # nat : nat : nat : @parameter : @storage
+    MUL;        # nat : nat : @parameter : @storage
+    SWAP;       # nat : nat : @parameter : @storage
+    DIG 3;      # @storage : nat : nat : @parameter
+    CAR;        # pair (pair (pair (big_map %balances address (pair (map %approvals address nat) (nat %balance))) (address %governorContractAddress)) (pair (nat %interestRate) (timestamp %lastInterestCompoundTime))) (pair (pair (big_map %metadata string bytes) (address %pauseGuardianContractAddress)) (pair (bool %paused) (option %savedState_depositor address))) : nat : nat : @parameter
+    CAR;        # pair (pair (big_map %balances address (pair (map %approvals address nat) (nat %balance))) (address %governorContractAddress)) (pair (nat %interestRate) (timestamp %lastInterestCompoundTime)) : nat : nat : @parameter
+    CAR;        # pair (big_map %balances address (pair (map %approvals address nat) (nat %balance))) (address %governorContractAddress) : nat : nat : @parameter
+    CAR;        # big_map address (pair (map %approvals address nat) (nat %balance)) : nat : nat : @parameter
+    DIG 3;      # @parameter : big_map address (pair (map %approvals address nat) (nat %balance)) : nat : nat
+    GET;        # option (pair (map %approvals address nat) (nat %balance)) : nat : nat
+    IF_NONE
+      {
+        UNIT;       # unit : nat : nat
+        FAILWITH;   # FAILED
+      }
+      {
+        # of_some: Get-item:505 # @some : nat : nat
+      }; # @some : nat : nat
+    CDR;        # nat : nat : nat
+    MUL;        # nat : nat
+    EDIV;       # option (pair nat nat)
+    IF_NONE
+      {
+        UNIT;       # unit
+        FAILWITH;   # FAILED
+      }
+      {
+        CAR;        # nat
+      }; # nat
+  };
+view
+  "offchainView_getLPTokenConversionRate" unit nat
+  {
+    UNPAIR;     # @parameter : @storage
+    # conversionRate = sp.local("conversionRate", 0) # @parameter : @storage
+    PUSH nat 0; # nat : @parameter : @storage
+    # if self.data.totalSupply != 0: # nat : @parameter : @storage
+    PUSH nat 0; # nat : nat : @parameter : @storage
+    DUP 4;      # @storage : nat : nat : @parameter : @storage
+    GET 9;      # nat : nat : nat : @parameter : @storage
+    COMPARE;    # int : nat : @parameter : @storage
+    NEQ;        # bool : nat : @parameter : @storage
+    IF
+      {
+        DROP 2;     # @storage
+        # conversionRate.value = ((sp.view("offchainView_poolSize", sp.self_address, sp.unit, sp.TNat).open_some() * 1000000000000000000) * 1000000000000000000) // self.data.totalSupply # @storage
+        GET 9;      # nat
+        PUSH nat 1000000000000000000; # nat : nat
+        DUP;        # nat : nat : nat
+        SELF_ADDRESS; # @self : nat : nat : nat
+        UNIT;       # unit : @self : nat : nat : nat
+        VIEW "offchainView_poolSize" nat; # option nat : nat : nat : nat
+        IF_NONE
+          {
+            UNIT;       # unit : nat : nat : nat
+            FAILWITH;   # FAILED
+          }
+          {}; # @some : nat : nat : nat
+        MUL;        # nat : nat : nat
+        MUL;        # nat : nat
+        EDIV;       # option (pair nat nat)
+        IF_NONE
+          {
+            UNIT;       # unit
+            FAILWITH;   # FAILED
+          }
+          {
+            CAR;        # nat
+          }; # nat
+      }
+      {
+        SWAP;       # @parameter : nat : @storage
+        DROP;       # nat : @storage
+        SWAP;       # @storage : nat
+        DROP;       # nat
+      }; # nat
+    # sp.result(conversionRate.value) # nat
+  };
+view
+  "offchainView_poolSize" unit nat
+  {
+    CDR;        # @storage
+    # sp.result(self.data.underlyingBalance + sp.build_lambda(f_x4)(sp.record(interestRate = self.data.interestRate, lastInterestCompoundTime = self.data.lastInterestCompoundTime, underlyingBalance = self.data.underlyingBalance)).accruedInterest) # @storage
+    LAMBDA
+      (pair nat (pair timestamp nat))
+      (pair nat nat)
+      {
+        # numberOfElapsedInterestPeriods = sp.local("numberOfElapsedInterestPeriods", sp.as_nat(sp.now - _x4.lastInterestCompoundTime) // 60) # pair nat (pair timestamp nat)
+        DUP;        # pair nat (pair timestamp nat) : pair nat (pair timestamp nat)
+        GET 3;      # timestamp : pair nat (pair timestamp nat)
+        PUSH nat 60; # nat : timestamp : pair nat (pair timestamp nat)
+        SWAP;       # timestamp : nat : pair nat (pair timestamp nat)
+        NOW;        # @now : timestamp : nat : pair nat (pair timestamp nat)
+        SUB;        # int : nat : pair nat (pair timestamp nat)
+        ISNAT;      # option nat : nat : pair nat (pair timestamp nat)
+        IF_NONE
+          {
+            UNIT;       # unit : nat : pair nat (pair timestamp nat)
+            FAILWITH;   # FAILED
+          }
+          {}; # @some : nat : pair nat (pair timestamp nat)
+        EDIV;       # option (pair nat nat) : pair nat (pair timestamp nat)
+        IF_NONE
+          {
+            UNIT;       # unit : pair nat (pair timestamp nat)
+            FAILWITH;   # FAILED
+          }
+          {
+            CAR;        # nat : pair nat (pair timestamp nat)
+          }; # nat : pair nat (pair timestamp nat)
+        SWAP;       # pair nat (pair timestamp nat) : nat
+        # accruedInterest = sp.local("accruedInterest", sp.as_nat(((_x4.underlyingBalance * (1000000000000000000 + (numberOfElapsedInterestPeriods.value * _x4.interestRate))) // 1000000000000000000) - _x4.underlyingBalance)) # pair nat (pair timestamp nat) : nat
+        DUP;        # pair nat (pair timestamp nat) : pair nat (pair timestamp nat) : nat
+        DUG 2;      # pair nat (pair timestamp nat) : nat : pair nat (pair timestamp nat)
+        GET 4;      # nat : nat : pair nat (pair timestamp nat)
+        PUSH nat 1000000000000000000; # nat : nat : nat : pair nat (pair timestamp nat)
+        DUP 4;      # pair nat (pair timestamp nat) : nat : nat : nat : pair nat (pair timestamp nat)
+        CAR;        # nat : nat : nat : nat : pair nat (pair timestamp nat)
+        DUP 4;      # nat : nat : nat : nat : nat : pair nat (pair timestamp nat)
+        MUL;        # nat : nat : nat : nat : pair nat (pair timestamp nat)
+        PUSH nat 1000000000000000000; # nat : nat : nat : nat : nat : pair nat (pair timestamp nat)
+        ADD;        # nat : nat : nat : nat : pair nat (pair timestamp nat)
+        DIG 4;      # pair nat (pair timestamp nat) : nat : nat : nat : nat
+        GET 4;      # nat : nat : nat : nat : nat
+        MUL;        # nat : nat : nat : nat
+        EDIV;       # option (pair nat nat) : nat : nat
+        IF_NONE
+          {
+            UNIT;       # unit : nat : nat
+            FAILWITH;   # FAILED
+          }
+          {
+            CAR;        # nat : nat : nat
+          }; # nat : nat : nat
+        SUB;        # int : nat
+        ISNAT;      # option nat : nat
+        IF_NONE
+          {
+            UNIT;       # unit : nat
+            FAILWITH;   # FAILED
+          }
+          {}; # @some : nat
+        # sp.result(sp.record(accruedInterest = accruedInterest.value, numberOfElapsedInterestPeriods = numberOfElapsedInterestPeriods.value)) # @some : nat
+        PAIR;       # pair @some nat
+      }; # lambda (pair nat (pair timestamp nat)) (pair nat nat) : @storage
+    SWAP;       # @storage : lambda (pair nat (pair timestamp nat)) (pair nat nat)
+    DUP;        # @storage : @storage : lambda (pair nat (pair timestamp nat)) (pair nat nat)
+    GET 10;     # nat : @storage : lambda (pair nat (pair timestamp nat)) (pair nat nat)
+    SWAP;       # @storage : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat)
+    DUP;        # @storage : @storage : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat)
+    CAR;        # pair (pair (pair (big_map %balances address (pair (map %approvals address nat) (nat %balance))) (address %governorContractAddress)) (pair (nat %interestRate) (timestamp %lastInterestCompoundTime))) (pair (pair (big_map %metadata string bytes) (address %pauseGuardianContractAddress)) (pair (bool %paused) (option %savedState_depositor address))) : @storage : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat)
+    CAR;        # pair (pair (big_map %balances address (pair (map %approvals address nat) (nat %balance))) (address %governorContractAddress)) (pair (nat %interestRate) (timestamp %lastInterestCompoundTime)) : @storage : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat)
+    GET 4;      # timestamp : @storage : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat)
+    SWAP;       # @storage : timestamp : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat)
+    DUP;        # @storage : @storage : timestamp : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat)
+    DUG 4;      # @storage : timestamp : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : @storage
+    CAR;        # pair (pair (pair (big_map %balances address (pair (map %approvals address nat) (nat %balance))) (address %governorContractAddress)) (pair (nat %interestRate) (timestamp %lastInterestCompoundTime))) (pair (pair (big_map %metadata string bytes) (address %pauseGuardianContractAddress)) (pair (bool %paused) (option %savedState_depositor address))) : timestamp : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : @storage
+    CAR;        # pair (pair (big_map %balances address (pair (map %approvals address nat) (nat %balance))) (address %governorContractAddress)) (pair (nat %interestRate) (timestamp %lastInterestCompoundTime)) : timestamp : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : @storage
+    GET 3;      # nat : timestamp : nat : lambda (pair nat (pair timestamp nat)) (pair nat nat) : @storage
+    PAIR 3;     # pair nat (pair timestamp nat) : lambda (pair nat (pair timestamp nat)) (pair nat nat) : @storage
+    EXEC;       # pair nat nat : @storage
+    CAR;        # nat : @storage
+    SWAP;       # @storage : nat
+    GET 10;     # nat : nat
+    ADD;        # nat
+  };
