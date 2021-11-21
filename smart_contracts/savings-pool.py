@@ -434,44 +434,53 @@ class SavingsPoolContract(FA12.FA12):
   # Get the total number of kUSD that will be in the pool next time interest accrues.
   @sp.offchain_view(pure = True)
   def offchainView_poolSize(self):
+    getPoolSize = sp.build_lambda(self.getPoolSize.f)
     getInterestAccrualResults = sp.build_lambda(self.getInterestAccrualResults.f)
 
-    interestAccrualResults = getInterestAccrualResults(
-      sp.record(
-        interestRate = self.data.interestRate,
-        lastInterestCompoundTime = self.data.lastInterestCompoundTime,
-        underlyingBalance = self.data.underlyingBalance,
+    sp.result(
+      getPoolSize(
+        sp.record(
+          getInterestAccrualResults = getInterestAccrualResults,
+          interestRate = self.data.interestRate,
+          lastInterestCompoundTime = self.data.lastInterestCompoundTime,
+          underlyingBalance = self.data.underlyingBalance
+        )
       )
     )
-    totalPoolSize = self.data.underlyingBalance + interestAccrualResults.accruedInterest
+
+    # interestAccrualResults = getInterestAccrualResults(
+    #   sp.record(
+    #     interestRate = self.data.interestRate,
+    #     lastInterestCompoundTime = self.data.lastInterestCompoundTime,
+    #     underlyingBalance = self.data.underlyingBalance,
+    #   )
+    # )
+    # totalPoolSize = self.data.underlyingBalance + interestAccrualResults.accruedInterest
     
-    sp.result(totalPoolSize)
+    # sp.result(totalPoolSize)
 
   # Get the conversion rate of one LP token to kUSD. Results are denominated in kUSD, with 18 digits
   # of precision.
   @sp.offchain_view(pure = True)
   def offchainView_getLPTokenConversionRate(self):
-    # Tabulate the total pool size.
-    # TODO(keefertaylor): This is a re-implementation of the logic in `offchainView_poolSize`, attempt to code share
+    getPoolSize = sp.build_lambda(self.getPoolSize.f)
     getInterestAccrualResults = sp.build_lambda(self.getInterestAccrualResults.f)
-    interestAccrualResults = getInterestAccrualResults(
-      sp.record(
-        interestRate = self.data.interestRate,
-        lastInterestCompoundTime = self.data.lastInterestCompoundTime,
-        underlyingBalance = self.data.underlyingBalance,
+    getLPTokenConversionRate = sp.build_lambda(self.getLPTokenConversionRate.f)
+
+    sp.result(
+      getLPTokenConversionRate(
+        sp.record(
+          getPoolSize = getPoolSize,
+          getInterestAccrualResults = getInterestAccrualResults,
+          interestRate = self.data.interestRate,
+          lastInterestCompoundTime = self.data.lastInterestCompoundTime,
+          underlyingBalance = self.data.underlyingBalance,
+          totalSupply = self.data.totalSupply
+        )
       )
     )
-    totalPoolSize = self.data.underlyingBalance + interestAccrualResults.accruedInterest
 
-    # Avoid divide by 0 errors if no LP tokens are issued.
-    conversionRate = sp.local('conversionRate', sp.nat(0))
-    sp.if self.data.totalSupply != sp.nat(0):
-      # NOTE: KSR is denominated in 36 digits, and kUSD uses 18 so we upscale the kUSD size to be 
-      #       the same precision.
-      conversionRate.value = ((totalPoolSize * Constants.PRECISION * Constants.PRECISION) / self.data.totalSupply)
-    
-    sp.result(conversionRate.value)
-    
+
   # Get the balance of an account in kUSD, if the account redeemed all their LP tokens. Results are 
   # denominated in kUSD, with 18 digits of precision.
   # Get the conversion rate of one LP token to kUSD. Results are denominated in kUSD, with 18 digits
@@ -480,26 +489,21 @@ class SavingsPoolContract(FA12.FA12):
   def offchainView_getAccountValue(self, address):
     sp.set_type(address, sp.TAddress)
 
-    # Tabulate the total pool size.
-    # TODO(keefertaylor): This is a re-implementation of the logic in `offchainView_poolSize`, attempt to code share
+    getPoolSize = sp.build_lambda(self.getPoolSize.f)
     getInterestAccrualResults = sp.build_lambda(self.getInterestAccrualResults.f)
-    interestAccrualResults = getInterestAccrualResults(
+    getLPTokenConversionRate = sp.build_lambda(self.getLPTokenConversionRate.f)
+
+    conversionRate = getLPTokenConversionRate(
       sp.record(
+        getPoolSize = getPoolSize,
+        getInterestAccrualResults = getInterestAccrualResults,
         interestRate = self.data.interestRate,
         lastInterestCompoundTime = self.data.lastInterestCompoundTime,
         underlyingBalance = self.data.underlyingBalance,
+        totalSupply = self.data.totalSupply
       )
     )
-    totalPoolSize = self.data.underlyingBalance + interestAccrualResults.accruedInterest
-
-    # Avoid divide by 0 errors if no LP tokens are issued.
-    # TODO(keefertaylor): This is a re-implementation of the logic in `offchainView_poolSize`, attempt to code share
-    conversionRate = sp.local('conversionRate', sp.nat(0))
-    sp.if self.data.totalSupply != sp.nat(0):
-      # NOTE: KSR is denominated in 36 digits, and kUSD uses 18 so we upscale the kUSD size to be 
-      #       the same precision.
-      conversionRate.value = ((totalPoolSize * Constants.PRECISION * Constants.PRECISION) / self.data.totalSupply)
-
+    
     # Get account balance.
     # Default to 0 to avoid a bad map access.
     accountLPTokens = sp.nat(0)
@@ -510,7 +514,7 @@ class SavingsPoolContract(FA12.FA12):
     # NOTE: KSR is denominated in 36 digits, and kUSD uses 18 so we upscale the kUSD size to be 
     #       the same precision. Then, two fixed point numbers with 36 digits of precision are
     #       multiplied together, which means we need to divide by the LP_TOKEN_PRECISION.
-    accountValue = accountLPTokens * conversionRate.value // Constants.LP_TOKEN_PRECISION
+    accountValue = accountLPTokens * conversionRate // Constants.LP_TOKEN_PRECISION
     sp.result(accountValue)
 
   ################################################################
@@ -696,6 +700,110 @@ class SavingsPoolContract(FA12.FA12):
         numberOfElapsedInterestPeriods = numberOfElapsedInterestPeriods.value,
       )
     )
+  
+  # Get the current size of the pool. 
+  #
+  # This lambda acts as the implementation of `offchainView_getPoolSize` and is split into a lambda
+  # for reusue.
+  @sp.global_lambda
+  def getPoolSize(params):
+    # TODO(keefertaylor): Type these parameters
+    sp.set_type(
+      params,
+      sp.TRecord(
+        getInterestAccrualResults = sp.TLambda(
+          sp.TRecord(
+            interestRate = sp.TNat,
+            lastInterestCompoundTime = sp.TTimestamp,
+            underlyingBalance = sp.TNat        
+          ),
+          sp.TRecord(
+            accruedInterest = sp.TNat,
+            numberOfElapsedInterestPeriods =  sp.TNat,
+          )
+        ),
+        interestRate = sp.TNat,
+        lastInterestCompoundTime = sp.TTimestamp,
+        underlyingBalance = sp.TNat
+      )
+    )
+
+    interestAccrualResults = params.getInterestAccrualResults(
+      sp.record(
+        interestRate = params.interestRate,
+        lastInterestCompoundTime = params.lastInterestCompoundTime,
+        underlyingBalance = params.underlyingBalance,
+      )
+    )
+    totalPoolSize = params.underlyingBalance + interestAccrualResults.accruedInterest
+
+    sp.result(totalPoolSize)
+
+  # Get the conversion rate of 1 LP token to kUSD. 
+  #
+  # This lambda acts as the implementation of `offchainView_getLPTokenConversionRate` and is split into a lambda
+  # for reusue.
+  @sp.global_lambda
+  def getLPTokenConversionRate(params):
+    # TODO(keefertaylor): Type these parameters
+    sp.set_type(
+      params,
+      sp.TRecord(
+        getInterestAccrualResults = sp.TLambda(
+          sp.TRecord(
+            interestRate = sp.TNat,
+            lastInterestCompoundTime = sp.TTimestamp,
+            underlyingBalance = sp.TNat        
+          ),
+          sp.TRecord(
+            accruedInterest = sp.TNat,
+            numberOfElapsedInterestPeriods =  sp.TNat,
+          )
+        ),
+        getPoolSize = sp.TLambda(
+          sp.TRecord(
+            getInterestAccrualResults = sp.TLambda(
+              sp.TRecord(
+                interestRate = sp.TNat,
+                lastInterestCompoundTime = sp.TTimestamp,
+                underlyingBalance = sp.TNat        
+              ),
+              sp.TRecord(
+                accruedInterest = sp.TNat,
+                numberOfElapsedInterestPeriods =  sp.TNat,
+              )
+            ),
+            interestRate = sp.TNat,
+            lastInterestCompoundTime = sp.TTimestamp,
+            underlyingBalance = sp.TNat
+          ),
+          sp.TNat,
+        ),
+        interestRate = sp.TNat,
+        lastInterestCompoundTime = sp.TTimestamp,
+        underlyingBalance = sp.TNat,
+        totalSupply = sp.TNat,
+      )
+    )
+
+    # Tabulate the total pool size.
+    totalPoolSize = params.getPoolSize(
+        sp.record(
+          getInterestAccrualResults = params.getInterestAccrualResults,
+          interestRate = params.interestRate,
+          lastInterestCompoundTime = params.lastInterestCompoundTime,
+          underlyingBalance = params.underlyingBalance
+        )
+      )
+
+    # Avoid divide by 0 errors if no LP tokens are issued.
+    conversionRate = sp.local('conversionRate', sp.nat(0))
+    sp.if params.totalSupply != sp.nat(0):
+      # NOTE: KSR is denominated in 36 digits, and kUSD uses 18 so we upscale the kUSD size to be 
+      #       the same precision.
+      conversionRate.value = ((totalPoolSize * Constants.PRECISION * Constants.PRECISION) / params.totalSupply)
+    
+    sp.result(conversionRate.value)    
 
 ################################################################
 ################################################################
