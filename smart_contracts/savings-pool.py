@@ -41,7 +41,7 @@ class SavingsPoolContract(FA12.FA12):
     pauseGuardianContractAddress = Addresses.PAUSE_GUARDIAN_ADDRESS,
 
     # The interest rate.
-    interestRate = sp.nat(0),
+    interestRate = sp.nat(123),
 
     # The last time the interest rate was updated.
     lastInterestCompoundTime = sp.timestamp(0),
@@ -479,7 +479,6 @@ class SavingsPoolContract(FA12.FA12):
   @sp.offchain_view(pure = True)
   def offchainView_getAccountValue(self, address):
     sp.set_type(address, sp.TAddress)
-
 
     # Tabulate the total pool size.
     # TODO(keefertaylor): This is a re-implementation of the logic in `offchainView_poolSize`, attempt to code share
