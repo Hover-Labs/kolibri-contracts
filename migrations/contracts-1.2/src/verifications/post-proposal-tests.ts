@@ -2,10 +2,9 @@ import { approveToken, checkConfirmed, ContractOriginationResult, fetchFromCache
 import CACHE_KEYS from "../cache-keys"
 import { NETWORK_CONFIG } from "../config"
 import BigNumber from 'bignumber.js'
-import { OvenClient, StableCoinClient, Network, HarbingerClient, deriveOvenAddress } from "@hover-labs/kolibri-js"
+import { OvenClient, StableCoinClient, Network, HarbingerClient, deriveOvenAddress, SavingsPoolClient } from "@hover-labs/kolibri-js"
 import _ from "lodash";
 import { TransactionWalletOperation } from '@taquito/taquito'
-import SavingsPoolClient from "../savings-pool-client"
 import { KOLIBRI_CONFIG } from "../config"
 
 const main = async () => {
