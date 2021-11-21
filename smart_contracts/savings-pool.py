@@ -85,7 +85,7 @@ class SavingsPoolContract(FA12.FA12):
       tvalue = sp.TRecord(token_id = sp.TNat, token_info = sp.TMap(sp.TString, sp.TBytes))
     )
 
-    metadata_data = sp.utils.bytes_of_string('{ "name": "Interest Bearing kUSD",  "description": "Interest Bearing kUSD",  "authors": ["Hover Labs <hello@hover.engineering>"],  "homepage":  "https://kolibri.finance", "interfaces": [ "TZIP-007-2021-01-29"] }')
+    metadata_data = sp.utils.bytes_of_string('{ "name": "Kolibri Savings Rate LP", "description": "Tracks shares in the Kolibri Savings Pool", "authors": ["Hover Labs <hello@hover.engineering>"], "homepage": "https://kolibri.finance", "interfaces": [ "TZIP-007-2021-01-29"] }')
     metadata = sp.big_map(
       l = {
         "": sp.utils.bytes_of_string('tezos-storage:data'),
