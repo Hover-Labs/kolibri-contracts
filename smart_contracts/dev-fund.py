@@ -237,7 +237,7 @@ if __name__ == "__main__":
         dummyContract = DummyContract.DummyContract()
         scenario += dummyContract
 
-        # WHEN send is calledb with less than the full amount
+        # WHEN send is called with less than the full amount
         sendAmount = sp.mutez(2)
         param = (sendAmount, dummyContract.address)
         scenario += fund.send(param).run(
@@ -266,7 +266,8 @@ if __name__ == "__main__":
         param = (balance, notGovernor)
         scenario += fund.send(param).run(
             sender = notGovernor,
-            valid = False
+            valid = False,
+            exception = Errors.NOT_GOVERNOR
         )    
 
     ################################################################
@@ -316,7 +317,8 @@ if __name__ == "__main__":
         notGovernor = Addresses.NULL_ADDRESS
         scenario += fund.sendAll(notGovernor).run(
             sender = notGovernor,
-            valid = False
+            valid = False,
+            exception = Errors.NOT_GOVERNOR
         )    
 
     ################################################################
