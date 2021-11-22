@@ -116,7 +116,7 @@ class SavingsPoolContract(FA12.FA12):
       lastInterestCompoundTime = lastInterestCompoundTime,
       paused = paused,
 
-      # State machinge
+      # State machine
       state = state,
       savedState_tokensToRedeem = savedState_tokensToRedeem, # Amount of tokens to redeem, populated when state = WAITING_REDEEM
       savedState_redeemer = savedState_redeemer, # Account redeeming tokens, populated when state = WAITING_REDEEM
