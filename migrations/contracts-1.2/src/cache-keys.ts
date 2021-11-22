@@ -4,6 +4,8 @@ const CACHE_KEYS = {
   NEW_STABILITY_FUND_TRANSFER: 'new-stability-fund-transfer',
   SAVINGS_POOL_TRANSFER: 'savings-pool-transfer',
 
+  STABILITY_FUND_MSIG: 'stability-fund-msig',
+
   STABILITY_FUND_DEPLOY: 'stability-fund-deploy',
   STABILITY_FUND_BREAK_GLASS_DEPLOY: 'stability-fund-break-glass-deploy',
   SAVINGS_POOL_DEPLOY: 'savings-pool-deploy',
