@@ -61,6 +61,14 @@ class DevFundContract(sp.Contract):
 
     # Governance is timelocked and can always transfer funds.
     @sp.entry_point
+    def sendAll(self, destination):
+        sp.set_type(destination, sp.TAddress)
+
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        sp.send(destination, sp.balance)        
+
+    # Governance is timelocked and can always transfer funds.
+    @sp.entry_point
     def sendTokens(self, param):
         sp.set_type(param, sp.TPair(sp.TNat, sp.TAddress))
 
@@ -212,6 +220,34 @@ if __name__ == "__main__":
         scenario.verify(fund.balance == sp.mutez(0))
         scenario.verify(dummyContract.balance == balance)
 
+    @sp.add_test(name="send - succeeds when with less than the entire amount")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a DevFund contract with some balance
+        balance = sp.mutez(10)
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        fund = DevFundContract(
+            governorContractAddress = governorContractAddress
+        )
+        fund.set_initial_balance(balance)
+        scenario += fund
+
+        # AND a dummy contract to receive funds
+        dummyContract = DummyContract.DummyContract()
+        scenario += dummyContract
+
+        # WHEN send is calledb with less than the full amount
+        sendAmount = sp.mutez(2)
+        param = (sendAmount, dummyContract.address)
+        scenario += fund.send(param).run(
+            sender = governorContractAddress,
+        )
+
+        # THEN the funds are sent.
+        scenario.verify(fund.balance == (balance - sendAmount))
+        scenario.verify(dummyContract.balance == sendAmount)        
+
     @sp.add_test(name="send - fails when not called by governor")
     def test():
         scenario = sp.test_scenario()
@@ -232,6 +268,57 @@ if __name__ == "__main__":
             sender = notGovernor,
             valid = False
         )    
+
+    ################################################################
+    # sendAll
+    ################################################################
+
+    @sp.add_test(name="sendAll - succeeds when called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a DevFund contract with some balance
+        balance = sp.mutez(10)
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        fund = DevFundContract(
+            governorContractAddress = governorContractAddress
+        )
+        fund.set_initial_balance(balance)
+        scenario += fund
+
+        # AND a dummy contract to receive funds
+        dummyContract = DummyContract.DummyContract()
+        scenario += dummyContract
+
+        # WHEN sendAll is called
+        scenario += fund.sendAll(dummyContract.address).run(
+            sender = governorContractAddress,
+        )
+
+        # THEN the funds are sent.
+        scenario.verify(fund.balance == sp.mutez(0))
+        scenario.verify(dummyContract.balance == balance)
+     
+    @sp.add_test(name="sendAll - fails when not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a DevFund contract
+        balance = sp.mutez(10)
+        governorContractAddress = Addresses.GOVERNOR_ADDRESS
+        fund = DevFundContract(
+            governorContractAddress = governorContractAddress
+        )
+        fund.set_initial_balance(balance)
+        scenario += fund
+
+        # WHEN send is called by someone who isn't the governor THEN the call fails
+        notGovernor = Addresses.NULL_ADDRESS
+        scenario += fund.sendAll(notGovernor).run(
+            sender = notGovernor,
+            valid = False
+        )    
+
     ################################################################
     # sendTokens
     ################################################################
