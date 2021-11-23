@@ -75,7 +75,7 @@ test-e2e:
 # Compile the Dev Fund
 compile-dev-fund:
 	$(SMART_PY_CLI) compile dev-fund.py $(OUT_DIR)
-	cp $(OUT_DIR)/dev-fund/step_000_cont_0_contract.tz dev-fund.tz
+	cp $(OUT_DIR)/dev-fund/step_000_cont_2_contract.tz dev-fund.tz
 	rm -rf $(OUT_DIR)
 
 # Compile the Minter
@@ -100,7 +100,7 @@ compile-oven-proxy:
 compile-savings-pool:
 	$(SMART_PY_CLI) compile savings-pool.py $(OUT_DIR)
 	cp $(OUT_DIR)/savings-pool/step_000_cont_1_contract.tz savings-pool.tz
-	rm -rf $(OUT_DIR)
+# rm -rf $(OUT_DIR)
 
 # Compile the Stability Fund
 compile-stability-fund:

@@ -24,6 +24,17 @@ const main = async () => {
 
   // Get a local signer to use with Kolibri-JS
   const signer = await getSigner(NETWORK_CONFIG)
+  const deployAddress = await signer.publicKeyHash()
+
+  // Sanity check that the user has funds
+  console.log("Performing Pre Flight Checks...")
+  const requiredXTZ = new BigNumber(10 * CONSTANTS.XTZ_MANTISSA)
+  const xtzHeld = await tezos.tz.getBalance(deployAddress)
+  if (xtzHeld.isLessThan(requiredXTZ)) {
+    throw new Error(`${deployAddress} does not have the required XTZ to complete this migration.\nBalance: ${xtzHeld.toFixed()} XTZ\nRequired: ${requiredXTZ.toFixed()} XTZ`)
+  }
+  console.log("Done!")
+  console.log("")
 
   console.log(``)
   console.log(`New Stability Fund: ${stabilityFund}`)
@@ -55,7 +66,7 @@ const main = async () => {
 
   console.log("...Sending some value to the stability fund")
   const kUSDInOldFund = new BigNumber(123456789) // 0.000000000123456789 kUSD
-  const sendTokensHash = sendTokens(oldStabilityFund, kUSDInOldFund, token, tezos, NETWORK_CONFIG)
+  const sendTokensHash = await sendTokens(oldStabilityFund, kUSDInOldFund, token, tezos, NETWORK_CONFIG)
   await checkConfirmed(NETWORK_CONFIG, sendTokensHash)
 
   console.log("...Validating that value transferred")

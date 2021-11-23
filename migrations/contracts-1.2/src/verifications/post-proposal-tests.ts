@@ -32,6 +32,17 @@ const main = async () => {
 
   // Get a local signer to use with Kolibri-JS
   const signer = await getSigner(NETWORK_CONFIG)
+  const deployAddress = await signer.publicKeyHash()
+
+  // Sanity check that the user has funds
+  console.log("Performing Pre Flight Checks...")
+  const requiredXTZ = new BigNumber(10 * CONSTANTS.XTZ_MANTISSA)
+  const xtzHeld = await tezos.tz.getBalance(deployAddress)
+  if (xtzHeld.isLessThan(requiredXTZ)) {
+    throw new Error(`${deployAddress} does not have the required XTZ to complete this migration.\nBalance: ${xtzHeld.toFixed()} XTZ\nRequired: ${requiredXTZ.toFixed()} XTZ`)
+  }
+  console.log("Done!")
+  console.log("")
 
   console.log(``)
   console.log(`New Stability Fund: ${stabilityFund}`)
@@ -103,12 +114,12 @@ const main = async () => {
   console.log("...Depositing to the oven")
   const harbingerClient = new HarbingerClient(NETWORK_CONFIG.tezosNodeUrl, harbingerNormalizer)
   const ovenClient = new OvenClient(NETWORK_CONFIG.tezosNodeUrl, signer, ovenAddress, stablecoinClient, harbingerClient)
-  const depositResult = (await ovenClient.deposit(new BigNumber(1000 * CONSTANTS.XTZ_MANTISSA))) as TransactionWalletOperation // Deposit 1000 XTZ
+  const depositResult = (await ovenClient.deposit(requiredXTZ)) as TransactionWalletOperation
   await checkConfirmed(NETWORK_CONFIG, depositResult.opHash)
 
   console.log("...Taking a loan")
-  const loanAmount = new BigNumber(100).times(new BigNumber(CONSTANTS.MANTISSA))
-  const borrowResult = (await ovenClient.borrow(loanAmount)) as TransactionWalletOperation // Borrow 100 kUSD
+  const loanAmount = new BigNumber(5).times(new BigNumber(CONSTANTS.MANTISSA))
+  const borrowResult = (await ovenClient.borrow(loanAmount)) as TransactionWalletOperation // Borrow 5 kUSD
   await checkConfirmed(NETWORK_CONFIG, borrowResult.opHash)
 
   console.log(`...Waiting ${minutesToWait} minutes for interest to accrue (Started at ${(new Date()).toString()}`)
@@ -135,7 +146,7 @@ const main = async () => {
   // Check that interest can be accrued from the savings pool
   console.log("Verifying users can accrue interest")
   const savingsPoolClient = new SavingsPoolClient(NETWORK_CONFIG.tezosNodeUrl, signer, savingsPool)
-  const initialBalance = await getTokenBalanceFromDefaultSmartPyContract(await signer.publicKeyHash(), token, tezos)
+  const initialBalance = await getTokenBalanceFromDefaultSmartPyContract(deployAddress, token, tezos)
   const depositAmount = new BigNumber(100).times(new BigNumber(CONSTANTS.MANTISSA))
 
   console.log("...Zeroing kUSD Approval for Savings Pool")
@@ -155,7 +166,7 @@ const main = async () => {
   console.log(`...Depositing ${depositAmount.toString()} to pool`)
   const savingsPoolDepositResult = (await savingsPoolClient.deposit(depositAmount)) as TransactionWalletOperation
   await checkConfirmed(NETWORK_CONFIG, savingsPoolDepositResult.opHash)
-  const lpTokenBalance = await getTokenBalanceFromDefaultSmartPyContract(await signer.publicKeyHash(), savingsPool, tezos)
+  const lpTokenBalance = await getTokenBalanceFromDefaultSmartPyContract(deployAddress, savingsPool, tezos)
   console.log(`...Deposit completed in hash ${savingsPoolDepositResult.opHash}`)
   console.log(`...Received ${lpTokenBalance} LP tokens`)
 
@@ -186,7 +197,7 @@ const main = async () => {
   console.log("   / passed")
 
   console.log("...Validating the user received interest")
-  const balanceAfterRedeem = await getTokenBalanceFromDefaultSmartPyContract(await signer.publicKeyHash(), token, tezos)
+  const balanceAfterRedeem = await getTokenBalanceFromDefaultSmartPyContract(deployAddress, token, tezos)
   if (!balanceAfterRedeem.isGreaterThan(initialBalance)) {
     throw new Error("Balance after redemption did not increase!")
   }

@@ -27,7 +27,11 @@ class StabilityFundContract(DevFund.DevFundContract):
             administratorContractAddress = administratorContractAddress,
             tokenContractAddress = tokenContractAddress,
             ovenRegistryContractAddress = ovenRegistryContractAddress,
-            savingsAccountContractAddress = savingsAccountContractAddress
+            savingsAccountContractAddress = savingsAccountContractAddress,
+
+            # State machine
+            state= DevFund.IDLE,
+            sendAllTokens_destination = sp.none
         )
 
     ################################################################

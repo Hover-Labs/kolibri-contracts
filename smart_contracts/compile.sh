@@ -45,9 +45,9 @@ function processContract {
     echo ">>> Done."
 
     echo ">>> [3 / 3] Copying Artifacts"
-    # Some contracts need to inherit or have other contrats, in which case they will be step_000_cont_1.
+    # Some contracts need to inherit or have other contracts, in which case they will be step_000_cont_1 or 2.
     # TODO(keefertaylor): This is pretty brittle. Consider if we should migrate to Makefile or find a better way.
-    cp "$OUT_DIR/${CONTRACT_NAME}/step_000_cont_0_contract.tz" $CONTRACT_OUT || cp "$OUT_DIR/${CONTRACT_NAME}/step_000_cont_1_contract.tz" $CONTRACT_OUT 
+    cp "$OUT_DIR/${CONTRACT_NAME}/step_000_cont_0_contract.tz" $CONTRACT_OUT || cp "$OUT_DIR/${CONTRACT_NAME}/step_000_cont_1_contract.tz" $CONTRACT_OUT || cp "$OUT_DIR/${CONTRACT_NAME}/step_000_cont_2_contract.tz" $CONTRACT_OUT 
     echo ">>> Written to ${CONTRACT_OUT}"
 }
 
