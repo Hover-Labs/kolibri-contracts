@@ -790,7 +790,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract.
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -863,7 +863,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract.
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -936,7 +936,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract.
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -1009,7 +1009,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract.
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -1377,7 +1377,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract.
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -1785,7 +1785,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -2687,7 +2687,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -2817,7 +2817,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -2967,7 +2967,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
