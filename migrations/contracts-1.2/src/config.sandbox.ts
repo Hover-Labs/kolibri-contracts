@@ -22,7 +22,7 @@ export const MIGRATION_CONFIG = {
   // Initial Interest Rate for Savings Pool 
   // 5% Interest
   // See https://www.wolframalpha.com/input/?i=ln%281+%2B+0.05%29+%2F+%2860+*+24+*+365%29
-  initialInterestRate: new BigNumber('000000000000928276'),
+  initialInterestRate: new BigNumber('92827557400'),
 
   // Configuration for the Multisig that will become governor of the old stability fund
   stabilityFundMsig: {
