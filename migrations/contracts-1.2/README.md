@@ -88,6 +88,9 @@ rm -rf src/config.ts deploy-data.json
 ```
 
 **Run Migration**
+
+NOTE: The DEPLOY_SK account needs $3 of kUSD on it to complete this migration.
+
 ```
 export DEPLOY_SK=esdk...
 cp src/config.mainnet.ts src/config.ts
