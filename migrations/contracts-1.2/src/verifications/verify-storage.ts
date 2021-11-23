@@ -21,6 +21,8 @@ const main = async () => {
   const stabilityFundBreakGlassAddress = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_BREAK_GLASS_DEPLOY) as ContractOriginationResult).contractAddress
   const savingsPoolBreakGlassAddress = (await fetchFromCache(CACHE_KEYS.SAVINGS_POOL_BREAK_GLASS_DEPLOY) as ContractOriginationResult).contractAddress
 
+  const stabilityFundGovernorMultisigAddress = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_MSIG) as ContractOriginationResult).contractAddress
+
   // Validate storage for stability fund.
   // 1. governor should be break glass
   // 2. savings account should be the new savings account
@@ -86,6 +88,19 @@ const main = async () => {
 
   console.log("   / passed")
 
+  // Validate the multisig configuration
+  // 1. operationId should start at 0
+  // 2. threshold, signers and timelockSeconds shoudl match the MIGRATION_CONFIG
+  console.log(`Validating multisig configuration... (${stabilityFundGovernorMultisigAddress})`)
+
+  await validateStorageValue(stabilityFundGovernorMultisigAddress, 'operationId', 0, tezos)
+
+  await validateStorageValue(stabilityFundGovernorMultisigAddress, 'threshold', MIGRATION_CONFIG.stabilityFundMsig.threshold, tezos)
+  await validateStorageValue(stabilityFundGovernorMultisigAddress, 'signers', MIGRATION_CONFIG.stabilityFundMsig.publicKeys, tezos)
+  await validateStorageValue(stabilityFundGovernorMultisigAddress, 'timelockSeconds', MIGRATION_CONFIG.stabilityFundMsig.timelockSeconds, tezos)
+  console.log("   / passed")
+  console.log("")
+
   // Validate break glasses are attached correctly
 
   console.log(`Validating break glass for stability fund... (${stabilityFundBreakGlassAddress})`)
@@ -109,7 +124,6 @@ const main = async () => {
     tezos
   )
   console.log("   / passed")
-
   console.log("")
 
   // Validate Metadata

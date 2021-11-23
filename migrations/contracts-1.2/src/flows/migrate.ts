@@ -1,8 +1,9 @@
 import { KOLIBRI_CONFIG, MIGRATION_CONFIG, NETWORK_CONFIG } from "../config"
-import { ContractOriginationResult, loadContract, printConfig, sendOperation, getTezos, fetchFromCacheOrRun, deployContract, getTokenBalanceFromDefaultSmartPyContract, CONSTANTS } from "@hover-labs/tezos-utils"
+import { ContractOriginationResult, loadContract, printConfig, sendOperation, getTezos, fetchFromCacheOrRun, deployContract, getTokenBalanceFromDefaultSmartPyContract, CONSTANTS, sendTokens } from "@hover-labs/tezos-utils"
 import { generateBreakGlassStorage } from '../storage/break-glass-contract-storage'
 import { generateStabilityFundStorage } from '../storage/stability-fund-contract-storage'
 import { generateSavingsPoolStorage } from "../storage/savings-pool-contract-storage"
+import { generateMultisigStorage } from '../storage/multisig-storage'
 import CACHE_KEYS from '../cache-keys'
 import BigNumber from 'bignumber.js'
 
@@ -24,7 +25,8 @@ const main = async () => {
   const contractSources = {
     stabilityFundContractSource: loadContract(`${__dirname}/../../../../smart_contracts/stability-fund.tz`),
     savingsPoolContractSource: loadContract(`${__dirname}/../../../../smart_contracts/savings-pool.tz`),
-    breakGlassContractSource: loadContract(`${__dirname}/../../../../break-glass-contracts/smart_contracts/break-glass.tz`)
+    breakGlassContractSource: loadContract(`${__dirname}/../../../../break-glass-contracts/smart_contracts/break-glass.tz`),
+    multisigContractSource: loadContract(`${__dirname}/../../../../multisig-timelock/smart_contracts/msig-timelock.tz`)
   }
   console.log("Done!")
   console.log('')
@@ -148,48 +150,38 @@ const main = async () => {
   // Additionally, the automated tests assume there is *some* value in the stability fund to start in order to
   // validate the transfer occurred, so we need some value here. 
   console.log("Transferring 1 kUSD to the old stability fund to ensure it has value")
+  const kUSDTokenAddress = KOLIBRI_CONFIG.contracts.TOKEN!
+  const initialAmount = new BigNumber("1000000000000000000") // 1 kUSD
   const oldStabilityFundTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.OLD_STABILITY_FUND_TRANSFER, async () => {
-    const tokenContractAddress = KOLIBRI_CONFIG.contracts.TOKEN!
     const oldStabilityFundAddress = KOLIBRI_CONFIG.contracts.STABILITY_FUND!
-    const amount = new BigNumber("1000000000000000000") // 1 kUSD
-
-    const transferParam = [
-      deployAddress,
-      oldStabilityFundAddress,
-      amount
-    ]
-    return sendOperation(NETWORK_CONFIG, tezos, tokenContractAddress, 'transfer', transferParam)
+    return sendTokens(oldStabilityFundAddress, initialAmount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
   })
   console.log('')
 
   console.log("Transferring 1 kUSD to the new stability fund to ensure it has value")
   const newStabilityFundTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.NEW_STABILITY_FUND_TRANSFER, async () => {
-    const tokenContractAddress = KOLIBRI_CONFIG.contracts.TOKEN!
     const newStabilityFundAddress = stabilityFundDeployResult.contractAddress
-    const amount = new BigNumber("1000000000000000000") // 1 kUSD
-
-    const transferParam = [
-      deployAddress,
-      newStabilityFundAddress,
-      amount
-    ]
-    return sendOperation(NETWORK_CONFIG, tezos, tokenContractAddress, 'transfer', transferParam)
+    return sendTokens(newStabilityFundAddress, initialAmount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
   })
 
   console.log("Transferring 1 kUSD to the new savings pool to ensure it has value")
   const savingsPoolTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.SAVINGS_POOL_TRANSFER, async () => {
-    const tokenContractAddress = KOLIBRI_CONFIG.contracts.TOKEN!
     const savingsPoolAddress = savingsPoolDeployResult.contractAddress
-    const amount = new BigNumber("1000000000000000000") // 1 kUSD
-
-    const transferParam = [
-      deployAddress,
-      savingsPoolAddress,
-      amount
-    ]
-    return sendOperation(NETWORK_CONFIG, tezos, tokenContractAddress, 'transfer', transferParam)
+    return sendTokens(savingsPoolAddress, initialAmount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
   })
   console.log('')
+
+  // Step 9: Deploy a new multisig to act as the governor of the old stability fund
+  console.log("Deploying a Multisig Contract")
+  const multisigDeployResult: ContractOriginationResult = await fetchFromCacheOrRun(CACHE_KEYS.STABILITY_FUND_MSIG, async () => {
+    const multisigStorage = generateMultisigStorage(
+      MIGRATION_CONFIG.stabilityFundMsig.publicKeys,
+      MIGRATION_CONFIG.stabilityFundMsig.threshold,
+      MIGRATION_CONFIG.stabilityFundMsig.timelockSeconds
+    )
+    return deployContract(NETWORK_CONFIG, tezos, contractSources.multisigContractSource, multisigStorage)
+  })
+  console.log("")
 
   // Print Results
   console.log("----------------------------------------------------------------------------")
@@ -197,10 +189,11 @@ const main = async () => {
   console.log("----------------------------------------------------------------------------")
 
   console.log("Contracts:")
-  console.log(`New Stability Fund Contract:             ${stabilityFundDeployResult.contractAddress} / ${stabilityFundDeployResult.operationHash}`)
-  console.log(`New Stability Fund Break Glass Contract: ${stabilityFundBreakGlassDeployResult.contractAddress} / ${stabilityFundBreakGlassDeployResult.operationHash}`)
-  console.log(`New Savings Pool Contract:               ${savingsPoolDeployResult.contractAddress} / ${savingsPoolDeployResult.operationHash}`)
-  console.log(`New Savings Pool Break Glass Contract:   ${savingsPoolBreakGlassDeployResult.contractAddress} / ${savingsPoolBreakGlassDeployResult.operationHash}`)
+  console.log(`New Stability Fund Contract:              ${stabilityFundDeployResult.contractAddress} / ${stabilityFundDeployResult.operationHash}`)
+  console.log(`New Stability Fund Break Glass Contract:  ${stabilityFundBreakGlassDeployResult.contractAddress} / ${stabilityFundBreakGlassDeployResult.operationHash}`)
+  console.log(`New Savings Pool Contract:                ${savingsPoolDeployResult.contractAddress} / ${savingsPoolDeployResult.operationHash}`)
+  console.log(`New Savings Pool Break Glass Contract:    ${savingsPoolBreakGlassDeployResult.contractAddress} / ${savingsPoolBreakGlassDeployResult.operationHash}`)
+  console.log(`Multisig Governor for Old Stability Fund: ${multisigDeployResult.contractAddress} / ${multisigDeployResult.operationHash}`)
   console.log("")
 
   console.log("Operations:")
