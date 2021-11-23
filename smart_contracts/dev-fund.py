@@ -5,6 +5,13 @@ Constants = sp.io.import_script_from_url("file:common/constants.py")
 Errors = sp.io.import_script_from_url("file:common/errors.py")
 
 ################################################################
+# State Machine
+################################################################
+
+IDLE = 0
+WAITING_FOR_TOKEN_BALANCE = 1
+
+################################################################
 # Contract
 ################################################################
 
@@ -14,14 +21,22 @@ class DevFundContract(sp.Contract):
         governorContractAddress = Addresses.GOVERNOR_ADDRESS,
         administratorContractAddress = Addresses.FUND_ADMINISTRATOR_ADDRESS,
         tokenContractAddress = Addresses.TOKEN_ADDRESS,
+        state = IDLE,
+        sendAllTokens_destination = sp.none,
         **extra_storage
     ):
         self.exception_optimization_level = "DefaultUnit"
 
         self.init(
+            # Addresses
             governorContractAddress = governorContractAddress,
             administratorContractAddress = administratorContractAddress,
             tokenContractAddress = tokenContractAddress,
+
+            # State machine
+            state = state,
+            sendAllTokens_destination = sendAllTokens_destination,
+
             **extra_storage
         )
 
@@ -91,6 +106,37 @@ class DevFundContract(sp.Contract):
             "transfer"
         ).open_some()
         sp.transfer(tokenContractParam, sp.mutez(0), contractHandle)
+
+    # Private callback for `sendAllTokens`
+    @sp.entry_point
+    def sendAllTokens_callback(self, tokenBalance):
+        sp.set_type(tokenBalance, sp.TNat)
+
+        # Verify sender is the token contract
+        sp.verify(sp.sender == self.data.tokenContractAddress, message = Errors.BAD_SENDER)
+
+        # Verify state is correct.
+        sp.verify(self.data.state == WAITING_FOR_TOKEN_BALANCE, message = Errors.BAD_STATE)
+
+        # Unwrap saved parameters.
+        destination = self.data.sendAllTokens_destination.open_some()
+
+        # Invoke token contract
+        tokenContractParam = sp.record(
+            to_ = destination,
+            from_ = sp.self_address,
+            value = tokenBalance
+        )
+        contractHandle = sp.contract(
+            sp.TRecord(from_ = sp.TAddress, to_ = sp.TAddress, value = sp.TNat).layout(("from_ as from", ("to_ as to", "value"))),
+            self.data.tokenContractAddress,
+            "transfer"
+        ).open_some()
+        sp.transfer(tokenContractParam, sp.mutez(0), contractHandle)
+
+        # Reset state
+        self.data.state = IDLE
+        self.data.sendAllTokens_destination = sp.none      
 
     # Rescue FA1.2 Tokens
     @sp.entry_point
@@ -557,9 +603,9 @@ if __name__ == "__main__":
             valid = False
         )    
 
-    # ################################################################
-    # # rescueFA2
-    # ################################################################
+    ################################################################
+    # rescueFA2
+    ################################################################
 
     @sp.add_test(name="rescueFA2 - rescues tokens")
     def test():
@@ -777,5 +823,130 @@ if __name__ == "__main__":
             valid = False,
             exception = Errors.NOT_GOVERNOR
         )    
+
+    ################################################################
+    # sendAllTokens_callback
+    ################################################################
+
+    @sp.add_test(name="sendAllTokens_callback - sends the token balance")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Token contract.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
+
+        # AND a DevFund contract that is waiting to send a balance to Alice
+        recipientAddress = Addresses.ALICE_ADDRESS 
+        fund = DevFundContract(
+            governorContractAddress = governorAddress,
+            tokenContractAddress = token.address,
+
+            state = WAITING_FOR_TOKEN_BALANCE,
+            sendAllTokens_destination = sp.some(recipientAddress)
+        )
+        scenario += fund
+
+        # AND the fund has $1000 of tokens.
+        fundTokens = 1000 * Constants.PRECISION 
+        mintForFundParam = sp.record(address = fund.address, value = fundTokens)
+        scenario += token.mint(mintForFundParam).run(
+            sender = governorAddress
+        )
+
+        # WHEN sendAllTokens_callback is called by the token contract
+        scenario += fund.sendAllTokens_callback(fundTokens).run(
+            sender = token.address,
+        )
+
+        # THEN the fund is zero'ed
+        scenario.verify(token.data.balances[fund.address].balance == 0)
+
+        # AND the recipient was credited the tokens.
+        scenario.verify(token.data.balances[recipientAddress].balance == fundTokens)
+
+        # AND the state is reset
+        scenario.verify(fund.data.state == IDLE)
+        scenario.verify(fund.data.sendAllTokens_destination == sp.none)
+
+    @sp.add_test(name="sendAllTokens_callback - fails if sender is not the token contract")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Token contract.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
+
+        # AND a DevFund contract that is waiting to send a balance to Alice
+        recipientAddress = Addresses.ALICE_ADDRESS 
+        fund = DevFundContract(
+            governorContractAddress = governorAddress,
+            tokenContractAddress = token.address,
+
+            state = WAITING_FOR_TOKEN_BALANCE,
+            sendAllTokens_destination = sp.some(recipientAddress)
+        )
+        scenario += fund
+
+        # AND the fund has $1000 of tokens.
+        fundTokens = 1000 * Constants.PRECISION 
+        mintForFundParam = sp.record(address = fund.address, value = fundTokens)
+        scenario += token.mint(mintForFundParam).run(
+            sender = governorAddress
+        )
+
+        # WHEN sendAllTokens_callback is called by someone other than the token contract
+        # THEN the call fails with BAD_SENDER
+        notToken = Addresses.NULL_ADDRESS
+        scenario += fund.sendAllTokens_callback(fundTokens).run(
+            sender = notToken,
+
+            valid = False,
+            exception = Errors.BAD_SENDER
+        )
+
+    @sp.add_test(name="sendAllTokens_callback - fails in wrong state")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Token contract.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
+
+        # AND a DevFund contract that is in the idle state
+        recipientAddress = Addresses.ALICE_ADDRESS 
+        fund = DevFundContract(
+            governorContractAddress = governorAddress,
+            tokenContractAddress = token.address,
+
+            state = IDLE,
+            sendAllTokens_destination = sp.none
+        )
+        scenario += fund
+
+        # AND the fund has $1000 of tokens.
+        fundTokens = 1000 * Constants.PRECISION 
+        mintForFundParam = sp.record(address = fund.address, value = fundTokens)
+        scenario += token.mint(mintForFundParam).run(
+            sender = governorAddress
+        )
+
+        # WHEN sendAllTokens_callback is called by the token contract
+        # THEN the call fails with BAD_STATE
+        scenario += fund.sendAllTokens_callback(fundTokens).run(
+            sender = token.address,
+
+            valid = False,
+            exception = Errors.BAD_STATE
+        )          
 
     sp.add_compilation_target("dev-fund", DevFundContract())
