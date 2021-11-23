@@ -21,5 +21,5 @@ export const KOLIBRI_CONFIG: KolibriConfig = {
 export const MIGRATION_CONFIG = {
   // 5% Interest
   // See https://www.wolframalpha.com/input/?i=ln%281+%2B+0.05%29+%2F+%2860+*+24+*+365%29
-  initialInterestRate: new BigNumber('92827557400')
+  initialInterestRate: new BigNumber('000000000000928276')
 }
