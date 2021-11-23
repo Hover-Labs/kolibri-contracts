@@ -1,5 +1,5 @@
 import { KOLIBRI_CONFIG, MIGRATION_CONFIG, NETWORK_CONFIG } from "../config"
-import { ContractOriginationResult, loadContract, printConfig, sendOperation, getTezos, fetchFromCacheOrRun, deployContract } from "@hover-labs/tezos-utils"
+import { ContractOriginationResult, loadContract, printConfig, sendOperation, getTezos, fetchFromCacheOrRun, deployContract, getTokenBalanceFromDefaultSmartPyContract, CONSTANTS } from "@hover-labs/tezos-utils"
 import { generateBreakGlassStorage } from '../storage/break-glass-contract-storage'
 import { generateStabilityFundStorage } from '../storage/stability-fund-contract-storage'
 import { generateSavingsPoolStorage } from "../storage/savings-pool-contract-storage"
@@ -15,6 +15,7 @@ const main = async () => {
   // Init Deployer
   console.log("Initializing Deployer Account")
   const tezos = await getTezos(NETWORK_CONFIG)
+  const deployAddress = await tezos.signer.publicKeyHash()
   console.log("Deployer initialized!")
   console.log('')
 
@@ -28,14 +29,25 @@ const main = async () => {
   console.log("Done!")
   console.log('')
 
+  // Sanity check that the user has funds
+  console.log("Performing Pre Flight Checks...")
+  const kUSDTokenContract = KOLIBRI_CONFIG.contracts.TOKEN!
+  const kUSDHeld = await getTokenBalanceFromDefaultSmartPyContract(deployAddress, kUSDTokenContract, tezos)
+  const requiredkUSD = new BigNumber(3).times(CONSTANTS.MANTISSA)
+  if (kUSDHeld.isLessThan(requiredkUSD)) {
+    throw new Error(`${deployAddress} does not have the required kUSD to complete this migration.\nBalance: ${kUSDHeld.toFixed()} kUSD\nRequired: ${requiredkUSD.toFixed()} kUSD`)
+  }
+  console.log("Done!")
+  console.log('')
+
   // Deploy Pipeline
 
   // Step 0: Deploy a new stability fund
   console.log('Deploying a new Stability Fund')
   const stabilityFundDeployResult: ContractOriginationResult = await fetchFromCacheOrRun(CACHE_KEYS.STABILITY_FUND_DEPLOY, async () => {
     const params = {
-      governorContractAddress: await tezos.signer.publicKeyHash(),
-      savingsAccountContractAddress: await tezos.signer.publicKeyHash()
+      governorContractAddress: deployAddress,
+      savingsAccountContractAddress: deployAddress
     }
     const stabilityFundStorage = await generateStabilityFundStorage(params, KOLIBRI_CONFIG.contracts.STABILITY_FUND!, tezos)
     return deployContract(NETWORK_CONFIG, tezos, contractSources.stabilityFundContractSource, stabilityFundStorage)
@@ -61,7 +73,7 @@ const main = async () => {
   console.log('Deploying Savings Pool')
   const savingsPoolDeployResult: ContractOriginationResult = await fetchFromCacheOrRun(CACHE_KEYS.SAVINGS_POOL_DEPLOY, async () => {
     const params = {
-      governorAddress: await tezos.signer.publicKeyHash(),
+      governorAddress: deployAddress,
       interestRate: MIGRATION_CONFIG.initialInterestRate.toNumber(),
       pauseGuardianAddress: KOLIBRI_CONFIG.contracts.PAUSE_GUARDIAN!,
       stabilityFundAddress: stabilityFundDeployResult.contractAddress,
@@ -111,6 +123,7 @@ const main = async () => {
       stabilityFundBreakGlassDeployResult.contractAddress
     )
   })
+  console.log('')
 
   // Step 7: Wire the stability fund to use the savings pool
   console.log('Wiring the Savings Pool to use the Break Glass as the Governor')
@@ -123,6 +136,7 @@ const main = async () => {
       savingsPoolBreakGlassDeployResult.contractAddress
     )
   })
+  console.log('')
 
   // Step 8: Fund the funds
   // Give the stability fund some value by transferring 1 kUSD from the deployer to the stability fund.
@@ -137,26 +151,25 @@ const main = async () => {
   const oldStabilityFundTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.OLD_STABILITY_FUND_TRANSFER, async () => {
     const tokenContractAddress = KOLIBRI_CONFIG.contracts.TOKEN!
     const oldStabilityFundAddress = KOLIBRI_CONFIG.contracts.STABILITY_FUND!
-    const deployerAddress = await tezos.signer.publicKeyHash()
     const amount = new BigNumber("1000000000000000000") // 1 kUSD
 
     const transferParam = [
-      deployerAddress,
+      deployAddress,
       oldStabilityFundAddress,
       amount
     ]
     return sendOperation(NETWORK_CONFIG, tezos, tokenContractAddress, 'transfer', transferParam)
   })
+  console.log('')
 
   console.log("Transferring 1 kUSD to the new stability fund to ensure it has value")
   const newStabilityFundTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.NEW_STABILITY_FUND_TRANSFER, async () => {
     const tokenContractAddress = KOLIBRI_CONFIG.contracts.TOKEN!
     const newStabilityFundAddress = stabilityFundDeployResult.contractAddress
-    const deployerAddress = await tezos.signer.publicKeyHash()
     const amount = new BigNumber("1000000000000000000") // 1 kUSD
 
     const transferParam = [
-      deployerAddress,
+      deployAddress,
       newStabilityFundAddress,
       amount
     ]
@@ -167,16 +180,16 @@ const main = async () => {
   const savingsPoolTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.SAVINGS_POOL_TRANSFER, async () => {
     const tokenContractAddress = KOLIBRI_CONFIG.contracts.TOKEN!
     const savingsPoolAddress = savingsPoolDeployResult.contractAddress
-    const deployerAddress = await tezos.signer.publicKeyHash()
     const amount = new BigNumber("1000000000000000000") // 1 kUSD
 
     const transferParam = [
-      deployerAddress,
+      deployAddress,
       savingsPoolAddress,
       amount
     ]
     return sendOperation(NETWORK_CONFIG, tezos, tokenContractAddress, 'transfer', transferParam)
   })
+  console.log('')
 
   // Print Results
   console.log("----------------------------------------------------------------------------")
