@@ -1,9 +1,5 @@
 import { KOLIBRI_CONFIG, MIGRATION_CONFIG, NETWORK_CONFIG } from "../config"
-<<<<<<< HEAD
-import { ContractOriginationResult, loadContract, printConfig, sendOperation, getTezos, fetchFromCacheOrRun, deployContract, sendTokens } from "@hover-labs/tezos-utils"
-=======
-import { ContractOriginationResult, loadContract, printConfig, sendOperation, getTezos, fetchFromCacheOrRun, deployContract, getTokenBalanceFromDefaultSmartPyContract, CONSTANTS } from "@hover-labs/tezos-utils"
->>>>>>> keefertaylor/contracts-v1.2
+import { ContractOriginationResult, loadContract, printConfig, sendOperation, getTezos, fetchFromCacheOrRun, deployContract, getTokenBalanceFromDefaultSmartPyContract, CONSTANTS, sendTokens } from "@hover-labs/tezos-utils"
 import { generateBreakGlassStorage } from '../storage/break-glass-contract-storage'
 import { generateStabilityFundStorage } from '../storage/stability-fund-contract-storage'
 import { generateSavingsPoolStorage } from "../storage/savings-pool-contract-storage"
@@ -155,55 +151,23 @@ const main = async () => {
   // validate the transfer occurred, so we need some value here. 
   console.log("Transferring 1 kUSD to the old stability fund to ensure it has value")
   const kUSDTokenAddress = KOLIBRI_CONFIG.contracts.TOKEN!
+  const initialAmount = new BigNumber("1000000000000000000") // 1 kUSD
   const oldStabilityFundTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.OLD_STABILITY_FUND_TRANSFER, async () => {
     const oldStabilityFundAddress = KOLIBRI_CONFIG.contracts.STABILITY_FUND!
-    const amount = new BigNumber("1000000000000000000") // 1 kUSD
-<<<<<<< HEAD
-    sendTokens(oldStabilityFundAddress, amount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
-=======
-
-    const transferParam = [
-      deployAddress,
-      oldStabilityFundAddress,
-      amount
-    ]
-    return sendOperation(NETWORK_CONFIG, tezos, tokenContractAddress, 'transfer', transferParam)
->>>>>>> keefertaylor/contracts-v1.2
+    sendTokens(oldStabilityFundAddress, initialAmount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
   })
   console.log('')
 
   console.log("Transferring 1 kUSD to the new stability fund to ensure it has value")
   const newStabilityFundTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.NEW_STABILITY_FUND_TRANSFER, async () => {
     const newStabilityFundAddress = stabilityFundDeployResult.contractAddress
-    const amount = new BigNumber("1000000000000000000") // 1 kUSD
-<<<<<<< HEAD
-    sendTokens(newStabilityFundAddress, amount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
-=======
-
-    const transferParam = [
-      deployAddress,
-      newStabilityFundAddress,
-      amount
-    ]
-    return sendOperation(NETWORK_CONFIG, tezos, tokenContractAddress, 'transfer', transferParam)
->>>>>>> keefertaylor/contracts-v1.2
+    sendTokens(newStabilityFundAddress, initialAmount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
   })
 
   console.log("Transferring 1 kUSD to the new savings pool to ensure it has value")
   const savingsPoolTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.SAVINGS_POOL_TRANSFER, async () => {
     const savingsPoolAddress = savingsPoolDeployResult.contractAddress
-    const amount = new BigNumber("1000000000000000000") // 1 kUSD
-<<<<<<< HEAD
-    sendTokens(savingsPoolAddress, amount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
-=======
-
-    const transferParam = [
-      deployAddress,
-      savingsPoolAddress,
-      amount
-    ]
-    return sendOperation(NETWORK_CONFIG, tezos, tokenContractAddress, 'transfer', transferParam)
->>>>>>> keefertaylor/contracts-v1.2
+    sendTokens(savingsPoolAddress, initialAmount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
   })
   console.log('')
 
