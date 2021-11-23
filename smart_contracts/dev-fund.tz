@@ -1,4 +1,4 @@
-parameter (or (or (unit %default) (or (pair %send mutez address) (pair %sendTokens nat address))) (or (address %setAdministratorContract) (or (option %setDelegate key_hash) (address %setGovernorContract))));
+parameter (or (or (unit %default) (or (pair %send mutez address) (address %sendAll))) (or (or (pair %sendTokens nat address) (address %setAdministratorContract)) (or (option %setDelegate key_hash) (address %setGovernorContract))));
 storage   (pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %tokenContractAddress)));
 code
   {
@@ -48,6 +48,43 @@ code
                 CONS;       # list operation : @storage
               }
               {
+                SWAP;       # @storage : @parameter%sendAll
+                # == sendAll ==
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%sendAll
+                DUP;        # @storage : @storage : @parameter%sendAll
+                DUG 2;      # @storage : @parameter%sendAll : @storage
+                GET 3;      # address : @parameter%sendAll : @storage
+                SENDER;     # @sender : address : @parameter%sendAll : @storage
+                COMPARE;    # int : @parameter%sendAll : @storage
+                EQ;         # bool : @parameter%sendAll : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 4; # int : @parameter%sendAll : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%sendAll : @storage
+                # sp.send(params, sp.balance) # @parameter%sendAll : @storage
+                CONTRACT unit; # option (contract unit) : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : @storage
+                NIL operation; # list operation : @some : @storage
+                SWAP;       # @some : list operation : @storage
+                BALANCE;    # @balance : @some : list operation : @storage
+                UNIT;       # unit : @balance : @some : list operation : @storage
+                TRANSFER_TOKENS; # operation : list operation : @storage
+                CONS;       # list operation : @storage
+              }; # list operation : @storage
+          }; # list operation : @storage
+      }
+      {
+        IF_LEFT
+          {
+            IF_LEFT
+              {
                 SWAP;       # @storage : @parameter%sendTokens
                 # == sendTokens ==
                 # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%sendTokens
@@ -82,30 +119,27 @@ code
                 PAIR 3;     # pair @self (pair address nat) : mutez : @some : list operation : @storage
                 TRANSFER_TOKENS; # operation : list operation : @storage
                 CONS;       # list operation : @storage
-              }; # list operation : @storage
-          }; # list operation : @storage
-      }
-      {
-        IF_LEFT
-          {
-            SWAP;       # @storage : @parameter%setAdministratorContract
-            # == setAdministratorContract ==
-            # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setAdministratorContract
-            DUP;        # @storage : @storage : @parameter%setAdministratorContract
-            DUG 2;      # @storage : @parameter%setAdministratorContract : @storage
-            GET 3;      # address : @parameter%setAdministratorContract : @storage
-            SENDER;     # @sender : address : @parameter%setAdministratorContract : @storage
-            COMPARE;    # int : @parameter%setAdministratorContract : @storage
-            EQ;         # bool : @parameter%setAdministratorContract : @storage
-            IF
-              {}
+              }
               {
-                PUSH int 4; # int : @parameter%setAdministratorContract : @storage
-                FAILWITH;   # FAILED
-              }; # @parameter%setAdministratorContract : @storage
-            # self.data.administratorContractAddress = params # @parameter%setAdministratorContract : @storage
-            UPDATE 1;   # @storage
-            NIL operation; # list operation : @storage
+                SWAP;       # @storage : @parameter%setAdministratorContract
+                # == setAdministratorContract ==
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setAdministratorContract
+                DUP;        # @storage : @storage : @parameter%setAdministratorContract
+                DUG 2;      # @storage : @parameter%setAdministratorContract : @storage
+                GET 3;      # address : @parameter%setAdministratorContract : @storage
+                SENDER;     # @sender : address : @parameter%setAdministratorContract : @storage
+                COMPARE;    # int : @parameter%setAdministratorContract : @storage
+                EQ;         # bool : @parameter%setAdministratorContract : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 4; # int : @parameter%setAdministratorContract : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%setAdministratorContract : @storage
+                # self.data.administratorContractAddress = params # @parameter%setAdministratorContract : @storage
+                UPDATE 1;   # @storage
+                NIL operation; # list operation : @storage
+              }; # list operation : @storage
           }
           {
             IF_LEFT
