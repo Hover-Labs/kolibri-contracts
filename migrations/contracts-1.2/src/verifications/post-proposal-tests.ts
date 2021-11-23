@@ -72,7 +72,7 @@ const main = async () => {
   console.log("   / passed")
 
   console.log("Verifying stability fund is attached to savings pool")
-  await validateStorageValue(stabilityFund, 'savingsAccountContractAddress', savingsPool, tezos)
+  await validateStorageValue(stabilityFund, 'savingsPoolContractAddress', savingsPool, tezos)
   console.log("   / passed")
 
   // Check wiring for minter

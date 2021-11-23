@@ -1,5 +1,5 @@
-parameter (or (or (or (nat %accrueInterest) (or (unit %default) (address %liquidate))) (or (or (pair %rescueFA12 (address %tokenContractAddress) (pair (nat %amount) (address %destination))) (pair %rescueFA2 (address %tokenContractAddress) (pair (nat %tokenId) (pair (nat %amount) (address %destination))))) (or (pair %send mutez address) (address %sendAll)))) (or (or (or (address %sendAllTokens) (nat %sendAllTokens_callback)) (or (pair %sendTokens nat address) (address %setAdministratorContract))) (or (or (option %setDelegate key_hash) (address %setGovernorContract)) (or (address %setOvenRegistryContract) (address %setSavingsAccountContract)))));
-storage   (pair (pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))) (pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))));
+parameter (or (or (or (nat %accrueInterest) (or (unit %default) (address %liquidate))) (or (or (pair %rescueFA12 (address %tokenContractAddress) (pair (nat %amount) (address %destination))) (pair %rescueFA2 (address %tokenContractAddress) (pair (nat %tokenId) (pair (nat %amount) (address %destination))))) (or (pair %send mutez address) (address %sendAll)))) (or (or (or (address %sendAllTokens) (nat %sendAllTokens_callback)) (or (pair %sendTokens nat address) (address %setAdministratorContract))) (or (or (option %setDelegate key_hash) (address %setGovernorContract)) (or (address %setOvenRegistryContract) (address %setSavingsPoolContract)))));
+storage   (pair (pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))) (pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))));
 code
   {
     UNPAIR;     # @parameter : @storage
@@ -11,10 +11,10 @@ code
               {
                 SWAP;       # @storage : @parameter%accrueInterest
                 # == accrueInterest ==
-                # sp.verify(sp.sender == self.data.savingsAccountContractAddress, 27) # @storage : @parameter%accrueInterest
+                # sp.verify(sp.sender == self.data.savingsPoolContractAddress, 27) # @storage : @parameter%accrueInterest
                 DUP;        # @storage : @storage : @parameter%accrueInterest
                 DUG 2;      # @storage : @parameter%accrueInterest : @storage
-                GET 3;      # pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address) : @parameter%accrueInterest : @storage
+                GET 3;      # pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address) : @parameter%accrueInterest : @storage
                 CAR;        # address : @parameter%accrueInterest : @storage
                 SENDER;     # @sender : address : @parameter%accrueInterest : @storage
                 COMPARE;    # int : @parameter%accrueInterest : @storage
@@ -25,7 +25,7 @@ code
                     PUSH int 27; # int : @parameter%accrueInterest : @storage
                     FAILWITH;   # FAILED
                   }; # @parameter%accrueInterest : @storage
-                # sp.transfer(sp.record(from_ = sp.self_address, to_ = self.data.savingsAccountContractAddress, value = params), sp.tez(0), sp.contract(sp.TRecord(from_ = sp.TAddress, to_ = sp.TAddress, value = sp.TNat).layout(("from_ as from", ("to_ as to", "value"))), self.data.tokenContractAddress, entry_point='transfer').open_some()) # @parameter%accrueInterest : @storage
+                # sp.transfer(sp.record(from_ = sp.self_address, to_ = self.data.savingsPoolContractAddress, value = params), sp.tez(0), sp.contract(sp.TRecord(from_ = sp.TAddress, to_ = sp.TAddress, value = sp.TNat).layout(("from_ as from", ("to_ as to", "value"))), self.data.tokenContractAddress, entry_point='transfer').open_some()) # @parameter%accrueInterest : @storage
                 NIL operation; # list operation : @parameter%accrueInterest : @storage
                 DUP 3;      # @storage : list operation : @parameter%accrueInterest : @storage
                 GET 6;      # address : list operation : @parameter%accrueInterest : @storage
@@ -39,7 +39,7 @@ code
                 PUSH mutez 0; # mutez : @some : list operation : @parameter%accrueInterest : @storage
                 DIG 3;      # @parameter%accrueInterest : mutez : @some : list operation : @storage
                 DUP 5;      # @storage : @parameter%accrueInterest : mutez : @some : list operation : @storage
-                GET 3;      # pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address) : @parameter%accrueInterest : mutez : @some : list operation : @storage
+                GET 3;      # pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address) : @parameter%accrueInterest : mutez : @some : list operation : @storage
                 CAR;        # address : @parameter%accrueInterest : mutez : @some : list operation : @storage
                 SELF_ADDRESS; # @self : address : @parameter%accrueInterest : mutez : @some : list operation : @storage
                 PAIR 3;     # pair @self (pair address @parameter%accrueInterest) : mutez : @some : list operation : @storage
@@ -324,9 +324,9 @@ code
                     PUSH int 1; # int : @storage : list operation : @parameter%sendAllTokens
                     UPDATE 5;   # @storage : list operation : @parameter%sendAllTokens
                     # self.data.sendAllTokens_destination = sp.some(params) # @storage : list operation : @parameter%sendAllTokens
-                    UNPAIR;     # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : list operation : @parameter%sendAllTokens
-                    SWAP;       # pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation : @parameter%sendAllTokens
-                    UNPAIR;     # pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address) : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation : @parameter%sendAllTokens
+                    UNPAIR;     # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : list operation : @parameter%sendAllTokens
+                    SWAP;       # pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation : @parameter%sendAllTokens
+                    UNPAIR;     # pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address) : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation : @parameter%sendAllTokens
                     CAR;        # address : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation : @parameter%sendAllTokens
                     DIG 4;      # @parameter%sendAllTokens : address : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation
                     SOME;       # option address : address : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation
@@ -379,7 +379,7 @@ code
                     PUSH mutez 0; # mutez : @some : list operation : @parameter%sendAllTokens_callback : @storage
                     DIG 3;      # @parameter%sendAllTokens_callback : mutez : @some : list operation : @storage
                     DUP 5;      # @storage : @parameter%sendAllTokens_callback : mutez : @some : list operation : @storage
-                    GET 3;      # pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address) : @parameter%sendAllTokens_callback : mutez : @some : list operation : @storage
+                    GET 3;      # pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address) : @parameter%sendAllTokens_callback : mutez : @some : list operation : @storage
                     CDR;        # option address : @parameter%sendAllTokens_callback : mutez : @some : list operation : @storage
                     IF_NONE
                       {
@@ -396,9 +396,9 @@ code
                     PUSH int 0; # int : @storage : list operation
                     UPDATE 5;   # @storage : list operation
                     # self.data.sendAllTokens_destination = sp.none # @storage : list operation
-                    UNPAIR;     # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : list operation
-                    SWAP;       # pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation
-                    UNPAIR;     # pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address) : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation
+                    UNPAIR;     # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : list operation
+                    SWAP;       # pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation
+                    UNPAIR;     # pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address) : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation
                     CAR;        # address : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation
                     NONE address; # option address : address : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation
                     SWAP;       # address : option address : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : list operation
@@ -467,13 +467,13 @@ code
                       }; # @parameter%setAdministratorContract : @storage
                     SWAP;       # @storage : @parameter%setAdministratorContract
                     # self.data.administratorContractAddress = params # @storage : @parameter%setAdministratorContract
-                    UNPAIR;     # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setAdministratorContract
-                    CDR;        # pair (address %governorContractAddress) (address %ovenRegistryContractAddress) : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setAdministratorContract
-                    DIG 2;      # @parameter%setAdministratorContract : pair (address %governorContractAddress) (address %ovenRegistryContractAddress) : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
-                    PAIR;       # pair @parameter%setAdministratorContract (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
-                    PAIR;       # pair (pair @parameter%setAdministratorContract (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))) (pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
-                    NIL operation; # list operation : pair (pair @parameter%setAdministratorContract (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))) (pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
-                  }; # list operation : pair (pair address (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))) (pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
+                    UNPAIR;     # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setAdministratorContract
+                    CDR;        # pair (address %governorContractAddress) (address %ovenRegistryContractAddress) : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setAdministratorContract
+                    DIG 2;      # @parameter%setAdministratorContract : pair (address %governorContractAddress) (address %ovenRegistryContractAddress) : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
+                    PAIR;       # pair @parameter%setAdministratorContract (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
+                    PAIR;       # pair (pair @parameter%setAdministratorContract (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))) (pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
+                    NIL operation; # list operation : pair (pair @parameter%setAdministratorContract (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))) (pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
+                  }; # list operation : pair (pair address (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))) (pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
               }; # list operation : pair (pair address (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))) (pair (pair address (option address)) (pair (int %state) (address %tokenContractAddress)))
           }
           {
@@ -522,17 +522,17 @@ code
                       }; # @parameter%setGovernorContract : @storage
                     SWAP;       # @storage : @parameter%setGovernorContract
                     # self.data.governorContractAddress = params # @storage : @parameter%setGovernorContract
-                    UNPAIR;     # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setGovernorContract
-                    UNPAIR;     # address : pair (address %governorContractAddress) (address %ovenRegistryContractAddress) : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setGovernorContract
-                    SWAP;       # pair (address %governorContractAddress) (address %ovenRegistryContractAddress) : address : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setGovernorContract
-                    CDR;        # address : address : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setGovernorContract
-                    DIG 3;      # @parameter%setGovernorContract : address : address : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
-                    PAIR;       # pair @parameter%setGovernorContract address : address : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
-                    SWAP;       # address : pair @parameter%setGovernorContract address : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
-                    PAIR;       # pair address (pair @parameter%setGovernorContract address) : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
-                    PAIR;       # pair (pair address (pair @parameter%setGovernorContract address)) (pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
-                    NIL operation; # list operation : pair (pair address (pair @parameter%setGovernorContract address)) (pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
-                  }; # list operation : pair (pair address (pair address address)) (pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
+                    UNPAIR;     # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setGovernorContract
+                    UNPAIR;     # address : pair (address %governorContractAddress) (address %ovenRegistryContractAddress) : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setGovernorContract
+                    SWAP;       # pair (address %governorContractAddress) (address %ovenRegistryContractAddress) : address : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setGovernorContract
+                    CDR;        # address : address : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setGovernorContract
+                    DIG 3;      # @parameter%setGovernorContract : address : address : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
+                    PAIR;       # pair @parameter%setGovernorContract address : address : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
+                    SWAP;       # address : pair @parameter%setGovernorContract address : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
+                    PAIR;       # pair address (pair @parameter%setGovernorContract address) : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
+                    PAIR;       # pair (pair address (pair @parameter%setGovernorContract address)) (pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
+                    NIL operation; # list operation : pair (pair address (pair @parameter%setGovernorContract address)) (pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
+                  }; # list operation : pair (pair address (pair address address)) (pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
               }
               {
                 IF_LEFT
@@ -555,45 +555,45 @@ code
                       }; # @parameter%setOvenRegistryContract : @storage
                     SWAP;       # @storage : @parameter%setOvenRegistryContract
                     # self.data.ovenRegistryContractAddress = params # @storage : @parameter%setOvenRegistryContract
-                    UNPAIR;     # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setOvenRegistryContract
-                    UNPAIR;     # address : pair (address %governorContractAddress) (address %ovenRegistryContractAddress) : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setOvenRegistryContract
-                    SWAP;       # pair (address %governorContractAddress) (address %ovenRegistryContractAddress) : address : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setOvenRegistryContract
-                    CAR;        # address : address : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setOvenRegistryContract
-                    DIG 3;      # @parameter%setOvenRegistryContract : address : address : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
-                    SWAP;       # address : @parameter%setOvenRegistryContract : address : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
-                    PAIR;       # pair address @parameter%setOvenRegistryContract : address : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
-                    SWAP;       # address : pair address @parameter%setOvenRegistryContract : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
-                    PAIR;       # pair address (pair address @parameter%setOvenRegistryContract) : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
-                    PAIR;       # pair (pair address (pair address @parameter%setOvenRegistryContract)) (pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
+                    UNPAIR;     # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setOvenRegistryContract
+                    UNPAIR;     # address : pair (address %governorContractAddress) (address %ovenRegistryContractAddress) : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setOvenRegistryContract
+                    SWAP;       # pair (address %governorContractAddress) (address %ovenRegistryContractAddress) : address : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setOvenRegistryContract
+                    CAR;        # address : address : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setOvenRegistryContract
+                    DIG 3;      # @parameter%setOvenRegistryContract : address : address : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
+                    SWAP;       # address : @parameter%setOvenRegistryContract : address : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
+                    PAIR;       # pair address @parameter%setOvenRegistryContract : address : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
+                    SWAP;       # address : pair address @parameter%setOvenRegistryContract : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
+                    PAIR;       # pair address (pair address @parameter%setOvenRegistryContract) : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress))
+                    PAIR;       # pair (pair address (pair address @parameter%setOvenRegistryContract)) (pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)))
                   }
                   {
-                    SWAP;       # @storage : @parameter%setSavingsAccountContract
-                    # == setSavingsAccountContract ==
-                    # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setSavingsAccountContract
-                    DUP;        # @storage : @storage : @parameter%setSavingsAccountContract
-                    DUG 2;      # @storage : @parameter%setSavingsAccountContract : @storage
-                    CAR;        # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : @parameter%setSavingsAccountContract : @storage
-                    GET 3;      # address : @parameter%setSavingsAccountContract : @storage
-                    SENDER;     # @sender : address : @parameter%setSavingsAccountContract : @storage
-                    COMPARE;    # int : @parameter%setSavingsAccountContract : @storage
-                    EQ;         # bool : @parameter%setSavingsAccountContract : @storage
+                    SWAP;       # @storage : @parameter%setSavingsPoolContract
+                    # == setSavingsPoolContract ==
+                    # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setSavingsPoolContract
+                    DUP;        # @storage : @storage : @parameter%setSavingsPoolContract
+                    DUG 2;      # @storage : @parameter%setSavingsPoolContract : @storage
+                    CAR;        # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : @parameter%setSavingsPoolContract : @storage
+                    GET 3;      # address : @parameter%setSavingsPoolContract : @storage
+                    SENDER;     # @sender : address : @parameter%setSavingsPoolContract : @storage
+                    COMPARE;    # int : @parameter%setSavingsPoolContract : @storage
+                    EQ;         # bool : @parameter%setSavingsPoolContract : @storage
                     IF
                       {}
                       {
-                        PUSH int 4; # int : @parameter%setSavingsAccountContract : @storage
+                        PUSH int 4; # int : @parameter%setSavingsPoolContract : @storage
                         FAILWITH;   # FAILED
-                      }; # @parameter%setSavingsAccountContract : @storage
-                    SWAP;       # @storage : @parameter%setSavingsAccountContract
-                    # self.data.savingsAccountContractAddress = params # @storage : @parameter%setSavingsAccountContract
-                    UNPAIR;     # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setSavingsAccountContract
-                    SWAP;       # pair (pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : @parameter%setSavingsAccountContract
-                    UNPAIR;     # pair (address %savingsAccountContractAddress) (option %sendAllTokens_destination address) : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : @parameter%setSavingsAccountContract
-                    CDR;        # option address : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : @parameter%setSavingsAccountContract
-                    DIG 3;      # @parameter%setSavingsAccountContract : option address : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))
-                    PAIR;       # pair @parameter%setSavingsAccountContract (option address) : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))
-                    PAIR;       # pair (pair @parameter%setSavingsAccountContract (option address)) (pair (int %state) (address %tokenContractAddress)) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))
-                    SWAP;       # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair @parameter%setSavingsAccountContract (option address)) (pair (int %state) (address %tokenContractAddress))
-                    PAIR;       # pair (pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))) (pair (pair @parameter%setSavingsAccountContract (option address)) (pair (int %state) (address %tokenContractAddress)))
+                      }; # @parameter%setSavingsPoolContract : @storage
+                    SWAP;       # @storage : @parameter%setSavingsPoolContract
+                    # self.data.savingsPoolContractAddress = params # @storage : @parameter%setSavingsPoolContract
+                    UNPAIR;     # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : @parameter%setSavingsPoolContract
+                    SWAP;       # pair (pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address)) (pair (int %state) (address %tokenContractAddress)) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : @parameter%setSavingsPoolContract
+                    UNPAIR;     # pair (address %savingsPoolContractAddress) (option %sendAllTokens_destination address) : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : @parameter%setSavingsPoolContract
+                    CDR;        # option address : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : @parameter%setSavingsPoolContract
+                    DIG 3;      # @parameter%setSavingsPoolContract : option address : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))
+                    PAIR;       # pair @parameter%setSavingsPoolContract (option address) : pair (int %state) (address %tokenContractAddress) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))
+                    PAIR;       # pair (pair @parameter%setSavingsPoolContract (option address)) (pair (int %state) (address %tokenContractAddress)) : pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))
+                    SWAP;       # pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress)) : pair (pair @parameter%setSavingsPoolContract (option address)) (pair (int %state) (address %tokenContractAddress))
+                    PAIR;       # pair (pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %ovenRegistryContractAddress))) (pair (pair @parameter%setSavingsPoolContract (option address)) (pair (int %state) (address %tokenContractAddress)))
                   }; # pair (pair address (pair address address)) (pair (pair address (option address)) (pair (int %state) (address %tokenContractAddress)))
                 NIL operation; # list operation : pair (pair address (pair address address)) (pair (pair address (option address)) (pair (int %state) (address %tokenContractAddress)))
               }; # list operation : pair (pair address (pair address address)) (pair (pair address (option address)) (pair (int %state) (address %tokenContractAddress)))

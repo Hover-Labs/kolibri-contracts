@@ -353,10 +353,10 @@ if __name__ == "__main__":
         )    
 
     ################################################################
-    # setSavingsAccountContract
+    # setSavingsPoolContract
     ################################################################
 
-    @sp.add_test(name="setSavingsAccountContract - succeeds when called by governor")
+    @sp.add_test(name="setSavingsPoolContract - succeeds when called by governor")
     def test():
         # GIVEN an DevFund contract
         scenario = sp.test_scenario()
@@ -367,16 +367,16 @@ if __name__ == "__main__":
         )
         scenario += fund
 
-        # WHEN the setSavingsAccountContract is called with a new contract
+        # WHEN the setSavingsPoolContract is called with a new contract
         rotatedAddress = Addresses.ROTATED_ADDRESS
-        scenario += fund.setSavingsAccountContract(rotatedAddress).run(
+        scenario += fund.setSavingsPoolContract(rotatedAddress).run(
             sender = governorContractAddress,
         )
 
         # THEN the contract is updated.
         scenario.verify(fund.data.savingsPoolContractAddress == rotatedAddress)
 
-    @sp.add_test(name="setSavingsAccountContract - fails when not called by governor")
+    @sp.add_test(name="setSavingsPoolContract - fails when not called by governor")
     def test():
         # GIVEN a DevFund contract
         scenario = sp.test_scenario()
@@ -387,9 +387,9 @@ if __name__ == "__main__":
         )
         scenario += fund
 
-        # WHEN the setSavingsAccountContract is called by someone who isn't the governor THEN the call fails
+        # WHEN the setSavingsPoolContract is called by someone who isn't the governor THEN the call fails
         rotatedAddress = Addresses.ROTATED_ADDRESS
-        scenario += fund.setSavingsAccountContract(rotatedAddress).run(
+        scenario += fund.setSavingsPoolContract(rotatedAddress).run(
             sender = Addresses.NULL_ADDRESS,
             valid = False
         )        

@@ -30,7 +30,7 @@ const main = async () => {
   console.log(`Validating new stability fund storage... (${stabilityFundContractAddress})`)
   await validateStorageValue(stabilityFundContractAddress, 'governorContractAddress', stabilityFundBreakGlassAddress, tezos)
 
-  await validateStorageValue(stabilityFundContractAddress, 'savingsAccountContractAddress', savingsPoolContractAddress, tezos)
+  await validateStorageValue(stabilityFundContractAddress, 'savingsPoolContractAddress', savingsPoolContractAddress, tezos)
 
   await validateStorageValue(
     stabilityFundContractAddress,
