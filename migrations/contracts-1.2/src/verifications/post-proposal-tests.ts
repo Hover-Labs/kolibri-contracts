@@ -160,23 +160,24 @@ const main = async () => {
   await checkConfirmed(NETWORK_CONFIG, savingsPoolBorrowResult.opHash)
   console.log(`...Initial kUSD Balance: ${initialBalance.toString()}`)
 
-  console.log(`...Issuing an approval for ${depositAmount.toString()} kUSD to be spent by the pool`)
-  await approveToken(savingsPool, depositAmount, token, tezos, NETWORK_CONFIG)
+  console.log(`...Issuing an approval for ${loanAmount.toString()} kUSD to be spent by the pool`)
+  const approvalhash = await approveToken(savingsPool, loanAmount, token, tezos, NETWORK_CONFIG)
+  console.log(`...Approval sent in hash ${approvalhash}`)
 
-  console.log(`...Depositing ${depositAmount.toString()} to pool`)
-  const savingsPoolDepositResult = (await savingsPoolClient.deposit(depositAmount)) as TransactionWalletOperation
+  console.log(`...Depositing ${loanAmount.toString()} to pool`)
+  const savingsPoolDepositResult = (await savingsPoolClient.deposit(loanAmount)) as TransactionWalletOperation
   await checkConfirmed(NETWORK_CONFIG, savingsPoolDepositResult.opHash)
   const lpTokenBalance = await getTokenBalanceFromDefaultSmartPyContract(deployAddress, savingsPool, tezos)
   console.log(`...Deposit completed in hash ${savingsPoolDepositResult.opHash}`)
-  console.log(`...Received ${lpTokenBalance} LP tokens`)
+  console.log(`...Received ${lpTokenBalance.toFixed()} LP tokens`)
 
   console.log(`...Waiting ${minutesToWait} minutes for interest to accrue (Started at ${(new Date()).toString()}`)
   await sleep(minutesToWait * 60)
 
-  console.log(`...Approving ${lpTokenBalance.toString()} LP tokens to be spent by the pool`)
+  console.log(`...Approving ${lpTokenBalance.toFixed()} LP tokens to be spent by the pool`)
   await approveToken(savingsPool, lpTokenBalance, savingsPool, tezos, NETWORK_CONFIG)
 
-  console.log(`...Redeeming ${lpTokenBalance.toString()} against the pool`)
+  console.log(`...Redeeming ${lpTokenBalance.toFixed()} against the pool`)
   const savingPoolRedeemResult = (await savingsPoolClient.redeem(lpTokenBalance)) as TransactionWalletOperation
   await checkConfirmed(NETWORK_CONFIG, savingPoolRedeemResult.opHash)
   console.log(`...Redeem completed in hash ${savingPoolRedeemResult.opHash}`)

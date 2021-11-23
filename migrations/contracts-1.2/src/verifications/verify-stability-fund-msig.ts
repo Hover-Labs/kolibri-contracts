@@ -7,12 +7,12 @@ import { TransactionWalletOperation } from '@taquito/taquito'
 import { KOLIBRI_CONFIG } from "../config"
 
 const main = async () => {
-  console.log("Validating end state is correct")
+  console.log("Validating the new multisig can transfer value from the old stability fund")
   console.log("")
 
   // Load contracts
   const tezos = await getTezos(NETWORK_CONFIG)
-  const stabilityFund = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_DEPLOY) as ContractOriginationResult).contractAddress
+  const newStabilityFund = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_DEPLOY) as ContractOriginationResult).contractAddress
   const stabilityFundGovernorMultisigAddress = (await fetchFromCache(CACHE_KEYS.STABILITY_FUND_MSIG) as ContractOriginationResult).contractAddress
 
   const minter = KOLIBRI_CONFIG.contracts.MINTER!
@@ -37,7 +37,7 @@ const main = async () => {
   console.log("")
 
   console.log(``)
-  console.log(`New Stability Fund: ${stabilityFund}`)
+  console.log(`New Stability Fund: ${newStabilityFund}`)
   console.log(`Old Stability Fund: ${oldStabilityFund}`)
   console.log(``)
 
@@ -67,16 +67,21 @@ const main = async () => {
   console.log("...Sending some value to the stability fund")
   const kUSDInOldFund = new BigNumber(123456789) // 0.000000000123456789 kUSD
   const sendTokensHash = await sendTokens(oldStabilityFund, kUSDInOldFund, token, tezos, NETWORK_CONFIG)
-  await checkConfirmed(NETWORK_CONFIG, sendTokensHash)
+  console.log(`...Sent in hash ${sendTokensHash}`)
+  await checkConfirmed(NETWORK_CONFIG, sendTokensHash!)
 
   console.log("...Validating that value transferred")
-  if (!(await getTokenBalanceFromDefaultSmartPyContract(oldStabilityFund, token, tezos)).isEqualTo(kUSDInOldFund)) {
+  if (!(await getTokenBalanceFromDefaultSmartPyContract(oldStabilityFund, token, tezos)).isGreaterThan(0)) {
     throw new Error("The old stability fund did not receive any value!")
   }
 
   console.log("...Fetching new stability fund's current value")
-  const newFundValue = await getTokenBalanceFromDefaultSmartPyContract(stabilityFund, token, tezos)
+  const newFundValue = await getTokenBalanceFromDefaultSmartPyContract(newStabilityFund, token, tezos)
   console.log(`...New stability fund has ${newFundValue.toFixed()} kUSD in value`)
+
+  console.log("...Fetching old stability fund's current value")
+  const oldFundValue = await getTokenBalanceFromDefaultSmartPyContract(oldStabilityFund, token, tezos)
+  console.log(`...Old stability fund has ${newFundValue.toFixed()} kUSD in value`)
 
   console.log("...Moving funds via the multisig")
   await callThroughMultisig(
@@ -84,7 +89,7 @@ const main = async () => {
     stabilityFundGovernorMultisigAddress,
     oldStabilityFund,
     'sendTokens',
-    `sp.pair(sp.nat(${kUSDInOldFund.toFixed()}), sp.address("${stabilityFund}""))`,
+    `sp.pair(sp.nat(${oldFundValue.toFixed()}), sp.address("${newStabilityFund}"))`,
     tezos
   )
 
@@ -95,7 +100,7 @@ const main = async () => {
 
   console.log("...Validating that the new stability fund received funds")
   const expectedValueInStabilityFund = newFundValue.plus(kUSDInOldFund)
-  const actualValueInStabilityFund = await getTokenBalanceFromDefaultSmartPyContract(stabilityFund, token, tezos)
+  const actualValueInStabilityFund = await getTokenBalanceFromDefaultSmartPyContract(newStabilityFund, token, tezos)
   if (!actualValueInStabilityFund.isEqualTo(expectedValueInStabilityFund)) {
     throw new Error(`New stability fund doesn't have the right value!\nActual: ${actualValueInStabilityFund}\nExpected" ${expectedValueInStabilityFund}`)
   }

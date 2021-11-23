@@ -18,25 +18,31 @@ export async function generateStabilityFundStorage(config: StabilityFundStorage,
   let contractStorage = `
   (Pair 
     (Pair 
-      (address %fundAdministratorAddress) 
-      (address %governorAddress)
+      (address %administratorContractAddress) 
+      (Pair 
+        (address %governorContractAddress) 
+        (address %ovenRegistryContractAddress)
+      )
     ) 
     (Pair 
-      (address %ovenRegistryAddress)
       (Pair 
-        (address %savingsAccountAddress)
-        (address %tokenAddress)
+        (address %savingsAccountContractAddress) 
+        None
+      ) 
+      (Pair 
+        0
+        (address %tokenContractAddress)
       )
     )
   )
   `
 
   contractStorage = substituteVariables(contractStorage, {
-    "(address %fundAdministratorAddress)": fundAdministratorContractAddress,
-    "(address %governorAddress)": config.governorContractAddress,
-    "(address %ovenRegistryAddress)": ovenRegistryContractAddress,
-    "(address %savingsAccountAddress)": config.savingsAccountContractAddress,
-    "(address %tokenAddress)": tokenContractAddress,
+    "(address %administratorContractAddress)": fundAdministratorContractAddress,
+    "(address %governorContractAddress)": config.governorContractAddress,
+    "(address %ovenRegistryContractAddress)": ovenRegistryContractAddress,
+    "(address %savingsAccountContractAddress)": config.savingsAccountContractAddress,
+    "(address %tokenContractAddress)": tokenContractAddress,
   })
 
   if (contractStorage.includes("%")) {

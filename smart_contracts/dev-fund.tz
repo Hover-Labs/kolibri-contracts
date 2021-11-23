@@ -1,5 +1,5 @@
-parameter (or (or (unit %default) (or (pair %send mutez address) (address %sendAll))) (or (or (pair %sendTokens nat address) (address %setAdministratorContract)) (or (option %setDelegate key_hash) (address %setGovernorContract))));
-storage   (pair (address %administratorContractAddress) (pair (address %governorContractAddress) (address %tokenContractAddress)));
+parameter (or (or (or (unit %default) (pair %rescueFA12 (address %tokenContractAddress) (pair (nat %amount) (address %destination)))) (or (pair %rescueFA2 (address %tokenContractAddress) (pair (nat %tokenId) (pair (nat %amount) (address %destination)))) (or (pair %send mutez address) (address %sendAll)))) (or (or (address %sendAllTokens) (or (nat %sendAllTokens_callback) (pair %sendTokens nat address))) (or (address %setAdministratorContract) (or (option %setDelegate key_hash) (address %setGovernorContract)))));
+storage   (pair (pair (address %administratorContractAddress) (address %governorContractAddress)) (pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress))));
 code
   {
     UNPAIR;     # @parameter : @storage
@@ -7,76 +7,172 @@ code
       {
         IF_LEFT
           {
-            DROP;       # @storage
-            # == default == # @storage
-            NIL operation; # list operation : @storage
+            IF_LEFT
+              {
+                DROP;       # @storage
+                # == default == # @storage
+                NIL operation; # list operation : @storage
+              }
+              {
+                SWAP;       # @storage : @parameter%rescueFA12
+                # == rescueFA12 ==
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%rescueFA12
+                DUP;        # @storage : @storage : @parameter%rescueFA12
+                DUG 2;      # @storage : @parameter%rescueFA12 : @storage
+                CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%rescueFA12 : @storage
+                CDR;        # address : @parameter%rescueFA12 : @storage
+                SENDER;     # @sender : address : @parameter%rescueFA12 : @storage
+                COMPARE;    # int : @parameter%rescueFA12 : @storage
+                EQ;         # bool : @parameter%rescueFA12 : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 4; # int : @parameter%rescueFA12 : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%rescueFA12 : @storage
+                # sp.transfer(sp.record(from_ = sp.self_address, to_ = params.destination, value = params.amount), sp.tez(0), sp.contract(sp.TRecord(from_ = sp.TAddress, to_ = sp.TAddress, value = sp.TNat).layout(("from_ as from", ("to_ as to", "value"))), params.tokenContractAddress, entry_point='transfer').open_some()) # @parameter%rescueFA12 : @storage
+                DUP;        # @parameter%rescueFA12 : @parameter%rescueFA12 : @storage
+                CAR;        # address : @parameter%rescueFA12 : @storage
+                CONTRACT %transfer (pair address (pair address nat)); # option (contract (pair address (pair address nat))) : @parameter%rescueFA12 : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : @parameter%rescueFA12 : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : @parameter%rescueFA12 : @storage
+                NIL operation; # list operation : @some : @parameter%rescueFA12 : @storage
+                SWAP;       # @some : list operation : @parameter%rescueFA12 : @storage
+                PUSH mutez 0; # mutez : @some : list operation : @parameter%rescueFA12 : @storage
+                DIG 3;      # @parameter%rescueFA12 : mutez : @some : list operation : @storage
+                DUP;        # @parameter%rescueFA12 : @parameter%rescueFA12 : mutez : @some : list operation : @storage
+                GET 3;      # nat : @parameter%rescueFA12 : mutez : @some : list operation : @storage
+                SWAP;       # @parameter%rescueFA12 : nat : mutez : @some : list operation : @storage
+                GET 4;      # address : nat : mutez : @some : list operation : @storage
+                SELF_ADDRESS; # @self : address : nat : mutez : @some : list operation : @storage
+                PAIR 3;     # pair @self (pair address nat) : mutez : @some : list operation : @storage
+                TRANSFER_TOKENS; # operation : list operation : @storage
+                CONS;       # list operation : @storage
+              }; # list operation : @storage
           }
           {
             IF_LEFT
               {
-                SWAP;       # @storage : @parameter%send
-                # == send ==
-                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%send
-                DUP;        # @storage : @storage : @parameter%send
-                DUG 2;      # @storage : @parameter%send : @storage
-                GET 3;      # address : @parameter%send : @storage
-                SENDER;     # @sender : address : @parameter%send : @storage
-                COMPARE;    # int : @parameter%send : @storage
-                EQ;         # bool : @parameter%send : @storage
+                SWAP;       # @storage : @parameter%rescueFA2
+                # == rescueFA2 ==
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%rescueFA2
+                DUP;        # @storage : @storage : @parameter%rescueFA2
+                DUG 2;      # @storage : @parameter%rescueFA2 : @storage
+                CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%rescueFA2 : @storage
+                CDR;        # address : @parameter%rescueFA2 : @storage
+                SENDER;     # @sender : address : @parameter%rescueFA2 : @storage
+                COMPARE;    # int : @parameter%rescueFA2 : @storage
+                EQ;         # bool : @parameter%rescueFA2 : @storage
                 IF
                   {}
                   {
-                    PUSH int 4; # int : @parameter%send : @storage
+                    PUSH int 4; # int : @parameter%rescueFA2 : @storage
                     FAILWITH;   # FAILED
-                  }; # @parameter%send : @storage
-                # sp.send(sp.snd(params), sp.fst(params)) # @parameter%send : @storage
-                DUP;        # @parameter%send : @parameter%send : @storage
-                CDR;        # address : @parameter%send : @storage
-                CONTRACT unit; # option (contract unit) : @parameter%send : @storage
+                  }; # @parameter%rescueFA2 : @storage
+                # sp.transfer(sp.list([sp.record(from_ = sp.self_address, txs = sp.list([sp.record(to_ = params.destination, token_id = params.tokenId, amount = params.amount)]))]), sp.tez(0), sp.contract(sp.TList(sp.TRecord(from_ = sp.TAddress, txs = sp.TList(sp.TRecord(amount = sp.TNat, to_ = sp.TAddress, token_id = sp.TNat).layout(("to_", ("token_id", "amount"))))).layout(("from_", "txs"))), params.tokenContractAddress, entry_point='transfer').open_some()) # @parameter%rescueFA2 : @storage
+                DUP;        # @parameter%rescueFA2 : @parameter%rescueFA2 : @storage
+                CAR;        # address : @parameter%rescueFA2 : @storage
+                CONTRACT %transfer (list (pair address (list (pair address (pair nat nat))))); # option (contract (list (pair address (list (pair address (pair nat nat)))))) : @parameter%rescueFA2 : @storage
                 IF_NONE
                   {
-                    UNIT;       # unit : @parameter%send : @storage
+                    UNIT;       # unit : @parameter%rescueFA2 : @storage
                     FAILWITH;   # FAILED
                   }
-                  {}; # @some : @parameter%send : @storage
-                NIL operation; # list operation : @some : @parameter%send : @storage
-                SWAP;       # @some : list operation : @parameter%send : @storage
-                DIG 2;      # @parameter%send : @some : list operation : @storage
-                CAR;        # mutez : @some : list operation : @storage
-                UNIT;       # unit : mutez : @some : list operation : @storage
+                  {}; # @some : @parameter%rescueFA2 : @storage
+                NIL operation; # list operation : @some : @parameter%rescueFA2 : @storage
+                SWAP;       # @some : list operation : @parameter%rescueFA2 : @storage
+                PUSH mutez 0; # mutez : @some : list operation : @parameter%rescueFA2 : @storage
+                NIL (pair address (list (pair address (pair nat nat)))); # list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @parameter%rescueFA2 : @storage
+                NIL (pair address (pair nat nat)); # list (pair address (pair nat nat)) : list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @parameter%rescueFA2 : @storage
+                DIG 5;      # @parameter%rescueFA2 : list (pair address (pair nat nat)) : list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @storage
+                DUP;        # @parameter%rescueFA2 : @parameter%rescueFA2 : list (pair address (pair nat nat)) : list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @storage
+                GET 5;      # nat : @parameter%rescueFA2 : list (pair address (pair nat nat)) : list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @storage
+                SWAP;       # @parameter%rescueFA2 : nat : list (pair address (pair nat nat)) : list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @storage
+                DUP;        # @parameter%rescueFA2 : @parameter%rescueFA2 : nat : list (pair address (pair nat nat)) : list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @storage
+                GET 3;      # nat : @parameter%rescueFA2 : nat : list (pair address (pair nat nat)) : list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @storage
+                SWAP;       # @parameter%rescueFA2 : nat : nat : list (pair address (pair nat nat)) : list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @storage
+                GET 6;      # address : nat : nat : list (pair address (pair nat nat)) : list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @storage
+                PAIR 3;     # pair address (pair nat nat) : list (pair address (pair nat nat)) : list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @storage
+                CONS;       # list (pair address (pair nat nat)) : list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @storage
+                SELF_ADDRESS; # @self : list (pair address (pair nat nat)) : list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @storage
+                PAIR;       # pair @self (list (pair address (pair nat nat))) : list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @storage
+                CONS;       # list (pair address (list (pair address (pair nat nat)))) : mutez : @some : list operation : @storage
                 TRANSFER_TOKENS; # operation : list operation : @storage
                 CONS;       # list operation : @storage
               }
               {
-                SWAP;       # @storage : @parameter%sendAll
-                # == sendAll ==
-                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%sendAll
-                DUP;        # @storage : @storage : @parameter%sendAll
-                DUG 2;      # @storage : @parameter%sendAll : @storage
-                GET 3;      # address : @parameter%sendAll : @storage
-                SENDER;     # @sender : address : @parameter%sendAll : @storage
-                COMPARE;    # int : @parameter%sendAll : @storage
-                EQ;         # bool : @parameter%sendAll : @storage
-                IF
-                  {}
+                IF_LEFT
                   {
-                    PUSH int 4; # int : @parameter%sendAll : @storage
-                    FAILWITH;   # FAILED
-                  }; # @parameter%sendAll : @storage
-                # sp.send(params, sp.balance) # @parameter%sendAll : @storage
-                CONTRACT unit; # option (contract unit) : @storage
-                IF_NONE
-                  {
-                    UNIT;       # unit : @storage
-                    FAILWITH;   # FAILED
+                    SWAP;       # @storage : @parameter%send
+                    # == send ==
+                    # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%send
+                    DUP;        # @storage : @storage : @parameter%send
+                    DUG 2;      # @storage : @parameter%send : @storage
+                    CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%send : @storage
+                    CDR;        # address : @parameter%send : @storage
+                    SENDER;     # @sender : address : @parameter%send : @storage
+                    COMPARE;    # int : @parameter%send : @storage
+                    EQ;         # bool : @parameter%send : @storage
+                    IF
+                      {}
+                      {
+                        PUSH int 4; # int : @parameter%send : @storage
+                        FAILWITH;   # FAILED
+                      }; # @parameter%send : @storage
+                    # sp.send(sp.snd(params), sp.fst(params)) # @parameter%send : @storage
+                    DUP;        # @parameter%send : @parameter%send : @storage
+                    CDR;        # address : @parameter%send : @storage
+                    CONTRACT unit; # option (contract unit) : @parameter%send : @storage
+                    IF_NONE
+                      {
+                        UNIT;       # unit : @parameter%send : @storage
+                        FAILWITH;   # FAILED
+                      }
+                      {}; # @some : @parameter%send : @storage
+                    NIL operation; # list operation : @some : @parameter%send : @storage
+                    SWAP;       # @some : list operation : @parameter%send : @storage
+                    DIG 2;      # @parameter%send : @some : list operation : @storage
+                    CAR;        # mutez : @some : list operation : @storage
+                    UNIT;       # unit : mutez : @some : list operation : @storage
+                    TRANSFER_TOKENS; # operation : list operation : @storage
+                    CONS;       # list operation : @storage
                   }
-                  {}; # @some : @storage
-                NIL operation; # list operation : @some : @storage
-                SWAP;       # @some : list operation : @storage
-                BALANCE;    # @balance : @some : list operation : @storage
-                UNIT;       # unit : @balance : @some : list operation : @storage
-                TRANSFER_TOKENS; # operation : list operation : @storage
-                CONS;       # list operation : @storage
+                  {
+                    SWAP;       # @storage : @parameter%sendAll
+                    # == sendAll ==
+                    # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%sendAll
+                    DUP;        # @storage : @storage : @parameter%sendAll
+                    DUG 2;      # @storage : @parameter%sendAll : @storage
+                    CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%sendAll : @storage
+                    CDR;        # address : @parameter%sendAll : @storage
+                    SENDER;     # @sender : address : @parameter%sendAll : @storage
+                    COMPARE;    # int : @parameter%sendAll : @storage
+                    EQ;         # bool : @parameter%sendAll : @storage
+                    IF
+                      {}
+                      {
+                        PUSH int 4; # int : @parameter%sendAll : @storage
+                        FAILWITH;   # FAILED
+                      }; # @parameter%sendAll : @storage
+                    # sp.send(params, sp.balance) # @parameter%sendAll : @storage
+                    CONTRACT unit; # option (contract unit) : @storage
+                    IF_NONE
+                      {
+                        UNIT;       # unit : @storage
+                        FAILWITH;   # FAILED
+                      }
+                      {}; # @some : @storage
+                    NIL operation; # list operation : @some : @storage
+                    SWAP;       # @some : list operation : @storage
+                    BALANCE;    # @balance : @some : list operation : @storage
+                    UNIT;       # unit : @balance : @some : list operation : @storage
+                    TRANSFER_TOKENS; # operation : list operation : @storage
+                    CONS;       # list operation : @storage
+                  }; # list operation : @storage
               }; # list operation : @storage
           }; # list operation : @storage
       }
@@ -85,48 +181,175 @@ code
           {
             IF_LEFT
               {
-                SWAP;       # @storage : @parameter%sendTokens
-                # == sendTokens ==
-                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%sendTokens
-                DUP;        # @storage : @storage : @parameter%sendTokens
-                DUG 2;      # @storage : @parameter%sendTokens : @storage
-                GET 3;      # address : @parameter%sendTokens : @storage
-                SENDER;     # @sender : address : @parameter%sendTokens : @storage
-                COMPARE;    # int : @parameter%sendTokens : @storage
-                EQ;         # bool : @parameter%sendTokens : @storage
+                SWAP;       # @storage : @parameter%sendAllTokens
+                # == sendAllTokens ==
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%sendAllTokens
+                DUP;        # @storage : @storage : @parameter%sendAllTokens
+                DUG 2;      # @storage : @parameter%sendAllTokens : @storage
+                CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%sendAllTokens : @storage
+                CDR;        # address : @parameter%sendAllTokens : @storage
+                SENDER;     # @sender : address : @parameter%sendAllTokens : @storage
+                COMPARE;    # int : @parameter%sendAllTokens : @storage
+                EQ;         # bool : @parameter%sendAllTokens : @storage
                 IF
                   {}
                   {
-                    PUSH int 4; # int : @parameter%sendTokens : @storage
+                    PUSH int 4; # int : @parameter%sendAllTokens : @storage
                     FAILWITH;   # FAILED
-                  }; # @parameter%sendTokens : @storage
-                # sp.transfer(sp.record(from_ = sp.self_address, to_ = sp.snd(params), value = sp.fst(params)), sp.tez(0), sp.contract(sp.TRecord(from_ = sp.TAddress, to_ = sp.TAddress, value = sp.TNat).layout(("from_ as from", ("to_ as to", "value"))), self.data.tokenContractAddress, entry_point='transfer').open_some()) # @parameter%sendTokens : @storage
-                NIL operation; # list operation : @parameter%sendTokens : @storage
-                DUP 3;      # @storage : list operation : @parameter%sendTokens : @storage
-                GET 4;      # address : list operation : @parameter%sendTokens : @storage
-                CONTRACT %transfer (pair address (pair address nat)); # option (contract (pair address (pair address nat))) : list operation : @parameter%sendTokens : @storage
+                  }; # @parameter%sendAllTokens : @storage
+                # sp.verify(self.data.state == 0, 12) # @parameter%sendAllTokens : @storage
+                PUSH int 0; # int : @parameter%sendAllTokens : @storage
+                DUP 3;      # @storage : int : @parameter%sendAllTokens : @storage
+                GET 5;      # int : int : @parameter%sendAllTokens : @storage
+                COMPARE;    # int : @parameter%sendAllTokens : @storage
+                EQ;         # bool : @parameter%sendAllTokens : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 12; # int : @parameter%sendAllTokens : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%sendAllTokens : @storage
+                # sp.transfer((sp.self_address, sp.self_entry_point('sendAllTokens_callback')), sp.tez(0), sp.contract(sp.TPair(sp.TAddress, sp.TContract(sp.TNat)), self.data.tokenContractAddress, entry_point='getBalance').open_some()) # @parameter%sendAllTokens : @storage
+                NIL operation; # list operation : @parameter%sendAllTokens : @storage
+                DUP 3;      # @storage : list operation : @parameter%sendAllTokens : @storage
+                GET 6;      # address : list operation : @parameter%sendAllTokens : @storage
+                CONTRACT %getBalance (pair address (contract nat)); # option (contract (pair address (contract nat))) : list operation : @parameter%sendAllTokens : @storage
                 IF_NONE
                   {
-                    UNIT;       # unit : list operation : @parameter%sendTokens : @storage
+                    UNIT;       # unit : list operation : @parameter%sendAllTokens : @storage
                     FAILWITH;   # FAILED
                   }
-                  {}; # @some : list operation : @parameter%sendTokens : @storage
-                PUSH mutez 0; # mutez : @some : list operation : @parameter%sendTokens : @storage
-                DIG 3;      # @parameter%sendTokens : mutez : @some : list operation : @storage
-                UNPAIR;     # nat : address : mutez : @some : list operation : @storage
-                SWAP;       # address : nat : mutez : @some : list operation : @storage
-                SELF_ADDRESS; # @self : address : nat : mutez : @some : list operation : @storage
-                PAIR 3;     # pair @self (pair address nat) : mutez : @some : list operation : @storage
-                TRANSFER_TOKENS; # operation : list operation : @storage
-                CONS;       # list operation : @storage
+                  {}; # @some : list operation : @parameter%sendAllTokens : @storage
+                PUSH mutez 0; # mutez : @some : list operation : @parameter%sendAllTokens : @storage
+                SELF %sendAllTokens_callback; # @self : mutez : @some : list operation : @parameter%sendAllTokens : @storage
+                SELF_ADDRESS; # @self : @self : mutez : @some : list operation : @parameter%sendAllTokens : @storage
+                PAIR;       # pair @self @self : mutez : @some : list operation : @parameter%sendAllTokens : @storage
+                TRANSFER_TOKENS; # operation : list operation : @parameter%sendAllTokens : @storage
+                CONS;       # list operation : @parameter%sendAllTokens : @storage
+                # self.data.state = 1 # list operation : @parameter%sendAllTokens : @storage
+                DIG 2;      # @storage : list operation : @parameter%sendAllTokens
+                PUSH int 1; # int : @storage : list operation : @parameter%sendAllTokens
+                UPDATE 5;   # @storage : list operation : @parameter%sendAllTokens
+                DUG 2;      # list operation : @parameter%sendAllTokens : @storage
+                # self.data.sendAllTokens_destination = sp.some(params) # list operation : @parameter%sendAllTokens : @storage
+                DUG 2;      # @parameter%sendAllTokens : @storage : list operation
+                SOME;       # option address : @storage : list operation
+                UPDATE 3;   # @storage : list operation
+                SWAP;       # list operation : @storage
               }
+              {
+                IF_LEFT
+                  {
+                    SWAP;       # @storage : @parameter%sendAllTokens_callback
+                    # == sendAllTokens_callback ==
+                    # sp.verify(sp.sender == self.data.tokenContractAddress, 28) # @storage : @parameter%sendAllTokens_callback
+                    DUP;        # @storage : @storage : @parameter%sendAllTokens_callback
+                    DUG 2;      # @storage : @parameter%sendAllTokens_callback : @storage
+                    GET 6;      # address : @parameter%sendAllTokens_callback : @storage
+                    SENDER;     # @sender : address : @parameter%sendAllTokens_callback : @storage
+                    COMPARE;    # int : @parameter%sendAllTokens_callback : @storage
+                    EQ;         # bool : @parameter%sendAllTokens_callback : @storage
+                    IF
+                      {}
+                      {
+                        PUSH int 28; # int : @parameter%sendAllTokens_callback : @storage
+                        FAILWITH;   # FAILED
+                      }; # @parameter%sendAllTokens_callback : @storage
+                    # sp.verify(self.data.state == 1, 12) # @parameter%sendAllTokens_callback : @storage
+                    PUSH int 1; # int : @parameter%sendAllTokens_callback : @storage
+                    DUP 3;      # @storage : int : @parameter%sendAllTokens_callback : @storage
+                    GET 5;      # int : int : @parameter%sendAllTokens_callback : @storage
+                    COMPARE;    # int : @parameter%sendAllTokens_callback : @storage
+                    EQ;         # bool : @parameter%sendAllTokens_callback : @storage
+                    IF
+                      {}
+                      {
+                        PUSH int 12; # int : @parameter%sendAllTokens_callback : @storage
+                        FAILWITH;   # FAILED
+                      }; # @parameter%sendAllTokens_callback : @storage
+                    # sp.transfer(sp.record(from_ = sp.self_address, to_ = self.data.sendAllTokens_destination.open_some(), value = params), sp.tez(0), sp.contract(sp.TRecord(from_ = sp.TAddress, to_ = sp.TAddress, value = sp.TNat).layout(("from_ as from", ("to_ as to", "value"))), self.data.tokenContractAddress, entry_point='transfer').open_some()) # @parameter%sendAllTokens_callback : @storage
+                    NIL operation; # list operation : @parameter%sendAllTokens_callback : @storage
+                    DUP 3;      # @storage : list operation : @parameter%sendAllTokens_callback : @storage
+                    GET 6;      # address : list operation : @parameter%sendAllTokens_callback : @storage
+                    CONTRACT %transfer (pair address (pair address nat)); # option (contract (pair address (pair address nat))) : list operation : @parameter%sendAllTokens_callback : @storage
+                    IF_NONE
+                      {
+                        UNIT;       # unit : list operation : @parameter%sendAllTokens_callback : @storage
+                        FAILWITH;   # FAILED
+                      }
+                      {}; # @some : list operation : @parameter%sendAllTokens_callback : @storage
+                    PUSH mutez 0; # mutez : @some : list operation : @parameter%sendAllTokens_callback : @storage
+                    DIG 3;      # @parameter%sendAllTokens_callback : mutez : @some : list operation : @storage
+                    DUP 5;      # @storage : @parameter%sendAllTokens_callback : mutez : @some : list operation : @storage
+                    GET 3;      # option address : @parameter%sendAllTokens_callback : mutez : @some : list operation : @storage
+                    IF_NONE
+                      {
+                        UNIT;       # unit : @parameter%sendAllTokens_callback : mutez : @some : list operation : @storage
+                        FAILWITH;   # FAILED
+                      }
+                      {}; # @some : @parameter%sendAllTokens_callback : mutez : @some : list operation : @storage
+                    SELF_ADDRESS; # @self : @some : @parameter%sendAllTokens_callback : mutez : @some : list operation : @storage
+                    PAIR 3;     # pair @self (pair @some @parameter%sendAllTokens_callback) : mutez : @some : list operation : @storage
+                    TRANSFER_TOKENS; # operation : list operation : @storage
+                    CONS;       # list operation : @storage
+                    SWAP;       # @storage : list operation
+                    # self.data.state = 0 # @storage : list operation
+                    PUSH int 0; # int : @storage : list operation
+                    UPDATE 5;   # @storage : list operation
+                    # self.data.sendAllTokens_destination = sp.none # @storage : list operation
+                    NONE address; # option address : @storage : list operation
+                    UPDATE 3;   # @storage : list operation
+                    SWAP;       # list operation : @storage
+                  }
+                  {
+                    SWAP;       # @storage : @parameter%sendTokens
+                    # == sendTokens ==
+                    # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%sendTokens
+                    DUP;        # @storage : @storage : @parameter%sendTokens
+                    DUG 2;      # @storage : @parameter%sendTokens : @storage
+                    CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%sendTokens : @storage
+                    CDR;        # address : @parameter%sendTokens : @storage
+                    SENDER;     # @sender : address : @parameter%sendTokens : @storage
+                    COMPARE;    # int : @parameter%sendTokens : @storage
+                    EQ;         # bool : @parameter%sendTokens : @storage
+                    IF
+                      {}
+                      {
+                        PUSH int 4; # int : @parameter%sendTokens : @storage
+                        FAILWITH;   # FAILED
+                      }; # @parameter%sendTokens : @storage
+                    # sp.transfer(sp.record(from_ = sp.self_address, to_ = sp.snd(params), value = sp.fst(params)), sp.tez(0), sp.contract(sp.TRecord(from_ = sp.TAddress, to_ = sp.TAddress, value = sp.TNat).layout(("from_ as from", ("to_ as to", "value"))), self.data.tokenContractAddress, entry_point='transfer').open_some()) # @parameter%sendTokens : @storage
+                    NIL operation; # list operation : @parameter%sendTokens : @storage
+                    DUP 3;      # @storage : list operation : @parameter%sendTokens : @storage
+                    GET 6;      # address : list operation : @parameter%sendTokens : @storage
+                    CONTRACT %transfer (pair address (pair address nat)); # option (contract (pair address (pair address nat))) : list operation : @parameter%sendTokens : @storage
+                    IF_NONE
+                      {
+                        UNIT;       # unit : list operation : @parameter%sendTokens : @storage
+                        FAILWITH;   # FAILED
+                      }
+                      {}; # @some : list operation : @parameter%sendTokens : @storage
+                    PUSH mutez 0; # mutez : @some : list operation : @parameter%sendTokens : @storage
+                    DIG 3;      # @parameter%sendTokens : mutez : @some : list operation : @storage
+                    UNPAIR;     # nat : address : mutez : @some : list operation : @storage
+                    SWAP;       # address : nat : mutez : @some : list operation : @storage
+                    SELF_ADDRESS; # @self : address : nat : mutez : @some : list operation : @storage
+                    PAIR 3;     # pair @self (pair address nat) : mutez : @some : list operation : @storage
+                    TRANSFER_TOKENS; # operation : list operation : @storage
+                    CONS;       # list operation : @storage
+                  }; # list operation : @storage
+              }; # list operation : @storage
+          }
+          {
+            IF_LEFT
               {
                 SWAP;       # @storage : @parameter%setAdministratorContract
                 # == setAdministratorContract ==
                 # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setAdministratorContract
                 DUP;        # @storage : @storage : @parameter%setAdministratorContract
                 DUG 2;      # @storage : @parameter%setAdministratorContract : @storage
-                GET 3;      # address : @parameter%setAdministratorContract : @storage
+                CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setAdministratorContract : @storage
+                CDR;        # address : @parameter%setAdministratorContract : @storage
                 SENDER;     # @sender : address : @parameter%setAdministratorContract : @storage
                 COMPARE;    # int : @parameter%setAdministratorContract : @storage
                 EQ;         # bool : @parameter%setAdministratorContract : @storage
@@ -136,56 +359,69 @@ code
                     PUSH int 4; # int : @parameter%setAdministratorContract : @storage
                     FAILWITH;   # FAILED
                   }; # @parameter%setAdministratorContract : @storage
-                # self.data.administratorContractAddress = params # @parameter%setAdministratorContract : @storage
-                UPDATE 1;   # @storage
-                NIL operation; # list operation : @storage
-              }; # list operation : @storage
-          }
-          {
-            IF_LEFT
-              {
-                SWAP;       # @storage : @parameter%setDelegate
-                # == setDelegate ==
-                # sp.verify(sp.sender == self.data.administratorContractAddress, 8) # @storage : @parameter%setDelegate
-                DUP;        # @storage : @storage : @parameter%setDelegate
-                DUG 2;      # @storage : @parameter%setDelegate : @storage
-                CAR;        # address : @parameter%setDelegate : @storage
-                SENDER;     # @sender : address : @parameter%setDelegate : @storage
-                COMPARE;    # int : @parameter%setDelegate : @storage
-                EQ;         # bool : @parameter%setDelegate : @storage
-                IF
-                  {}
-                  {
-                    PUSH int 8; # int : @parameter%setDelegate : @storage
-                    FAILWITH;   # FAILED
-                  }; # @parameter%setDelegate : @storage
-                # sp.set_delegate(params) # @parameter%setDelegate : @storage
-                SET_DELEGATE; # operation : @storage
-                NIL operation; # list operation : operation : @storage
-                SWAP;       # operation : list operation : @storage
-                CONS;       # list operation : @storage
+                SWAP;       # @storage : @parameter%setAdministratorContract
+                # self.data.administratorContractAddress = params # @storage : @parameter%setAdministratorContract
+                UNPAIR;     # pair (address %administratorContractAddress) (address %governorContractAddress) : pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress)) : @parameter%setAdministratorContract
+                CDR;        # address : pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress)) : @parameter%setAdministratorContract
+                DIG 2;      # @parameter%setAdministratorContract : address : pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress))
+                PAIR;       # pair @parameter%setAdministratorContract address : pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress))
+                PAIR;       # pair (pair @parameter%setAdministratorContract address) (pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress)))
+                NIL operation; # list operation : pair (pair @parameter%setAdministratorContract address) (pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress)))
               }
               {
-                SWAP;       # @storage : @parameter%setGovernorContract
-                # == setGovernorContract ==
-                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setGovernorContract
-                DUP;        # @storage : @storage : @parameter%setGovernorContract
-                DUG 2;      # @storage : @parameter%setGovernorContract : @storage
-                GET 3;      # address : @parameter%setGovernorContract : @storage
-                SENDER;     # @sender : address : @parameter%setGovernorContract : @storage
-                COMPARE;    # int : @parameter%setGovernorContract : @storage
-                EQ;         # bool : @parameter%setGovernorContract : @storage
-                IF
-                  {}
+                IF_LEFT
                   {
-                    PUSH int 4; # int : @parameter%setGovernorContract : @storage
-                    FAILWITH;   # FAILED
-                  }; # @parameter%setGovernorContract : @storage
-                # self.data.governorContractAddress = params # @parameter%setGovernorContract : @storage
-                UPDATE 3;   # @storage
-                NIL operation; # list operation : @storage
-              }; # list operation : @storage
-          }; # list operation : @storage
-      }; # list operation : @storage
-    PAIR;       # pair (list operation) @storage
+                    SWAP;       # @storage : @parameter%setDelegate
+                    # == setDelegate ==
+                    # sp.verify(sp.sender == self.data.administratorContractAddress, 8) # @storage : @parameter%setDelegate
+                    DUP;        # @storage : @storage : @parameter%setDelegate
+                    DUG 2;      # @storage : @parameter%setDelegate : @storage
+                    CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setDelegate : @storage
+                    CAR;        # address : @parameter%setDelegate : @storage
+                    SENDER;     # @sender : address : @parameter%setDelegate : @storage
+                    COMPARE;    # int : @parameter%setDelegate : @storage
+                    EQ;         # bool : @parameter%setDelegate : @storage
+                    IF
+                      {}
+                      {
+                        PUSH int 8; # int : @parameter%setDelegate : @storage
+                        FAILWITH;   # FAILED
+                      }; # @parameter%setDelegate : @storage
+                    # sp.set_delegate(params) # @parameter%setDelegate : @storage
+                    SET_DELEGATE; # operation : @storage
+                    NIL operation; # list operation : operation : @storage
+                    SWAP;       # operation : list operation : @storage
+                    CONS;       # list operation : @storage
+                  }
+                  {
+                    SWAP;       # @storage : @parameter%setGovernorContract
+                    # == setGovernorContract ==
+                    # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setGovernorContract
+                    DUP;        # @storage : @storage : @parameter%setGovernorContract
+                    DUG 2;      # @storage : @parameter%setGovernorContract : @storage
+                    CAR;        # pair (address %administratorContractAddress) (address %governorContractAddress) : @parameter%setGovernorContract : @storage
+                    CDR;        # address : @parameter%setGovernorContract : @storage
+                    SENDER;     # @sender : address : @parameter%setGovernorContract : @storage
+                    COMPARE;    # int : @parameter%setGovernorContract : @storage
+                    EQ;         # bool : @parameter%setGovernorContract : @storage
+                    IF
+                      {}
+                      {
+                        PUSH int 4; # int : @parameter%setGovernorContract : @storage
+                        FAILWITH;   # FAILED
+                      }; # @parameter%setGovernorContract : @storage
+                    SWAP;       # @storage : @parameter%setGovernorContract
+                    # self.data.governorContractAddress = params # @storage : @parameter%setGovernorContract
+                    UNPAIR;     # pair (address %administratorContractAddress) (address %governorContractAddress) : pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress)) : @parameter%setGovernorContract
+                    CAR;        # address : pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress)) : @parameter%setGovernorContract
+                    DIG 2;      # @parameter%setGovernorContract : address : pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress))
+                    SWAP;       # address : @parameter%setGovernorContract : pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress))
+                    PAIR;       # pair address @parameter%setGovernorContract : pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress))
+                    PAIR;       # pair (pair address @parameter%setGovernorContract) (pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress)))
+                    NIL operation; # list operation : pair (pair address @parameter%setGovernorContract) (pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress)))
+                  }; # list operation : pair (pair address address) (pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress)))
+              }; # list operation : pair (pair address address) (pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress)))
+          }; # list operation : pair (pair address address) (pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress)))
+      }; # list operation : pair (pair address address) (pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress)))
+    PAIR;       # pair (list operation) (pair (pair address address) (pair (option %sendAllTokens_destination address) (pair (int %state) (address %tokenContractAddress))))
   };

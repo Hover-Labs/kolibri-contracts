@@ -154,20 +154,20 @@ const main = async () => {
   const initialAmount = new BigNumber("1000000000000000000") // 1 kUSD
   const oldStabilityFundTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.OLD_STABILITY_FUND_TRANSFER, async () => {
     const oldStabilityFundAddress = KOLIBRI_CONFIG.contracts.STABILITY_FUND!
-    sendTokens(oldStabilityFundAddress, initialAmount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
+    return sendTokens(oldStabilityFundAddress, initialAmount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
   })
   console.log('')
 
   console.log("Transferring 1 kUSD to the new stability fund to ensure it has value")
   const newStabilityFundTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.NEW_STABILITY_FUND_TRANSFER, async () => {
     const newStabilityFundAddress = stabilityFundDeployResult.contractAddress
-    sendTokens(newStabilityFundAddress, initialAmount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
+    return sendTokens(newStabilityFundAddress, initialAmount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
   })
 
   console.log("Transferring 1 kUSD to the new savings pool to ensure it has value")
   const savingsPoolTransferResult = await fetchFromCacheOrRun(CACHE_KEYS.SAVINGS_POOL_TRANSFER, async () => {
     const savingsPoolAddress = savingsPoolDeployResult.contractAddress
-    sendTokens(savingsPoolAddress, initialAmount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
+    return sendTokens(savingsPoolAddress, initialAmount, kUSDTokenAddress, tezos, NETWORK_CONFIG)
   })
   console.log('')
 
