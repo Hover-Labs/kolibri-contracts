@@ -35,11 +35,14 @@ const main = async () => {
   const deployAddress = await signer.publicKeyHash()
 
   // Sanity check that the user has funds
+  console.log("Performing Pre Flight Checks...")
   const requiredXTZ = new BigNumber(10 * CONSTANTS.XTZ_MANTISSA)
   const xtzHeld = await tezos.tz.getBalance(deployAddress)
   if (xtzHeld.isLessThan(requiredXTZ)) {
     throw new Error(`${deployAddress} does not have the required XTZ to complete this migration.\nBalance: ${xtzHeld.toFixed()} XTZ\nRequired: ${requiredXTZ.toFixed()} XTZ`)
   }
+  console.log("Done!")
+  console.log("")
 
   console.log(``)
   console.log(`New Stability Fund: ${stabilityFund}`)
@@ -111,12 +114,12 @@ const main = async () => {
   console.log("...Depositing to the oven")
   const harbingerClient = new HarbingerClient(NETWORK_CONFIG.tezosNodeUrl, harbingerNormalizer)
   const ovenClient = new OvenClient(NETWORK_CONFIG.tezosNodeUrl, signer, ovenAddress, stablecoinClient, harbingerClient)
-  const depositResult = (await ovenClient.deposit()) as TransactionWalletOperation // Deposit 1000 XTZ
+  const depositResult = (await ovenClient.deposit(requiredXTZ)) as TransactionWalletOperation
   await checkConfirmed(NETWORK_CONFIG, depositResult.opHash)
 
   console.log("...Taking a loan")
-  const loanAmount = new BigNumber(100).times(new BigNumber(CONSTANTS.MANTISSA))
-  const borrowResult = (await ovenClient.borrow(loanAmount)) as TransactionWalletOperation // Borrow 100 kUSD
+  const loanAmount = new BigNumber(5).times(new BigNumber(CONSTANTS.MANTISSA))
+  const borrowResult = (await ovenClient.borrow(loanAmount)) as TransactionWalletOperation // Borrow 5 kUSD
   await checkConfirmed(NETWORK_CONFIG, borrowResult.opHash)
 
   console.log(`...Waiting ${minutesToWait} minutes for interest to accrue (Started at ${(new Date()).toString()}`)
