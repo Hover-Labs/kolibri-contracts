@@ -536,7 +536,12 @@ class MinterContract(sp.Contract):
     @sp.entry_point
     def setDeveloperFundContract(self, newDeveloperFund):
         sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-        self.data.developerFundContractAddress = newDeveloperFund        
+        self.data.developerFundContractAddress = newDeveloperFund      
+
+    @sp.entry_point
+    def setInitializerContract(self, newInitializer):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.initializerContractAddress = newInitializer      
 
     # Update the splits between the funds
     @sp.entry_point
@@ -3760,4 +3765,55 @@ if __name__ == "__main__":
             valid = False,
             # TODO(keefertaylor): Enable me.
             # exception = Errors.BAD_SENDER
+        )
+
+    ################################################################
+    # setInitializerContract
+    ################################################################
+
+    @sp.add_test(name="setInitializerContract - can rotate initializer")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an unitialized Minter contract
+        initializer = Addresses.INITIALIZER_ADDRESS
+        governor = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            initializerContractAddress = initializer,
+            governorContractAddress = governor
+        )
+        scenario += minter
+
+        # WHEN initialize is called
+        rotatedAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setInitializerContract(rotatedAddress).run(
+            sender = governor
+        )
+
+        # THEN the initializer is updated
+        scenario.verify(minter.data.initializerContractAddress == rotatedAddress)
+
+    @sp.add_test(name="setInitializerContract - fails if not called by governor")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an unitialized Minter contract
+        initializer = Addresses.INITIALIZER_ADDRESS
+        governor = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            initializerContractAddress = initializer,
+            governorContractAddress = governor
+        )
+        scenario += minter
+
+        # WHEN initialize is called by someone other than the governor
+        # THEN the call fails with NOT_GOVERNOR
+        notGovernor = Addresses.NULL_ADDRESS
+        rotatedAddress = Addresses.ROTATED_ADDRESS
+        scenario += minter.setInitializerContract(rotatedAddress).run(
+            sender = notGovernor,
+
+            valid = False,
+            # TODO(keefertaylor): Enable me
+            # exception = Errors.NOT_GOVERNOR
         )
