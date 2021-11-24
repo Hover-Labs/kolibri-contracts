@@ -81,7 +81,7 @@ class MinterContract(sp.Contract):
         sp.verify(self.data.initialized == False, Errors.ALREADY_INITIALIZED)
 
         # Verify sender can initialize the contract.
-        sp.verify(sp.sender == self.data.initializerContractAddress)
+        sp.verify(sp.sender == self.data.initializerContractAddress, Errors.BAD_SENDER)
 
         # Set up global interest accumulator.
         self.data.amountLoaned = amountLoaned
@@ -3690,8 +3690,7 @@ if __name__ == "__main__":
             sender = initializer,
             
             valid = False,
-            # TODO(keefertaylor): Enable me.
-            # exception = Errors.ALREADY_INITIALIZED
+            exception = Errors.ALREADY_INITIALIZED
         )
 
     @sp.add_test(name="initialize - fails if not called by initializer")
@@ -3715,8 +3714,7 @@ if __name__ == "__main__":
             sender = notInitializer,
             
             valid = False,
-            # TODO(keefertaylor): Enable me.
-            # exception = Errors.BAD_SENDER
+            exception = Errors.BAD_SENDER
         )
 
     ################################################################
@@ -3766,8 +3764,7 @@ if __name__ == "__main__":
             sender = notGovernor,
 
             valid = False,
-            # TODO(keefertaylor): Enable me
-            # exception = Errors.NOT_GOVERNOR
+            exception = Errors.NOT_GOVERNOR
         )
 
     sp.add_compilation_target("minter", MinterContract())
