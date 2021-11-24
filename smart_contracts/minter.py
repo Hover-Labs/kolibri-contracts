@@ -474,10 +474,26 @@ class MinterContract(sp.Contract):
 
         # Compound interest and update internal state.
         timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
-        numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
-        newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
+        numPeriods = sp.local('numPeriods', timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
+        newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods.value)))
         self.data.interestIndex = newMinterInterestIndex
-        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods.value * Constants.SECONDS_PER_COMPOUND))
+
+        # Update the global accumulator and mint new tokens
+        newAmountLoaned = sp.local(
+            'newAmountLoaned', 
+            self.compoundWithLinearApproximation(
+                (
+                    self.data.amountLoaned,
+                    (
+                        self.data.stabilityFee, 
+                        numPeriods.value
+                    )
+                )
+            )
+        )
+        self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
+        self.data.amountLoaned = newAmountLoaned.value
 
         self.data.stabilityFee = newStabilityFee
 
@@ -3320,15 +3336,35 @@ if __name__ == "__main__":
     def test():
         scenario = sp.test_scenario()
 
-        # GIVEN a Minter contract with an interest index
+        # GIVEN a Token contract.
         governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
+        
+        # AND a Minter contract with an interest index
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        stabilityFee = 100000000000000000 # 10%
+        amountLoaned = Constants.PRECISION * 5 # 5 kUSD
+        devFundSplit = sp.nat(100000000000000000) # 10%
         minter = MinterContract(
             governorContractAddress = governorAddress,
-            stabilityFee = 100000000000000000,
+            stabilityFee = stabilityFee,
             lastInterestIndexUpdateTime = sp.timestamp(0),
             interestIndex = 1100000000000000000,
+            amountLoaned = amountLoaned,
+            devFundSplit = devFundSplit,
+            tokenContractAddress = token.address,
+            developerFundContractAddress = Addresses.DEVELOPER_FUND_ADDRESS,
+            stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
         )
         scenario += minter
+
+        # AND the minter is set as the administrator of the token contract
+        scenario += token.setAdministrator(minter.address).run(
+            sender = governorAddress
+        )
 
         # WHEN setStabilityFee is called by the governor
         newStabilityFee = sp.nat(1)
@@ -3341,6 +3377,34 @@ if __name__ == "__main__":
         # THEN the the interest is compounded.
         scenario.verify(minter.data.lastInterestIndexUpdateTime == now)
         scenario.verify(minter.data.interestIndex == 1210000000000000000)
+
+        # AND the total borrowed amount was updated
+        # expectedAmount = amountLoaned * (1 + (numPeriods * stabilityFee))
+        #                = 5 kUSD * (1 + (1 +* 0.1))
+        #                = 5 kUSD * (1 + 0.1)
+        #                = 5 kUSD * 1.1
+        #                = 5.5 kUSD
+        #         sp.result((initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION)
+        expectedAmountLoaned = (amountLoaned * (Constants.PRECISION + (1 * stabilityFee))) // Constants.PRECISION
+        scenario.verify(expectedAmountLoaned == 5500000000000000000) # 5.5 kUSD
+        scenario.verify(minter.data.amountLoaned == expectedAmountLoaned)
+
+        # AND the dev and stability funds received the tokens
+        # devFundValue = (newAmountLoaned - oldAmountLoaned) * devFundSplit
+        #              = (5.5 - 5) * .1
+        #              = .5 * .1
+        #              = .05
+        # expectedStabilityFundValue = (newAmountLoaned - oldAmountLoaned) - expectedDevFundValue
+        #                            = (5.5 - 5) - .05
+        #                            = .5 - .05
+        #                            = .45
+        expectedDevFundValue = (sp.as_nat(expectedAmountLoaned - amountLoaned) * devFundSplit) //Constants.PRECISION
+        scenario.verify(expectedDevFundValue == 50000000000000000) # 0.05 kUSD
+        scenario.verify(token.data.balances[Addresses.DEVELOPER_FUND_ADDRESS].balance == expectedDevFundValue)
+
+        expectedStabilityFundValue = sp.as_nat(sp.as_nat(expectedAmountLoaned - amountLoaned) - expectedDevFundValue)
+        scenario.verify(expectedStabilityFundValue == 450000000000000000) # 0.45 kUSD
+        scenario.verify(token.data.balances[Addresses.STABILITY_FUND_ADDRESS].balance == expectedStabilityFundValue)
 
     @sp.add_test(name="setStabilityFee - updates value")
     def test():
