@@ -468,31 +468,6 @@ class MinterContract(sp.Contract):
     # size.
     ################################################################
 
-    # DEPRECATED: Please use setXXXContract entrypoints instead. This entrypoint will be removed in a future update.
-    # DEPRECATED: `ovenMax` is deprecated and has no effect. This parameter will be removed in a future update.
-    # Params: (stabilityFee, (liquidationFeePercent, (collateralizationPercentage, ovenMax)))
-    @sp.entry_point
-    def updateParams(self, newParams):
-        sp.set_type(newParams, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TOption(sp.TMutez)))))
-
-        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-
-        # Compound interest and update internal state.
-        timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
-        numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
-        newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
-        self.data.interestIndex = newMinterInterestIndex
-        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
-
-        # Update to new parameters.
-        newStabilityFee, pair1                     = sp.match_pair(newParams)
-        newLiquidationFeePercent, pair2            = sp.match_pair(pair1)
-        newCollateralizationPercentage             = sp.fst(pair2)
-
-        self.data.stabilityFee                = newStabilityFee
-        self.data.liquidationFeePercent       = newLiquidationFeePercent
-        self.data.collateralizationPercentage = newCollateralizationPercentage
-
     @sp.entry_point
     def setStabilityFee(self, newStabilityFee):
         sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
@@ -515,25 +490,6 @@ class MinterContract(sp.Contract):
     def setCollateralizationPercentage(self, newCollateralizationPercentage):
         sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
         self.data.collateralizationPercentage = newCollateralizationPercentage
-
-    # DEPRECATED: Please use setXXXContract entrypoints instead. This entrypoint will be removed in a future update.
-    # Params: (governor (token, (ovenProxy, (stabilityFund, devFund))))
-    @sp.entry_point
-    def updateContracts(self, newParams):
-        sp.set_type(newParams, sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TAddress)))))
-
-        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-
-        newGovernorContractAddress, pair1                                = sp.match_pair(newParams)
-        newTokenContractAddress, pair2                                   = sp.match_pair(pair1)
-        newOvenProxyContractAddress, pair3                               = sp.match_pair(pair2)
-        newStabilityFundContractAddress, newDeveloperFundContractAddress = sp.match_pair(pair3)
-
-        self.data.governorContractAddress      = newGovernorContractAddress
-        self.data.tokenContractAddress         = newTokenContractAddress
-        self.data.ovenProxyContractAddress     = newOvenProxyContractAddress       
-        self.data.stabilityFundContractAddress = newStabilityFundContractAddress
-        self.data.developerFundContractAddress = newDeveloperFundContractAddress
 
     @sp.entry_point
     def setLiquidityPoolContract(self, newLiquidityPoolContract):
@@ -3129,65 +3085,6 @@ if __name__ == "__main__":
         )
 
     ################################################################
-    # updateContracts
-    ################################################################
-
-    @sp.add_test(name="updateContracts - updates contracts")
-    def test():
-        scenario = sp.test_scenario()
-
-        # GIVEN a Minter contract
-        governorAddress = Addresses.GOVERNOR_ADDRESS
-        minter = MinterContract(
-            governorContractAddress = governorAddress
-        )
-        scenario += minter
-
-        # WHEN updateContracts is called by the governor
-        newGovernorContractAddress = DummyContract.DummyContract().address
-        newTokenContractAddress = DummyContract.DummyContract().address
-        newOvenProxyContractAddress = DummyContract.DummyContract().address
-        newStabilityFundContractAddress = DummyContract.DummyContract().address
-        newdeveloperFundContractAddress = DummyContract.DummyContract().address
-        newContracts = (newGovernorContractAddress, (newTokenContractAddress, (newOvenProxyContractAddress, (newStabilityFundContractAddress, newdeveloperFundContractAddress))))
-        scenario += minter.updateContracts(newContracts).run(
-            sender = governorAddress,
-            now = sp.timestamp_from_utc_now(),
-        )
-
-        # THEN the contracts are updated.
-        scenario.verify(minter.data.governorContractAddress == newGovernorContractAddress)
-        scenario.verify(minter.data.tokenContractAddress == newTokenContractAddress)
-        scenario.verify(minter.data.ovenProxyContractAddress == newOvenProxyContractAddress)
-        scenario.verify(minter.data.stabilityFundContractAddress == newStabilityFundContractAddress)
-        scenario.verify(minter.data.developerFundContractAddress == newdeveloperFundContractAddress)
-
-    @sp.add_test(name="updateContracts - fails if not called by governor")
-    def test():
-        scenario = sp.test_scenario()
-
-        # GIVEN a Minter contract
-        governorAddress = Addresses.GOVERNOR_ADDRESS
-        minter = MinterContract(
-            governorContractAddress = governorAddress
-        )
-        scenario += minter
-
-        # WHEN updateContracts is called by someone other than the governor THEN the request fails
-        newGovernorContractAddress = DummyContract.DummyContract().address
-        newTokenContractAddress = DummyContract.DummyContract().address
-        newOvenProxyContractAddress = DummyContract.DummyContract().address
-        newStabilityFundContractAddress = DummyContract.DummyContract().address
-        newdeveloperFundContractAddress = DummyContract.DummyContract().address
-        newContracts = (newGovernorContractAddress, (newTokenContractAddress, (newOvenProxyContractAddress, (newStabilityFundContractAddress, newdeveloperFundContractAddress))))
-        notGovernor = Addresses.NULL_ADDRESS
-        scenario += minter.updateContracts(newContracts).run(
-            sender = notGovernor,
-            now = sp.timestamp_from_utc_now(),
-            valid = False
-        )
-
-    ################################################################
     # setGovernorContract
     ################################################################
     
@@ -3415,88 +3312,6 @@ if __name__ == "__main__":
             valid = False
         )         
    
-    ################################################################
-    # updateParams
-    ################################################################
-
-    @sp.add_test(name="updateParams - compounds interest")
-    def test():
-        scenario = sp.test_scenario()
-
-        # GIVEN a Minter contract with an interest index
-        governorAddress = Addresses.GOVERNOR_ADDRESS
-        minter = MinterContract(
-            governorContractAddress = governorAddress,
-            stabilityFee = 100000000000000000,
-            lastInterestIndexUpdateTime = sp.timestamp(0),
-            interestIndex = 1100000000000000000,
-        )
-        scenario += minter
-
-        # WHEN updateParams is called by the governor
-        newStabilityFee = sp.nat(1)
-        newLiquidationFeePercent = sp.nat(2)
-        newCollateralizationPercentage = sp.nat(3)
-        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, sp.none)))
-        now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)    
-        scenario += minter.updateParams(newParams).run(
-            sender = governorAddress,
-            now = now
-        )
-
-        # THEN the the interest is compounded.
-        scenario.verify(minter.data.lastInterestIndexUpdateTime == now)
-        scenario.verify(minter.data.interestIndex == 1210000000000000000)
-
-    @sp.add_test(name="updateParams - updates parameters")
-    def test():
-        scenario = sp.test_scenario()
-
-        # GIVEN a Minter contract
-        governorAddress = Addresses.GOVERNOR_ADDRESS
-        minter = MinterContract(
-            governorContractAddress = governorAddress
-        )
-        scenario += minter
-
-        # WHEN updateParams is called by the governor
-        newStabilityFee = sp.nat(1)
-        newLiquidationFeePercent = sp.nat(2)
-        newCollateralizationPercentage = sp.nat(3)
-        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, sp.none)))
-        scenario += minter.updateParams(newParams).run(
-            sender = governorAddress,
-            now = sp.timestamp_from_utc_now(),
-        )
-
-        # THEN the parameters are updated.
-        scenario.verify(minter.data.stabilityFee == newStabilityFee)
-        scenario.verify(minter.data.liquidationFeePercent == newLiquidationFeePercent)
-        scenario.verify(minter.data.collateralizationPercentage == newCollateralizationPercentage)
-
-    @sp.add_test(name="updateParams - fails if not called by governor")
-    def test():
-        scenario = sp.test_scenario()
-
-        # GIVEN a Minter contract
-        governorAddress = Addresses.GOVERNOR_ADDRESS
-        minter = MinterContract(
-            governorContractAddress = governorAddress
-        )
-        scenario += minter
-
-        # WHEN updateParams is called by someone other than the governor THEN the request fails
-        newStabilityFee = sp.nat(1)
-        newLiquidationFeePercent = sp.nat(2)
-        newCollateralizationPercentage = sp.nat(3)
-        newParams = (newStabilityFee, (newLiquidationFeePercent, (newCollateralizationPercentage, sp.none)))
-        notGovernor = Addresses.NULL_ADDRESS
-        scenario += minter.updateParams(newParams).run(
-            sender = notGovernor,
-            now = sp.timestamp_from_utc_now(),
-            valid = False
-        )
-
     ################################################################
     # setStabilityFee
     ################################################################
