@@ -42,7 +42,7 @@ FUND_ADMINISTRATOR_ADDRESS = sp.address("tz1VmiY38m3y95HqQLjMwqnMS7sdMfGomzKi")
 STABILITY_FUND_ADDRESS = sp.address("tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT")
 
 # An address which acts as a Developer Fund
-DEVELOPER_FUND_ADDRESS =sp.address("tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")
+DEVELOPER_FUND_ADDRESS = sp.address("tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")
 
 # An address which can be rotated.
 ROTATED_ADDRESS = sp.address("tz1UMCB2AHSTwG7YcGNr31CqYCtGN873royv")
@@ -56,5 +56,25 @@ NULL_ADDRESS = sp.address("tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")
 # The address which acts as the liquidity pool
 LIQUIDITY_POOL_ADDRESS = sp.address("tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D")
 
+# The address of the savings account.
+SAVINGS_ACCOUNT_ADDRESS = sp.address("tz1gfArv665EUkSg2ojMBzcbfwuPxAvqPvjo")
+
+# The address which acts as the Token Admin
+TOKEN_ADMIN_ADDRESS = sp.address("tz1eEnQhbwf6trb8Q8mPb2RaPkNk2rN7BKi8")
+
+# An series of named addresses with no particular role.
+# These are used for token transfer tests.
+ALICE_ADDRESS = sp.address("tz1VQnqCCqX4K5sP3FNkVSNKTdCAMJDd3E1n")
+BOB_ADDRESS = sp.address("tz2FCNBrERXtaTtNX6iimR1UJ5JSDxvdHM93")
+CHARLIE_ADDRESS = sp.address("tz3S6BBeKgJGXxvLyZ1xzXzMPn11nnFtq5L9")
+
+# An address of a Baker
+BAKER_PUBLIC_KEY_HASH = "tz3RDC3Jdn4j15J7bBHZd29EUee9gVB1CxD9"
+BAKER_ADDRESS = sp.address(BAKER_PUBLIC_KEY_HASH)
+BAKER_KEY_HASH = sp.key_hash(BAKER_PUBLIC_KEY_HASH)
+VOTING_POWERS = {
+  BAKER_KEY_HASH: 8000,
+}
+
 # The address which can initialize contracts
-INITIALIZER_ADDRESS = sp.address("tz1eEnQhbwf6trb8Q8mPb2RaPkNk2rN7BKi8")
+INITIALIZER_ADDRESS = sp.address("tz1RCFbB9GpALpsZtu6J58sb74dm8qe6XBzv")
