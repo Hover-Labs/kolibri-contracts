@@ -16,7 +16,7 @@ class DummyContract(sp.Contract):
 
     # Default entrypoint always accepts transfers.
     @sp.entry_point
-    def default(self, unit):
+    def default(self):
         pass
 
     # Callback for a nat parameter. Places returned value in `natStorage`.

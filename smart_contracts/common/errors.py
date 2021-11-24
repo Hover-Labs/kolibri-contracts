@@ -84,3 +84,12 @@ BAD_SPLITS = 25
 
 # The sender was not allowed to liquidate, even though the oven was undercollateralized
 NOT_ALLOWED_TO_LIQUIDATE = 26
+
+# The caller was not the savings account.
+NOT_SAVINGS_ACCOUNT = 27
+
+# The sender was not the expected contract
+BAD_SENDER = 28
+
+# The sender tried to initialize a contract that was already initialized
+ALREADY_INITIALIZED = 29

@@ -1,8 +1,8 @@
 import smartpy as sp
 
-Addresses = sp.import_script_from_url("file:test-helpers/addresses.py")
-Constants = sp.import_script_from_url("file:common/constants.py")
-Errors = sp.import_script_from_url("file:common/errors.py")
+Addresses = sp.io.import_script_from_url("file:test-helpers/addresses.py")
+Constants = sp.io.import_script_from_url("file:common/constants.py")
+Errors = sp.io.import_script_from_url("file:common/errors.py")
 
 ################################################################
 # State Machine
@@ -146,8 +146,8 @@ if __name__ == "__main__":
     ################################################################
     ################################################################
 
-    DummyContract = sp.import_script_from_url("file:test-helpers/dummy-contract.py")
-    FakeHarbinger = sp.import_script_from_url("file:test-helpers/fake-harbinger.py")
+    DummyContract = sp.io.import_script_from_url("file:test-helpers/dummy-contract.py")
+    FakeHarbinger = sp.io.import_script_from_url("file:test-helpers/fake-harbinger.py")
 
     ################################################################
     # getXtzUsdRate
@@ -419,3 +419,5 @@ if __name__ == "__main__":
             sender = Addresses.NULL_ADDRESS,
             valid = False
         )    
+
+    sp.add_compilation_target("oracle", OracleContract())
