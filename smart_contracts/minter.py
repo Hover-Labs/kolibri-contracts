@@ -5,6 +5,12 @@ Constants = sp.import_script_from_url("file:common/constants.py")
 Errors = sp.import_script_from_url("file:common/errors.py")
 OvenApi = sp.import_script_from_url("file:common/oven-api.py")
 
+# TODO
+# - View for amount loaned
+# - View for interest rate
+# - View for amount owed
+# - Rotate initializor address
+
 ################################################################
 # Contract
 ################################################################
@@ -27,6 +33,12 @@ class MinterContract(sp.Contract):
         # Implicitly (1 - <dev fund split>) is given to the stability fund.
         devFundSplit = sp.nat(100000000000000000), # 10%
         liquidationFeePercent = sp.nat(80000000000000000),  # 8%
+        amountLoaned = sp.nat(0),
+
+        # Initialization for KIP-009
+        # See: https://discuss.kolibri.finance/t/kip-009-interest-at-accrual-time-rather-than-repayment-time/78/2
+        initialized = False,
+        initializerContractAddress = Addresses.INITIALIZER_ADDRESS,
     ):
         self.exception_optimization_level = "DefaultUnit"
         self.add_flag("no_comment")
@@ -47,10 +59,35 @@ class MinterContract(sp.Contract):
             devFundSplit = devFundSplit,
  
             # Interest Calculations
+            amountLoaned = amountLoaned,
             interestIndex = interestIndex,
             stabilityFee = stabilityFee,
             lastInterestIndexUpdateTime = lastInterestIndexUpdateTime,
+
+            # Initialization for KIP-009
+            # See: https://discuss.kolibri.finance/t/kip-009-interest-at-accrual-time-rather-than-repayment-time/78/2
+            initialized = initialized,
+            initializerContractAddress = initializerContractAddress,
         )
+
+    ################################################################
+    # KIP-009
+    ################################################################
+      
+    # Initialize the global accumulator
+    @sp.entry_point
+    def initialize(self, amountLoaned):
+        # Verify contract is not already initialized.
+        sp.verify(self.data.initialized == False, Errors.ALREADY_INITIALIZED)
+
+        # Verify sender can initialize the contract.
+        sp.verify(sp.sender == self.data.initializerContractAddress)
+
+        # Set up global interest accumulator.
+        self.data.amountLoaned = amountLoaned
+
+        # Set contract to be initialized
+        self.data.initialized = True
 
     ################################################################
     # Public Interface
@@ -3645,4 +3682,82 @@ if __name__ == "__main__":
         scenario += minter.setLiquidityPoolContract(newLiquidityPoolAddress).run(
             sender = notGovernor,
             valid = False
-        )        
+        )
+    
+    ################################################################
+    # initialize
+    ################################################################
+
+    @sp.add_test(name="initialize - can initialize the contract")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an unitialized Minter contract
+        initializer = Addresses.INITIALIZER_ADDRESS
+        minter = MinterContract(
+            initializerContractAddress = initializer,
+            initialized = False,
+            amountLoaned = sp.nat(0)
+        )
+        scenario += minter
+
+        # WHEN initialize is called
+        amountLoaned = sp.nat(123)
+        scenario += minter.initialize(amountLoaned).run(
+            sender = initializer
+        )
+
+        # THEN the contract initializes amountLoaned storage variable
+        scenario.verify(minter.data.amountLoaned == amountLoaned)
+
+        # AND the contract is set to be initialized
+        scenario.verify(minter.data.initialized == True)
+
+    @sp.add_test(name="initialize - fails to initialize an initialized contract")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an Minter contract that is initialized
+        initializer = Addresses.INITIALIZER_ADDRESS
+        minter = MinterContract(
+            initializerContractAddress = initializer,
+            initialized = True,
+            amountLoaned = sp.nat(0)
+        )
+        scenario += minter
+
+        # WHEN initialize is called
+        # THEN the call fails with ALREADY_INITIALIZED
+        amountLoaned = sp.nat(123)
+        scenario += minter.initialize(amountLoaned).run(
+            sender = initializer,
+            
+            valid = False,
+            # TODO(keefertaylor): Enable me.
+            # exception = Errors.ALREADY_INITIALIZED
+        )
+
+    @sp.add_test(name="initialize - fails if not called by initializer")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an Minter contract
+        initializer = Addresses.INITIALIZER_ADDRESS
+        minter = MinterContract(
+            initializerContractAddress = initializer,
+            initialized = False,
+            amountLoaned = sp.nat(0)
+        )
+        scenario += minter
+
+        # WHEN initialize is called by someone other than the initializer address
+        # THEN the call fails with BAD_SENDER
+        notInitializer = Addresses.NULL_ADDRESS
+        amountLoaned = sp.nat(123)
+        scenario += minter.initialize(amountLoaned).run(
+            sender = notInitializer,
+            
+            valid = False,
+            # TODO(keefertaylor): Enable me.
+            # exception = Errors.BAD_SENDER
+        )
