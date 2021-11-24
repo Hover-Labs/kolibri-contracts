@@ -80,7 +80,7 @@ Validate that the multisig can move remaining stability fund value:
 ts-node src/verifications/verify-stability-fund-msig.ts
 ```
 
-### Mainnet
+### Mainnet  and Testnet
 
 **Ensure up to date and clean checkout**
 ```
@@ -102,11 +102,13 @@ rm -rf src/config.ts deploy-data.json
 
 **Run Migration**
 
+Use `config.mainnnet.ts` in the below command to activate a mainnet deploy.
+
 NOTE: The DEPLOY_SK account needs $3 of kUSD on it to complete this migration.
 
 ```
 export DEPLOY_SK=esdk...
-cp src/config.mainnet.ts src/config.ts
+cp src/config.testnet.ts src/config.ts
 ts-node src/flows/migrate.ts
 ```
 

@@ -67,7 +67,7 @@ export async function generateSavingsPoolStorage(config: SavingsPoolStorage,) {
       name: 'Kolibri Savings Pool',
       description: "Savings Pool and Savings Pool LP tokens",
       authors: "Hover Labs <hello@hover.engineering>",
-      homepage: "https://governance.kolibri.finance",
+      homepage: "https://kolibri.finance",
       interfaces: ["TZIP-007-2021-01-29"]
     })
   })

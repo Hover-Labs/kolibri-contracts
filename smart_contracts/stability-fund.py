@@ -18,7 +18,7 @@ class StabilityFundContract(DevFund.DevFundContract):
         administratorContractAddress = Addresses.FUND_ADMINISTRATOR_ADDRESS,
         ovenRegistryContractAddress = Addresses.OVEN_REGISTRY_ADDRESS,
         tokenContractAddress = Addresses.TOKEN_ADDRESS,
-        savingsAccountContractAddress = Addresses.SAVINGS_ACCOUNT_ADDRESS,
+        savingsPoolContractAddress = Addresses.SAVINGS_ACCOUNT_ADDRESS,
     ):
         self.exception_optimization_level = "DefaultUnit"
 
@@ -27,7 +27,7 @@ class StabilityFundContract(DevFund.DevFundContract):
             administratorContractAddress = administratorContractAddress,
             tokenContractAddress = tokenContractAddress,
             ovenRegistryContractAddress = ovenRegistryContractAddress,
-            savingsAccountContractAddress = savingsAccountContractAddress,
+            savingsPoolContractAddress = savingsPoolContractAddress,
 
             # State machine
             state= DevFund.IDLE,
@@ -43,12 +43,12 @@ class StabilityFundContract(DevFund.DevFundContract):
         sp.set_type(tokensAccrued, sp.TNat)
 
         # Verify the caller is the savings account.
-        sp.verify(sp.sender == self.data.savingsAccountContractAddress, message = Errors.NOT_SAVINGS_ACCOUNT)
+        sp.verify(sp.sender == self.data.savingsPoolContractAddress, message = Errors.NOT_SAVINGS_ACCOUNT)
 
         # Transfer the accrued tokens.
         tokenTransferParam = sp.record(
             from_ = sp.self_address,
-            to_ = self.data.savingsAccountContractAddress, 
+            to_ = self.data.savingsPoolContractAddress, 
             value = tokensAccrued
         )
         transferHandle = sp.contract(
@@ -97,14 +97,13 @@ class StabilityFundContract(DevFund.DevFundContract):
         sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
         self.data.ovenRegistryContractAddress = newOvenRegistryContractAddress        
 
-    # Update the savings account contract.
-    # TODO(keefertaylor): Use `SavingsPool` here for consistency, and audit codebase for other uses.
+    # Update the savings pool contract.
     @sp.entry_point
-    def setSavingsAccountContract(self, newSavingsAccountContractAddress):
-        sp.set_type(newSavingsAccountContractAddress, sp.TAddress)
+    def setSavingsPoolContract(self, newSavingsPoolContractAddress):
+        sp.set_type(newSavingsPoolContractAddress, sp.TAddress)
 
         sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-        self.data.savingsAccountContractAddress = newSavingsAccountContractAddress                
+        self.data.savingsPoolContractAddress = newSavingsPoolContractAddress                
 
 # Only run tests if this file is main.
 if __name__ == "__main__":
@@ -136,9 +135,9 @@ if __name__ == "__main__":
         scenario += token
         
         # AND a StabilityFund contract
-        savingsAccountContractAddress = Addresses.SAVINGS_ACCOUNT_ADDRESS
+        savingsPoolContractAddress = Addresses.SAVINGS_ACCOUNT_ADDRESS
         fund = StabilityFundContract(
-            savingsAccountContractAddress = savingsAccountContractAddress,
+            savingsPoolContractAddress = savingsPoolContractAddress,
             tokenContractAddress = token.address
         )
         scenario += fund
@@ -173,9 +172,9 @@ if __name__ == "__main__":
         scenario += token
         
         # AND a StabilityFund contract
-        savingsAccountContractAddress = Addresses.SAVINGS_ACCOUNT_ADDRESS
+        savingsPoolContractAddress = Addresses.SAVINGS_ACCOUNT_ADDRESS
         fund = StabilityFundContract(
-            savingsAccountContractAddress = savingsAccountContractAddress,
+            savingsPoolContractAddress = savingsPoolContractAddress,
             tokenContractAddress = token.address
         )
         scenario += fund
@@ -354,10 +353,10 @@ if __name__ == "__main__":
         )    
 
     ################################################################
-    # setSavingsAccountContract
+    # setSavingsPoolContract
     ################################################################
 
-    @sp.add_test(name="setSavingsAccountContract - succeeds when called by governor")
+    @sp.add_test(name="setSavingsPoolContract - succeeds when called by governor")
     def test():
         # GIVEN an DevFund contract
         scenario = sp.test_scenario()
@@ -368,16 +367,16 @@ if __name__ == "__main__":
         )
         scenario += fund
 
-        # WHEN the setSavingsAccountContract is called with a new contract
+        # WHEN the setSavingsPoolContract is called with a new contract
         rotatedAddress = Addresses.ROTATED_ADDRESS
-        scenario += fund.setSavingsAccountContract(rotatedAddress).run(
+        scenario += fund.setSavingsPoolContract(rotatedAddress).run(
             sender = governorContractAddress,
         )
 
         # THEN the contract is updated.
-        scenario.verify(fund.data.savingsAccountContractAddress == rotatedAddress)
+        scenario.verify(fund.data.savingsPoolContractAddress == rotatedAddress)
 
-    @sp.add_test(name="setSavingsAccountContract - fails when not called by governor")
+    @sp.add_test(name="setSavingsPoolContract - fails when not called by governor")
     def test():
         # GIVEN a DevFund contract
         scenario = sp.test_scenario()
@@ -388,9 +387,9 @@ if __name__ == "__main__":
         )
         scenario += fund
 
-        # WHEN the setSavingsAccountContract is called by someone who isn't the governor THEN the call fails
+        # WHEN the setSavingsPoolContract is called by someone who isn't the governor THEN the call fails
         rotatedAddress = Addresses.ROTATED_ADDRESS
-        scenario += fund.setSavingsAccountContract(rotatedAddress).run(
+        scenario += fund.setSavingsPoolContract(rotatedAddress).run(
             sender = Addresses.NULL_ADDRESS,
             valid = False
         )        

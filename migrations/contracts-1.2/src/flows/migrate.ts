@@ -108,7 +108,7 @@ const main = async () => {
       NETWORK_CONFIG,
       tezos,
       stabilityFundDeployResult.contractAddress,
-      'setSavingsAccountContract',
+      'setSavingsPoolContract',
       savingsPoolDeployResult.contractAddress
     )
   })

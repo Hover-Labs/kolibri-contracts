@@ -254,7 +254,6 @@ class SavingsPoolContract(FA12.FA12):
     tokensToReceive = sp.local('tokensToReceive', (fractionOfPoolOwnership.value * (updatedBalance + accruedInterest)) / Constants.PRECISION)
 
     # Debit underlying balance by the amount of tokens that will be sent
-    # TODO(keefertaylor): Test.
     self.data.underlyingBalance = sp.as_nat(updatedBalance + accruedInterest - tokensToReceive.value)
 
     # Burn the tokens being redeemed.
@@ -790,7 +789,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract.
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -826,7 +825,7 @@ if __name__ == "__main__":
     )
 
     # AND the stability fund is wired to the tester.
-    scenario += stabilityFund.setSavingsAccountContract(
+    scenario += stabilityFund.setSavingsPoolContract(
       tester.address
     ).run(
       sender = Addresses.GOVERNOR_ADDRESS
@@ -863,7 +862,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract.
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -899,7 +898,7 @@ if __name__ == "__main__":
     )
 
     # AND the stability fund is wired to the tester.
-    scenario += stabilityFund.setSavingsAccountContract(
+    scenario += stabilityFund.setSavingsPoolContract(
       tester.address
     ).run(
       sender = Addresses.GOVERNOR_ADDRESS
@@ -936,7 +935,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract.
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -972,7 +971,7 @@ if __name__ == "__main__":
     )
 
     # AND the stability fund is wired to the tester.
-    scenario += stabilityFund.setSavingsAccountContract(
+    scenario += stabilityFund.setSavingsPoolContract(
       tester.address
     ).run(
       sender = Addresses.GOVERNOR_ADDRESS
@@ -1009,7 +1008,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract.
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -1045,7 +1044,7 @@ if __name__ == "__main__":
     )
 
     # AND the stability fund is wired to the tester.
-    scenario += stabilityFund.setSavingsAccountContract(
+    scenario += stabilityFund.setSavingsPoolContract(
       tester.address
     ).run(
       sender = Addresses.GOVERNOR_ADDRESS
@@ -1377,7 +1376,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract.
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -1785,7 +1784,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -2687,7 +2686,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -2817,7 +2816,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
@@ -2967,7 +2966,7 @@ if __name__ == "__main__":
 
     # AND a stability fund contract
     stabilityFund = StabilityFund.StabilityFundContract(
-      savingsAccountContractAddress = pool.address,
+      savingsPoolContractAddress = pool.address,
       tokenContractAddress = token.address,
     )
     scenario += stabilityFund
