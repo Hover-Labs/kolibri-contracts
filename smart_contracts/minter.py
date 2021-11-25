@@ -1945,7 +1945,7 @@ if __name__ == "__main__":
 
         # AND the total borrowed amount was updated
         # expectedAmount = (amountLoaned * (1 + (numPeriods * stabilityFee))) - newly repaid amount
-        #                = (5 kUSD * (1 + (1 +* 0.1))) - 1 kUSD
+        #                = (5 kUSD * (1 + (1 * 0.1))) - 1 kUSD
         #                = (5 kUSD * (1 + 0.1)) - 1 kUSD
         #                = (5 kUSD * 1.1) - 1 kUSD
         #                = 5.5 kUSD - 1 kUSD
@@ -2383,7 +2383,7 @@ if __name__ == "__main__":
 
         # AND the total borrowed amount was updated
         # expectedAmount = (amountLoaned * (1 + (numPeriods * stabilityFee))) - newly borrowed amount
-        #                = (5 kUSD * (1 + (1 +* 0.1))) + 1 kUSD
+        #                = (5 kUSD * (1 + (1 * 0.1))) + 1 kUSD
         #                = (5 kUSD * (1 + 0.1)) + 1 kUSD
         #                = (5 kUSD * 1.1) + 1 kUSD
         #                = 5.5 kUSD + 1 kUSD
@@ -2739,11 +2739,10 @@ if __name__ == "__main__":
 
         # AND the total borrowed amount was updated
         # expectedAmount = amountLoaned * (1 + (numPeriods * stabilityFee))
-        #                = 5 kUSD * (1 + (1 +* 0.1))
+        #                = 5 kUSD * (1 + (1 * 0.1))
         #                = 5 kUSD * (1 + 0.1)
         #                = 5 kUSD * 1.1
         #                = 5.5 kUSD
-        #         sp.result((initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION)
         expectedAmountLoaned = (amountLoaned * (Constants.PRECISION + (1 * stabilityFee))) // Constants.PRECISION
         scenario.verify(expectedAmountLoaned == 5500000000000000000) # 5.5 kUSD
         scenario.verify(minter.data.amountLoaned == expectedAmountLoaned)
@@ -3105,11 +3104,10 @@ if __name__ == "__main__":
 
         # AND the total borrowed amount was updated
         # expectedAmount = amountLoaned * (1 + (numPeriods * stabilityFee))
-        #                = 5 kUSD * (1 + (1 +* 0.1))
+        #                = 5 kUSD * (1 + (1 * 0.1))
         #                = 5 kUSD * (1 + 0.1)
         #                = 5 kUSD * 1.1
         #                = 5.5 kUSD
-        #         sp.result((initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION)
         expectedAmountLoaned = (amountLoaned * (Constants.PRECISION + (1 * stabilityFee))) // Constants.PRECISION
         scenario.verify(expectedAmountLoaned == 5500000000000000000) # 5.5 kUSD
         scenario.verify(minter.data.amountLoaned == expectedAmountLoaned)
@@ -3611,11 +3609,10 @@ if __name__ == "__main__":
 
         # AND the total borrowed amount was updated
         # expectedAmount = amountLoaned * (1 + (numPeriods * stabilityFee))
-        #                = 5 kUSD * (1 + (1 +* 0.1))
+        #                = 5 kUSD * (1 + (1 * 0.1))
         #                = 5 kUSD * (1 + 0.1)
         #                = 5 kUSD * 1.1
         #                = 5.5 kUSD
-        #         sp.result((initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION)
         expectedAmountLoaned = (amountLoaned * (Constants.PRECISION + (1 * stabilityFee))) // Constants.PRECISION
         scenario.verify(expectedAmountLoaned == 5500000000000000000) # 5.5 kUSD
         scenario.verify(minter.data.amountLoaned == expectedAmountLoaned)
