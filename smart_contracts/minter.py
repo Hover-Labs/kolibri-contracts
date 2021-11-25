@@ -165,10 +165,9 @@ class MinterContract(sp.Contract):
         sp.set_type(newTotalBorrowedTokens, sp.TNat)
 
         # Verify the oven is not under-collateralized. 
-        totalOutstandingTokens = newTotalBorrowedTokens + newStabilityFeeTokens
-        sp.set_type(totalOutstandingTokens, sp.TNat)
-        sp.if totalOutstandingTokens > 0:
-            newCollateralizationPercentage = self.computeCollateralizationPercentage((ovenBalance, (oraclePrice, totalOutstandingTokens)))
+        totalOutstandingTokens = sp.local('totalOutstandingTokens', newTotalBorrowedTokens + newStabilityFeeTokens)
+        sp.if totalOutstandingTokens.value > 0:
+            newCollateralizationPercentage = self.computeCollateralizationPercentage((ovenBalance, (oraclePrice, totalOutstandingTokens.value)))
             sp.verify(newCollateralizationPercentage >= self.data.collateralizationPercentage, message = Errors.OVEN_UNDER_COLLATERALIZED)
 
         # Call mint in token contract
@@ -176,6 +175,25 @@ class MinterContract(sp.Contract):
 
         # Inform oven of new state.
         self.updateOvenState(ovenAddress, newTotalBorrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, sp.balance)
+
+        # Accrue interest on the global accumulator and mint to developer and stability fund.
+        newAmountLoaned = sp.local(
+            'newAmountLoaned', 
+            self.compoundWithLinearApproximation(
+                (
+                    self.data.amountLoaned,
+                    (
+                        self.data.stabilityFee, 
+                        numPeriods
+                    )
+                )
+            )
+        )
+        self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
+
+        # Update the total amountLoaned 
+        # New total loaned = value of amountLoaned after accruing interest until now + newly borrowed tokens
+        self.data.amountLoaned = newAmountLoaned.value + tokensToBorrow
 
         # Update internal state
         self.data.interestIndex = newMinterInterestIndex
@@ -2138,14 +2156,34 @@ if __name__ == "__main__":
         ovenProxy = MockOvenProxy.MockOvenProxyContract()
         scenario += ovenProxy
 
-        # AND a Minter contract.
+        # AND a Token contract.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
+
+        # AND an Minter contract
+        amountLoaned = Constants.PRECISION * 5 # 5 kUSD
+        stabilityFee = 100000000000000000 # 10%
+        devFundSplit = sp.nat(100000000000000000) # 10%
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxy.address,
-            stabilityFee = 100000000000000000,
+            stabilityFee = stabilityFee,
             lastInterestIndexUpdateTime = sp.timestamp(0),
             interestIndex = Constants.PRECISION,
+            amountLoaned = amountLoaned,
+            devFundSplit = devFundSplit,
+            tokenContractAddress = token.address,
+            developerFundContractAddress = Addresses.DEVELOPER_FUND_ADDRESS,
+            stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
         )
         scenario += minter
+
+        # AND the minter is set as the administrator of the token contract
+        scenario += token.setAdministrator(minter.address).run(
+            sender = governorAddress
+        )
 
         # WHEN borrow is called with valid inputs
         ovenAddress = Addresses.OVEN_ADDRESS
@@ -2161,7 +2199,7 @@ if __name__ == "__main__":
         interestIndex = sp.to_int(Constants.PRECISION)
         stabilityFeeTokens = sp.int(0)
 
-        tokensToBorrow = Constants.PRECISION
+        tokensToBorrow = Constants.PRECISION # 1 kUSD
 
         param = (xtzPrice, (ovenAddress, (ownerAddress, (ovenBalance, (borrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, tokensToBorrow))))))))
 
@@ -2179,6 +2217,37 @@ if __name__ == "__main__":
         # AND the minter compounded interest.
         scenario.verify(minter.data.interestIndex == 1100000000000000000)
         scenario.verify(minter.data.lastInterestIndexUpdateTime == now)
+
+        # AND the total borrowed amount was updated
+        # expectedAmount = (amountLoaned * (1 + (numPeriods * stabilityFee))) + newly borrowed amount
+        #                = (5 kUSD * (1 + (1 +* 0.1))) + 1 kUSD
+        #                = (5 kUSD * (1 + 0.1)) + 1 kUSD
+        #                = (5 kUSD * 1.1) + 1 kUSD
+        #                = 5.5 kUSD + 1 kUSD
+        #                = 6.5 kUSD
+        #         sp.result((initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION)
+        expectedAmountLoanedAfterInterestAccrual = (amountLoaned * (Constants.PRECISION + (1 * stabilityFee))) // Constants.PRECISION
+        expectedAmountLoaned = expectedAmountLoanedAfterInterestAccrual + tokensToBorrow
+        scenario.verify(expectedAmountLoanedAfterInterestAccrual == 5500000000000000000) # 5.5 kUSD
+        scenario.verify(expectedAmountLoaned == 6500000000000000000) # 6.5 kUSD = expectedAmountOfInterestAccrued + tokensToBorrow
+        scenario.verify(minter.data.amountLoaned == expectedAmountLoaned)
+
+        # AND the dev and stability funds received the tokens
+        # devFundValue = (expectedAmountLoanedAfterInterestAccrual - oldAmountLoaned) * devFundSplit
+        #              = (5.5 - 5) * .1
+        #              = 0.5 * .1
+        #              = 0.05
+        # expectedStabilityFundValue = (expectedAmountLoanedAfterInterestAccrual - oldAmountLoaned) - expectedDevFundValue
+        #                            = (5.5 - 5) - .05
+        #                            = 0.5 - .05
+        #                            = 0.45
+        expectedDevFundValue = (sp.as_nat(expectedAmountLoanedAfterInterestAccrual - amountLoaned) * devFundSplit) //Constants.PRECISION
+        scenario.verify(expectedDevFundValue == 50000000000000000) # 0.05 kUSD
+        scenario.verify(token.data.balances[Addresses.DEVELOPER_FUND_ADDRESS].balance == expectedDevFundValue)
+
+        expectedStabilityFundValue = sp.as_nat(sp.as_nat(expectedAmountLoanedAfterInterestAccrual - amountLoaned) - expectedDevFundValue)
+        scenario.verify(expectedStabilityFundValue == 450000000000000000) # 0.45 kUSD
+        scenario.verify(token.data.balances[Addresses.STABILITY_FUND_ADDRESS].balance == expectedStabilityFundValue)
 
     @sp.add_test(name="borrow - succeeds and mints tokens")
     def test():
