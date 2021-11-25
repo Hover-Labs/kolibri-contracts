@@ -61,7 +61,11 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address)
+  scenario += minter.setOvenProxyContract(ovenProxy.address)
+  scenario += minter.setStabilityFundContract(stabilityFund.address)
+  scenario += minter.setDeveloperFundContract(developerFund.address)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -134,7 +138,11 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address)
+  scenario += minter.setOvenProxyContract(ovenProxy.address)
+  scenario += minter.setStabilityFundContract(stabilityFund.address)
+  scenario += minter.setDeveloperFundContract(developerFund.address)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -216,7 +224,11 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address)
+  scenario += minter.setOvenProxyContract(ovenProxy.address)
+  scenario += minter.setStabilityFundContract(stabilityFund.address)
+  scenario += minter.setDeveloperFundContract(developerFund.address)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -323,7 +335,11 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address)
+  scenario += minter.setOvenProxyContract(ovenProxy.address)
+  scenario += minter.setStabilityFundContract(stabilityFund.address)
+  scenario += minter.setDeveloperFundContract(developerFund.address)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -443,7 +459,11 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address)
+  scenario += minter.setOvenProxyContract(ovenProxy.address)
+  scenario += minter.setStabilityFundContract(stabilityFund.address)
+  scenario += minter.setDeveloperFundContract(developerFund.address)
   scenario += minter.setLiquidityPoolContract(liquidityPool.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -577,7 +597,11 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address)
+  scenario += minter.setOvenProxyContract(ovenProxy.address)
+  scenario += minter.setStabilityFundContract(stabilityFund.address)
+  scenario += minter.setDeveloperFundContract(developerFund.address)
   scenario += minter.setLiquidityPoolContract(liquidityPool.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -680,7 +704,11 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address)
+  scenario += minter.setOvenProxyContract(ovenProxy.address)
+  scenario += minter.setStabilityFundContract(stabilityFund.address)
+  scenario += minter.setDeveloperFundContract(developerFund.address)
   scenario += minter.setLiquidityPoolContract(liquidityPool.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -810,7 +838,11 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address)
+  scenario += minter.setOvenProxyContract(ovenProxy.address)
+  scenario += minter.setStabilityFundContract(stabilityFund.address)
+  scenario += minter.setDeveloperFundContract(developerFund.address)
   scenario += minter.setLiquidityPoolContract(liquidityPool.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -923,7 +955,11 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address)
+  scenario += minter.setOvenProxyContract(ovenProxy.address)
+  scenario += minter.setStabilityFundContract(stabilityFund.address)
+  scenario += minter.setDeveloperFundContract(developerFund.address)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -1032,7 +1068,11 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address)
+  scenario += minter.setOvenProxyContract(ovenProxy.address)
+  scenario += minter.setStabilityFundContract(stabilityFund.address)
+  scenario += minter.setDeveloperFundContract(developerFund.address)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -1126,7 +1166,11 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address)
+  scenario += minter.setOvenProxyContract(ovenProxy.address)
+  scenario += minter.setStabilityFundContract(stabilityFund.address)
+  scenario += minter.setDeveloperFundContract(developerFund.address)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
