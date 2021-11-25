@@ -488,15 +488,34 @@ class MinterContract(sp.Contract):
         # Burn tokens from the liquidator to pay for the Oven.
         self.burnTokens((totalOutstandingTokens + liquidationFee), liquidatorAddress)
                 
-        # Mint the extra tokens in the dev fund if they were paid.
-        self.mintTokensToStabilityAndDevFund(newStabilityFeeTokens + liquidationFee)
-
         # Send collateral to liquidator.
         sp.send(liquidatorAddress, sp.utils.nat_to_mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION))
 
         # Inform oven it is liquidated, clear owed tokens and return no collateral.
         self.updateOvenState(ovenAddress, sp.nat(0), sp.nat(0), newMinterInterestIndex, True, sp.mutez(0))
 
+        # Accrue interest on the global accumulator
+        newAmountLoaned = sp.local(
+            'newAmountLoaned', 
+            self.compoundWithLinearApproximation(
+                (
+                    self.data.amountLoaned,
+                    (
+                        self.data.stabilityFee, 
+                        numPeriods
+                    )
+                )
+            )
+        )
+
+        # Mint tokens to the developer and stability funds. 
+        # Amount to mint = new interest accrued globally + liquidation fee
+        self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned) + liquidationFee)
+
+        # Update the total amountLoaned 
+        # New total loaned = value of amountLoaned after accruing interest until now - tokens repaid to liquidate oven
+        self.data.amountLoaned = sp.as_nat(newAmountLoaned.value - totalOutstandingTokens)
+        
         # Update internal state
         self.data.interestIndex = newMinterInterestIndex
         self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
@@ -836,48 +855,47 @@ if __name__ == "__main__":
         scenario += ovenProxy
         
         # AND a Token contract.
-        governorAddress = Addresses.GOVERNOR_ADDRESS
+        interimTokenAdministrator = Addresses.GOVERNOR_ADDRESS
         token = Token.FA12(
-            admin = governorAddress
+            admin = interimTokenAdministrator
         )
         scenario += token
 
-        # AND dummy contracts to act as the dev and stability funds.
-        stabilityFund = DummyContract.DummyContract()
-        devFund = DummyContract.DummyContract()
-        scenario += stabilityFund
-        scenario += devFund
-
-        # AND a dummy contract that acts as the liquidity pool.
+        # AND a dummpy contract that acts as the liquidity pool
         liquidityPool = DummyContract.DummyContract()
         scenario += liquidityPool
+
+        # AND the liquidator has $1000 of tokens.
+        liquidatorTokens = 1000 * Constants.PRECISION 
+        mintForOvenOwnerParam = sp.record(address = liquidityPool.address, value = liquidatorTokens)
+        scenario += token.mint(mintForOvenOwnerParam).run(
+            sender = interimTokenAdministrator
+        )
 
         # AND a Minter contract
         liquidationFeePercent = sp.nat(80000000000000000) # 8%
         devFundSplit = sp.nat(100000000000000000) # 10%
+        ovenBorrowedTokens = 90 * Constants.PRECISION # $90 kUSD
+        ovenStabilityFeeTokens = sp.to_int(10 * Constants.PRECISION) # 10 kUSD
+        amountLoaned = liquidatorTokens + ovenBorrowedTokens + sp.as_nat(ovenStabilityFeeTokens) # 1100 = 1000 + 90 + 10
+        stabilityFee = 100000000000000000 # 10%
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
-            stabilityFundContractAddress = stabilityFund.address,
-            developerFundContractAddress = devFund.address,
+            stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
+            developerFundContractAddress = Addresses.DEVELOPER_FUND_ADDRESS,
             tokenContractAddress = token.address,
-            stabilityFee = 100000000000000000,
+            stabilityFee = stabilityFee, 
             lastInterestIndexUpdateTime = sp.timestamp(0),
             interestIndex = Constants.PRECISION,
-            liquidityPoolContractAddress = liquidityPool.address
+            liquidityPoolContractAddress = liquidityPool.address,
+            amountLoaned = amountLoaned,
         )
         scenario += minter
 
         # AND the Minter is the Token administrator
         scenario += token.setAdministrator(minter.address).run(
-            sender = governorAddress
-        )
-
-        # AND the liquidator has $1000 of tokens.
-        ovenOwnerTokens = 1000 * Constants.PRECISION 
-        mintForOvenOwnerParam = sp.record(address = liquidityPool.address, value = ovenOwnerTokens)
-        scenario += token.mint(mintForOvenOwnerParam).run(
-            sender = minter.address
+            sender = Addresses.GOVERNOR_ADDRESS
         )
 
         # WHEN liquidate is called on an undercollateralized oven with $100 of tokens outstanding
@@ -886,16 +904,13 @@ if __name__ == "__main__":
 
         xtzPrice = Constants.PRECISION # 1 XTZ / $1
 
-        ovenBorrowedTokens = 90 * Constants.PRECISION # $90 kUSD
-        stabilityFeeTokens = sp.to_int(10 * Constants.PRECISION) # 10 kUSD
-
         ovenOwnerAddress = Addresses.OVEN_OWNER_ADDRESS
         ovenAddress = Addresses.OVEN_ADDRESS
         isLiquidated = False
 
         interestIndex = sp.to_int(Constants.PRECISION)
 
-        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidityPool.address))))))))
+        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (ovenStabilityFeeTokens, (interestIndex, liquidityPool.address))))))))
 
         # AND one period has elapsed
         now = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
@@ -920,20 +935,75 @@ if __name__ == "__main__":
 
         # AND the liquidator is debited the correct number of tokens.
         expectedNewlyAccruedStabilityFees = 10 * Constants.PRECISION
-        outstandingTokens = sp.as_nat(stabilityFeeTokens) + ovenBorrowedTokens + expectedNewlyAccruedStabilityFees
+        outstandingTokens = sp.as_nat(ovenStabilityFeeTokens) + ovenBorrowedTokens + expectedNewlyAccruedStabilityFees
         liquidationFee = (outstandingTokens * liquidationFeePercent) // Constants.PRECISION
         totalTokensPaid = outstandingTokens + liquidationFee
-        scenario.verify(token.data.balances[liquidityPool.address].balance == sp.as_nat(ovenOwnerTokens - totalTokensPaid))
-
-        # AND the stability and dev funds receive a split of the liquidation fee and stability tokens
-        tokensReclaimedForFunds = liquidationFee + stabilityFeeTokens + expectedNewlyAccruedStabilityFees
-        expectedDevFundTokens = (tokensReclaimedForFunds * devFundSplit) // Constants.PRECISION
-        expectedStabilityFundTokens = sp.as_nat(tokensReclaimedForFunds - expectedDevFundTokens)
+        scenario.verify(token.data.balances[liquidityPool.address].balance == sp.as_nat(liquidatorTokens - totalTokensPaid))
 
         # AND the oven is marked as liquidated with values cleared correctly.
         scenario.verify(ovenProxy.data.updateState_ovenAddress == ovenAddress)
         scenario.verify(ovenProxy.data.updateState_borrowedTokens == 0)
         scenario.verify(ovenProxy.data.updateState_isLiquidated == True)
+
+        # AND the total borrowed amount was updated
+        #
+        # expectedAmountLoanedAfterInterestAccrual = amountLoaned * (1 + (numPeriods * stabilityFee))
+        #                                          = 1100 kUSD * (1 + (1 * 0.1))
+        #                                          = 1100 kUSD * (1 + 0.1)
+        #                                          = 1100 kUSD * 1.1
+        #                                          = 1210 kUSD
+        #
+        # expectedAmountRepaidAgainstOven = (ovenBorrowedTokens + ovenStabilityFees) * (1 + (numPeriods * stabilityFee))
+        #                                 = (90 kUSD + 10 kUSD) * (1 + (1 * 0.1))
+        #                                 = 100 kUSD * (1 + 0.1)
+        #                                 = 100 kUSD * 1.1
+        #                                 = 110 kUSD
+        #
+        # expectedAmount = expectedAmountLoanedAfterInterestAccrual - expectedAmountRepaidAgainstOven
+        #                = 1210 kUSD - 110 kUSD
+        #                = 1100 kUSD
+        expectedAmountLoanedAfterInterestAccrual = (amountLoaned * (Constants.PRECISION + (1 * stabilityFee))) // Constants.PRECISION
+        scenario.verify(expectedAmountLoanedAfterInterestAccrual == 1210000000000000000000) # 1210 kUSD
+
+        amountExpectedToBeRepaidToOven = ((ovenBorrowedTokens + sp.as_nat(ovenStabilityFeeTokens)) * (Constants.PRECISION + (1 * stabilityFee))) // Constants.PRECISION
+        scenario.verify(amountExpectedToBeRepaidToOven == 110000000000000000000) # 110 kUSD
+
+        expectedAmountLoaned = sp.as_nat(expectedAmountLoanedAfterInterestAccrual - amountExpectedToBeRepaidToOven)
+        scenario.verify(expectedAmountLoaned == 1100000000000000000000) # 1100 kUSD
+        scenario.verify(minter.data.amountLoaned == expectedAmountLoaned)
+
+        # AND the dev and stability funds received the tokens
+        #
+        # expectedAmountPaidInLiquidationFees = amountRepaidAgainstOven * liquidationFee
+        #                                     = 110 kUSD * 0.08
+        #                                     = 8.8 kUSD
+        #
+        # expectedTotalValuePaidToFunds = newlyAccruedInterest + liquidationFee
+        #                               = (expectedAmountLoanedAfterInterestAccrual - originalAmountLoaned) + liquidationFee
+        #                               = (1210 kUSD - 1100 kUSD) + 8.8 kUSD
+        #                               = 110 kUSD + 8.8 kUSD
+        #                               = 118.8 kUSD
+        #
+        # expectedDevFundValue = totalValuePaidToFunds * devFundSplit
+        #              = 118.8 kUSD * 0.1
+        #              = 11.88 kUSD
+        #
+        # expectedStabilityFundValue = totalValuePaidToFunds - expectedDevFundValue
+        #                            = 118.8 kUSD - 11.88 kUSD
+        #                            = 106.92 kUSD
+        expectedAmountPaidInLiquidationFees = (amountExpectedToBeRepaidToOven * liquidationFeePercent) // Constants.PRECISION
+        scenario.verify(expectedAmountPaidInLiquidationFees == 8800000000000000000) # 8.8 kUSD
+
+        expectedTotalValuePaidToFunds = sp.as_nat(expectedAmountLoanedAfterInterestAccrual - amountLoaned) + expectedAmountPaidInLiquidationFees
+        scenario.verify(expectedTotalValuePaidToFunds == 118800000000000000000) # 118.8 kUSD
+
+        expectedDevFundValue = (expectedTotalValuePaidToFunds * devFundSplit) // Constants.PRECISION
+        scenario.verify(expectedDevFundValue == 11880000000000000000) # 11.88 kUSD
+        scenario.verify(token.data.balances[Addresses.DEVELOPER_FUND_ADDRESS].balance == expectedDevFundValue)
+
+        expectedStabilityFundValue = sp.as_nat(expectedTotalValuePaidToFunds - expectedDevFundValue)
+        scenario.verify(expectedStabilityFundValue == 106920000000000000000) # 106.92 kUSD
+        scenario.verify(token.data.balances[Addresses.STABILITY_FUND_ADDRESS].balance == expectedStabilityFundValue)
 
     @sp.add_test(name="liquidate - successfully liquidates undercollateralized oven")
     def test():
@@ -944,45 +1014,43 @@ if __name__ == "__main__":
         scenario += ovenProxy
         
         # AND a Token contract.
-        governorAddress = Addresses.GOVERNOR_ADDRESS
+        interimTokenAdministrator = Addresses.GOVERNOR_ADDRESS
         token = Token.FA12(
-            admin = governorAddress
+            admin = interimTokenAdministrator
         )
         scenario += token
-
-        # AND dummy contracts to act as the dev and stability funds.
-        stabilityFund = DummyContract.DummyContract()
-        devFund = DummyContract.DummyContract()
-        scenario += stabilityFund
-        scenario += devFund
 
         # AND a dummy contract that acts as the liquidity pool.
         liquidityPool = DummyContract.DummyContract()
         scenario += liquidityPool
 
+        # AND the liquidator has $1000 of tokens.
+        liquidatorTokens = 1000 * Constants.PRECISION 
+        mintForOvenOwnerParam = sp.record(address = liquidityPool.address, value = liquidatorTokens)
+        scenario += token.mint(mintForOvenOwnerParam).run(
+            sender = interimTokenAdministrator
+        )
+
         # AND a Minter contract
         liquidationFeePercent = sp.nat(80000000000000000) # 8%
         devFundSplit = sp.nat(100000000000000000) # 10%
+        ovenBorrowedTokens = 90 * Constants.PRECISION # $90 kUSD
+        ovenStabilityFeeTokens = sp.to_int(10 * Constants.PRECISION) # 10 kUSD
+        amountLoaned = liquidatorTokens + ovenBorrowedTokens + sp.as_nat(ovenStabilityFeeTokens) # 1100 = 1000 + 90 + 10
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
-            stabilityFundContractAddress = stabilityFund.address,
-            developerFundContractAddress = devFund.address,
+            stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
+            developerFundContractAddress = Addresses.DEVELOPER_FUND_ADDRESS,
             tokenContractAddress = token.address,
-            liquidityPoolContractAddress = liquidityPool.address
+            liquidityPoolContractAddress = liquidityPool.address,
+            amountLoaned = amountLoaned,
         )
         scenario += minter
 
         # AND the Minter is the Token administrator
         scenario += token.setAdministrator(minter.address).run(
-            sender = governorAddress
-        )    
-
-        # AND the liquidator has $1000 of tokens.
-        ovenOwnerTokens = 1000 * Constants.PRECISION
-        mintForOvenOwnerParam = sp.record(address = liquidityPool.address, value = ovenOwnerTokens)
-        scenario += token.mint(mintForOvenOwnerParam).run(
-            sender = minter.address
+            sender = Addresses.GOVERNOR_ADDRESS
         )
 
         # WHEN liquidate is called on an undercollateralized oven.
@@ -991,18 +1059,15 @@ if __name__ == "__main__":
 
         xtzPrice = Constants.PRECISION # 1 XTZ / $1
 
-        ovenBorrowedTokens = 2 * Constants.PRECISION # $2 kUSD
-
         ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
         ovenAddress = Addresses.OVEN_ADDRESS
         isLiquidated = False
 
-        stabilityFeeTokens = sp.to_int(Constants.PRECISION)
         interestIndex = sp.to_int(Constants.PRECISION)
 
         liquidatorAddress = liquidityPool.address
 
-        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
+        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (ovenStabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
         scenario += minter.liquidate(param).run(
             sender = ovenProxy.address,
             amount = ovenBalanceMutez,
@@ -1013,15 +1078,10 @@ if __name__ == "__main__":
         scenario.verify(liquidityPool.balance == ovenBalanceMutez)
 
         # AND the liquidator is debited the correct number of tokens.
-        outstandingTokens = sp.as_nat(stabilityFeeTokens) + ovenBorrowedTokens
+        outstandingTokens = sp.as_nat(ovenStabilityFeeTokens) + ovenBorrowedTokens
         liquidationFee = (outstandingTokens * liquidationFeePercent) // Constants.PRECISION
         totalTokensPaid = outstandingTokens + liquidationFee
-        scenario.verify(token.data.balances[liquidityPool.address].balance == sp.as_nat(ovenOwnerTokens - totalTokensPaid))
-
-        # AND the stability and dev funds receive a split of the liquidation fee and stability tokens
-        tokensReclaimedForFunds = liquidationFee + stabilityFeeTokens
-        expectedDevFundTokens = (tokensReclaimedForFunds * devFundSplit) // Constants.PRECISION
-        expectedStabilityFundTokens = sp.as_nat(tokensReclaimedForFunds - expectedDevFundTokens)
+        scenario.verify(token.data.balances[liquidityPool.address].balance == sp.as_nat(liquidatorTokens - totalTokensPaid))
 
         # AND the oven is marked as liquidated with values cleared correctly.
         scenario.verify(ovenProxy.data.updateState_ovenAddress == ovenAddress)
@@ -1029,6 +1089,63 @@ if __name__ == "__main__":
         scenario.verify(ovenProxy.data.updateState_stabilityFeeTokens == 0)
         scenario.verify(ovenProxy.data.updateState_interestIndex == interestIndex)
         scenario.verify(ovenProxy.data.updateState_isLiquidated == True)
+
+        # AND the stability and dev funds receive a split of the liquidation fee and stability tokens
+        # expectedAmountLoanedAfterInterestAccrual = amountLoaned * (1 + (numPeriods * stabilityFee))
+        #                                          = 1100 kUSD * (1 + (x * 0))
+        #                                          = 1100 kUSD * (1 + 0)
+        #                                          = 1100 kUSD * 1
+        #                                          = 1100 kUSD
+        #                                          = amountLoaned
+        #
+        # expectedAmountRepaidAgainstOven = (ovenBorrowedTokens + ovenStabilityFees) * (1 + (numPeriods * stabilityFee))
+        #                                 = (90 kUSD + 10 kUSD) * (1 + (n * 0))
+        #                                 = 100 kUSD * (1 + 0)
+        #                                 = 100 kUSD * 1
+        #                                 = 100 kUSD
+        #                                 = (ovenBorrowedTokens + ovenStabilityFees)
+        #
+        # expectedNewlyAccruedInterest = expectedAmountLoanedAfterInterestAccrual  - originalLoanAmount
+        #                              = 1100 kUSD - 1100 kUSD
+        #                              = 0 kUSD
+        # 
+        # expectedAmountPaidInLiquidationFees = amountRepaidAgainstOven * liquidationFee
+        #                                     = 100 kUSD * 0.08
+        #                                     = 8 kUSD
+        #
+        # expectedTotalValuePaidToFunds = newlyAccruedInterest + liquidationFee
+        #                               = 0 kUSD + 8 kUSD
+        #                               = 8 kUSD
+        #
+        # expectedDevFundValue = totalValuePaidToFunds * devFundSplit
+        #                      = 8 kUSD * 0.1
+        #                      = 0.8 kUSD
+        #
+        # expectedStabilityFundValue = totalValuePaidToFunds - expectedDevFundValue
+        #                            = 8 kUSD - 0.8 kUSD
+        #                            = 7.2 kUSD
+        expectedAmountLoanedAfterInterestAccrual = amountLoaned
+        scenario.verify(expectedAmountLoanedAfterInterestAccrual == 1100000000000000000000) # 1000 kUSD
+
+        expectedAmountRepaidAgainstOven = ovenBorrowedTokens + sp.as_nat(ovenStabilityFeeTokens)
+        scenario.verify(expectedAmountRepaidAgainstOven == 100000000000000000000) # 100 kUSD
+
+        expectedNewlyAccruedInterest = sp.as_nat(expectedAmountLoanedAfterInterestAccrual - amountLoaned)
+        scenario.verify(expectedNewlyAccruedInterest == 0) # 0 kUSD
+
+        expectedAmountPaidInLiquidationFees = (expectedAmountRepaidAgainstOven * liquidationFeePercent) // Constants.PRECISION
+        scenario.verify(expectedAmountPaidInLiquidationFees == 8000000000000000000) # 8 kUSD
+
+        expectedTotalValuePaidToFunds = expectedNewlyAccruedInterest + expectedAmountPaidInLiquidationFees
+        scenario.verify(expectedTotalValuePaidToFunds == 8000000000000000000) # 8 kUSD
+
+        expectedDevFundValue = (expectedTotalValuePaidToFunds * devFundSplit) // Constants.PRECISION
+        scenario.verify(expectedDevFundValue == 800000000000000000) # 0.8 kUSD
+        scenario.verify(token.data.balances[Addresses.DEVELOPER_FUND_ADDRESS].balance == expectedDevFundValue)
+
+        expectedStabilityFundValue = sp.as_nat(expectedTotalValuePaidToFunds - expectedDevFundValue)
+        scenario.verify(expectedStabilityFundValue == 7200000000000000000) # 0.8 kUSD
+        scenario.verify(token.data.balances[Addresses.STABILITY_FUND_ADDRESS].balance == expectedStabilityFundValue)
 
     @sp.add_test(name="liquidate - liquidity pool can always liquidate")
     def test():
@@ -1045,12 +1162,6 @@ if __name__ == "__main__":
         )
         scenario += token
 
-        # AND dummy contracts to act as the dev and stability funds.
-        stabilityFund = DummyContract.DummyContract()
-        devFund = DummyContract.DummyContract()
-        scenario += stabilityFund
-        scenario += devFund
-
         # AND a dummy contract that acts as the liquidity pool.
         liquidityPool = DummyContract.DummyContract()
         scenario += liquidityPool
@@ -1064,13 +1175,12 @@ if __name__ == "__main__":
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
-            stabilityFundContractAddress = stabilityFund.address,
-            developerFundContractAddress = devFund.address,
             tokenContractAddress = token.address,
             liquidityPoolContractAddress = liquidityPool.address,
             collateralizationPercentage = collateralizationPercentage,
             privateOwnerLiquidationThreshold = privateOwnerLiquidationThreshold,
-            stabilityFee = stabilityFee
+            stabilityFee = stabilityFee,
+            amountLoaned = 9000 * Constants.PRECISION # 9,000 kUSD
         )
         scenario += minter
 
@@ -1132,9 +1242,7 @@ if __name__ == "__main__":
 
         # AND dummy contracts to act as the dev and stability funds.
         stabilityFund = DummyContract.DummyContract()
-        devFund = DummyContract.DummyContract()
         scenario += stabilityFund
-        scenario += devFund
 
         # AND a dummy contract that acts as the liquidity pool.
         liquidityPool = DummyContract.DummyContract()
@@ -1149,13 +1257,13 @@ if __name__ == "__main__":
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
-            stabilityFundContractAddress = stabilityFund.address,
-            developerFundContractAddress = devFund.address,
             tokenContractAddress = token.address,
+            stabilityFundContractAddress = stabilityFund.address,
             liquidityPoolContractAddress = liquidityPool.address,
             collateralizationPercentage = collateralizationPercentage,
             privateOwnerLiquidationThreshold = privateOwnerLiquidationThreshold,
-            stabilityFee = stabilityFee
+            stabilityFee = stabilityFee,
+            amountLoaned = 9000 * Constants.PRECISION # 9,000 kUSD
         )
         scenario += minter
 
@@ -1215,12 +1323,6 @@ if __name__ == "__main__":
         )
         scenario += token
 
-        # AND dummy contracts to act as the dev and stability funds.
-        stabilityFund = DummyContract.DummyContract()
-        devFund = DummyContract.DummyContract()
-        scenario += stabilityFund
-        scenario += devFund
-
         # AND a dummy contract that acts as the liquidity pool.
         liquidityPool = DummyContract.DummyContract()
         scenario += liquidityPool
@@ -1238,13 +1340,12 @@ if __name__ == "__main__":
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
-            stabilityFundContractAddress = stabilityFund.address,
-            developerFundContractAddress = devFund.address,
             tokenContractAddress = token.address,
             liquidityPoolContractAddress = liquidityPool.address,
             collateralizationPercentage = collateralizationPercentage,
             privateOwnerLiquidationThreshold = privateOwnerLiquidationThreshold,
             stabilityFee = stabilityFee,
+            amountLoaned = 9000 * Constants.PRECISION # 9,000 kUSD
         )
         scenario += minter
 
@@ -1281,12 +1382,14 @@ if __name__ == "__main__":
 
         param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
         
-        # THEN the call will fail.
+        # THEN the call will fail with NOT_ALLOWED_TO_LIQUIDATE
         scenario += minter.liquidate(param).run(
             sender = ovenProxy.address,
             amount = ovenBalanceMutez,
             now = sp.timestamp_from_utc_now(),
+
             valid = False,
+            exception = Errors.NOT_ALLOWED_TO_LIQUIDATE
         )
 
     @sp.add_test(name="liquidate - private owner can liquidate below private owner liquidation fee percent")
@@ -1333,7 +1436,8 @@ if __name__ == "__main__":
             liquidityPoolContractAddress = liquidityPool.address,
             collateralizationPercentage = collateralizationPercentage,
             privateOwnerLiquidationThreshold = privateOwnerLiquidationThreshold,
-            stabilityFee = stabilityFee
+            stabilityFee = stabilityFee,
+            amountLoaned = 9000 * Constants.PRECISION # 9,000 kUSD
         )
         scenario += minter
 
@@ -1398,12 +1502,6 @@ if __name__ == "__main__":
         )
         scenario += token
 
-        # AND dummy contracts to act as the dev and stability funds.
-        stabilityFund = DummyContract.DummyContract()
-        devFund = DummyContract.DummyContract()
-        scenario += stabilityFund
-        scenario += devFund
-
         # AND a dummy contract that acts as the liquidity pool.
         liquidityPool = DummyContract.DummyContract()
         scenario += liquidityPool
@@ -1421,13 +1519,12 @@ if __name__ == "__main__":
         minter = MinterContract(
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
-            stabilityFundContractAddress = stabilityFund.address,
-            developerFundContractAddress = devFund.address,
             tokenContractAddress = token.address,
             liquidityPoolContractAddress = liquidityPool.address,
             collateralizationPercentage = collateralizationPercentage,
             privateOwnerLiquidationThreshold = privateOwnerLiquidationThreshold,
-            stabilityFee = stabilityFee
+            stabilityFee = stabilityFee,
+            amountLoaned = 9000 * Constants.PRECISION # 9,000 kUSD
         )
         scenario += minter
 
@@ -1494,9 +1591,7 @@ if __name__ == "__main__":
 
         # AND dummy contracts to act as the dev and stability funds.
         stabilityFund = DummyContract.DummyContract()
-        devFund = DummyContract.DummyContract()
         scenario += stabilityFund
-        scenario += devFund
 
         # AND a dummy contract that acts as the liquidity pool.
         liquidityPool = DummyContract.DummyContract()
@@ -1516,12 +1611,12 @@ if __name__ == "__main__":
             liquidationFeePercent = liquidationFeePercent,
             ovenProxyContractAddress = ovenProxy.address,
             stabilityFundContractAddress = stabilityFund.address,
-            developerFundContractAddress = devFund.address,
             tokenContractAddress = token.address,
             liquidityPoolContractAddress = liquidityPool.address,
             collateralizationPercentage = collateralizationPercentage,
             privateOwnerLiquidationThreshold = privateOwnerLiquidationThreshold,
-            stabilityFee = stabilityFee
+            stabilityFee = stabilityFee,
+            amountLoaned = 9000 * Constants.PRECISION # 9,000 kUSD
         )
         scenario += minter
 
@@ -1585,7 +1680,8 @@ if __name__ == "__main__":
         # AND a Minter contract
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxy.address,
-            tokenContractAddress = token.address
+            tokenContractAddress = token.address,
+            amountLoaned = 9000 * Constants.PRECISION # 9,000 kUSD
         )
         scenario += minter
 
@@ -1622,13 +1718,15 @@ if __name__ == "__main__":
 
         liquidatorAddress = liquidator.address
 
-        # THEN the call fails.
+        # THEN the call fails with TOKEN_INSUFFICIENT_BALANCE
         param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
         scenario += minter.liquidate(param).run(
             sender = ovenProxy.address,
             amount = ovenBalanceMutez,
             now = sp.timestamp_from_utc_now(),
-            valid = False
+
+            valid = False,
+            exception = Errors.TOKEN_INSUFFICIENT_BALANCE
         )
 
     @sp.add_test(name="liquidate - fails if oven is properly collateralized")
@@ -1643,7 +1741,8 @@ if __name__ == "__main__":
         ovenProxyAddress = Addresses.OVEN_PROXY_ADDRESS
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxyAddress,
-            liquidityPoolContractAddress = liquidityPool.address
+            liquidityPoolContractAddress = liquidityPool.address,
+            amountLoaned = 9000 * Constants.PRECISION # 9,000 kUSD
         )
         scenario += minter
 
@@ -1664,12 +1763,14 @@ if __name__ == "__main__":
 
         param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
 
-        # THEN the call fails.
+        # THEN the call fails with NOT_UNDER_COLLATERALIZED
         scenario += minter.liquidate(param).run(
             sender = ovenProxyAddress,
             amount = ovenBalanceMutez,
             now = sp.timestamp_from_utc_now(),
-            valid = False
+
+            valid = False,
+            exception = Errors.NOT_UNDER_COLLATERALIZED
         )
 
     @sp.add_test(name="liquidate - fails if oven is already liquidated")
@@ -1684,7 +1785,8 @@ if __name__ == "__main__":
         ovenProxyAddress = Addresses.OVEN_PROXY_ADDRESS
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxyAddress,
-            liquidityPoolContractAddress = liquidityPool.address
+            liquidityPoolContractAddress = liquidityPool.address,
+            amountLoaned = 9000 * Constants.PRECISION # 9,000 kUSD
         )
         scenario += minter
 
@@ -1707,12 +1809,14 @@ if __name__ == "__main__":
 
         param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
 
-        # THEN the call fails.
+        # THEN the call fails with LIQUIDATED
         scenario += minter.liquidate(param).run(
             sender = ovenProxyAddress,
             amount = ovenBalanceMutez,
             now = sp.timestamp_from_utc_now(),
-            valid = False
+
+            valid = False,
+            exception = Errors.LIQUIDATED
         )
 
     @sp.add_test(name="liquidate - fails if not called by ovenProxy")
@@ -1727,7 +1831,7 @@ if __name__ == "__main__":
         ovenProxyAddress = Addresses.OVEN_PROXY_ADDRESS
         minter = MinterContract(
             ovenProxyContractAddress = ovenProxyAddress,
-            liquidityPoolContractAddress = liquidityPool.address
+            liquidityPoolContractAddress = liquidityPool.address,
         )
         scenario += minter
 
@@ -1750,14 +1854,16 @@ if __name__ == "__main__":
 
         param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
 
-        # THEN the call fails.
+        # THEN the call fails with NOT_OVEN_PROXY
         notOvenProxy = Addresses.NULL_ADDRESS
         scenario += minter.liquidate(param).run(
             sender = notOvenProxy,
             amount = ovenBalanceMutez,
             now = sp.timestamp_from_utc_now(),
-            valid = False
-        )    
+
+            valid = False,
+            exception = Errors.NOT_OVEN_PROXY
+        )
 
     ###############################################################
     # Repay
