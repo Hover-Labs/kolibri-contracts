@@ -28,6 +28,12 @@ test:
 	make test-token	
 	make test-e2e
 
+###### COMPILE AND TEST ###### 
+
+minter:
+	make compile-minter
+	make test-minter
+
 ###### TESTS ###### 
 
 # Run tests for the Dev Fund contract

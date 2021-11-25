@@ -5,12 +5,6 @@ Constants = sp.io.import_script_from_url("file:common/constants.py")
 Errors = sp.io.import_script_from_url("file:common/errors.py")
 OvenApi = sp.io.import_script_from_url("file:common/oven-api.py")
 
-# TODO
-# - View for amount loaned
-# - View for interest rate
-# - View for amount owed
-# - View for interest index
-
 ################################################################
 # Contract
 ################################################################
@@ -72,6 +66,12 @@ class MinterContract(sp.Contract):
             initializerContractAddress = initializerContractAddress,
         )
 
+        self.compoundWithLinearApproximation = sp.private_lambda(
+            name="compoundWithLinearApproximation", 
+            with_storage="read-only"
+        )(MinterContract.compoundWithLinearApproximation_implementation)
+
+
     ################################################################
     # KIP-009
     ################################################################
@@ -92,13 +92,119 @@ class MinterContract(sp.Contract):
         self.data.initialized = True
 
     ################################################################
+    # Views
+    ################################################################
+
+    # # Get oven's total balance, given the oven's data.
+    # #
+    # # Parameter:
+    # # - ovenBorrowedTokens: The number of tokens loaned against an oven.
+    # # - ovenStabilityFeeTokens: The number of tokens the oven has accrued in stability fees.
+    # # - ovenInterestIndex: The interest index of the oven.
+    # @sp.onchain_view()
+    # def getOvenLoanAmount(self, param):
+    #     sp.set_type(
+    #         param, 
+    #         sp.TRecord(
+    #             ovenBorrowedTokens = sp.TNat,
+    #             ovenStabilityFeeTokens = sp.TInt,
+    #             ovenInterestIndex = sp.TInt,
+    #         )            
+    #     )
+
+    #     # Compound interest
+    #     timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
+    #     numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
+    #     newMinterInterestIndex = self.compoundWithLinearApproximation(
+    #         (
+    #             self.data.interestIndex, 
+    #             (
+    #                 self.data.stabilityFee, 
+    #                 numPeriods
+    #             )
+    #         )
+    #     )
+
+    #     # Calculate newly accrued interest
+    #     newInterest = self.calculateNewAccruedInterest(
+    #         (
+    #             (
+    #                 param.ovenInterestIndex,
+    #                 (
+    #                     (
+    #                         param.ovenBorrowedTokens,
+    #                         (
+    #                             sp.as_nat(param.ovenStabilityFeeTokens),
+    #                             newMinterInterestIndex
+    #                         )
+    #                     )
+    #                 )
+    #             )
+    #         )
+    #     )
+
+    #     # Return oven borrowed tokens + oven stability fees + new interest
+    #     sp.result(param.ovenBorrowedTokens + sp.as_nat(param.ovenStabilityFeeTokens) + newInterest)
+
+    # Get the current stability fee.
+    @sp.onchain_view()
+    def getStabilityFee(self):
+        sp.result(self.data.stabilityFee)
+
+    # Get the current interest index.
+    @sp.onchain_view()
+    def getCurrentInterestIndex(self):
+        compoundWithLinearApproximationInlined = sp.build_lambda(self.compoundWithLinearApproximation_implementation)
+
+        # Compound interest
+        # TODO(keefertaylor): This code is duplicated here, in getAmountLoaned and probably elsewhere. Attempt to dedupe.
+        timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
+        numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
+        newMinterInterestIndex = compoundWithLinearApproximationInlined((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
+
+        sp.result(newMinterInterestIndex)
+
+    # # Get the current amount loaned
+    # @sp.onchain_view()
+    # def getAmountLoaned(self):
+    #     # Compound interest
+    #     timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
+    #     numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
+    #     newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
+
+    #     newAmountLoaned = sp.local(
+    #         'newAmountLoaned', 
+    #         self.compoundWithLinearApproximation(
+    #             (
+    #                 self.data.amountLoaned,
+    #                 (
+    #                     self.data.stabilityFee, 
+    #                     numPeriods
+    #                 )
+    #             )
+    #         )
+    #     )
+
+    #     sp.result(newAmountLoaned.value)
+
+    # Get the totality of the Minter storage, to parse in the client.
+    @sp.onchain_view()
+    def getStorage(self):
+        sp.result(self.data)
+
+    ################################################################
     # Public Interface
     ################################################################
 
     # Get interest index
+    # DEPRECATED: This method will be removed in a future release. Please use the `getInterestIndex` on chain view
+    #             instead.
     @sp.entry_point
     def getInterestIndex(self, param):        
         sp.set_type(param, sp.TContract(sp.TNat))
+
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
 
         # Verify the call did not contain a balance.
         sp.verify(sp.amount == sp.mutez(0), message = Errors.AMOUNT_NOT_ALLOWED)
@@ -110,6 +216,22 @@ class MinterContract(sp.Contract):
 
         # Transfer results to requester.
         sp.transfer(newMinterInterestIndex, sp.mutez(0), param)
+
+        # Accrue interest on the global accumulator and mint to developer and stability fund and update the global accumulator
+        newAmountLoaned = sp.local(
+            'newAmountLoaned', 
+            self.compoundWithLinearApproximation(
+                (
+                    self.data.amountLoaned,
+                    (
+                        self.data.stabilityFee, 
+                        numPeriods
+                    )
+                )
+            )
+        )
+        self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
+        self.data.amountLoaned = newAmountLoaned.value
 
         # Update internal state.
         self.data.interestIndex = newMinterInterestIndex
@@ -692,8 +814,8 @@ class MinterContract(sp.Contract):
     # - borrowedTokens: The tokens borrowed from an oven.
     # - stabilityFeeTokens: The existing tokens that are part of the stability fee
     # - minterInterestIndex: The global interest index in the minter.
-    @sp.global_lambda
-    def calculateNewAccruedInterest(params):
+    @sp.private_lambda(with_storage="read-only")
+    def calculateNewAccruedInterest(self, params):
         sp.set_type(params, sp.TPair(sp.TInt, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat))))
 
         ovenInterestIndex =  sp.as_nat(sp.fst(params))
@@ -707,28 +829,65 @@ class MinterContract(sp.Contract):
         newTokensAccruedAsFee = sp.as_nat(newTotalTokens - totalPrinciple)
         sp.result(newTokensAccruedAsFee)
 
+
     # Compound interest via a linear approximation.
     #
-    # TODO(keefertaylor): rename 'stabilityFee'
-    # 
     # Parameters:
     # - initialValue: The initial value to compound
     # - stabilityFee: The interest rate compounding is occuring at
     # - numPeriods: The number of periods to compound for
-    @sp.global_lambda
-    def compoundWithLinearApproximation(params):
+    # @sp.private_lambda(with_storage="read-only")
+    # def compoundWithLinearApproximation2(self, params):
+    #     sp.set_type(params, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
+
+    #     initialValue = sp.fst(params)
+    #     stabilityFee = sp.fst(sp.snd(params))
+    #     numPeriods = sp.snd(sp.snd(params))
+
+    #     sp.result((initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION)
+
+    # @sp.private_lambda(with_storage="read-only")
+    # def compoundWithLinearApproximation(self, params):
+    #     sp.set_type(params, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
+
+    #     myLambdaInlined = sp.build_lambda(self.func)
+    #     sp.result(myLambdaInlined(params))  
+        
+    def compoundWithLinearApproximation_implementation(self, params):
         sp.set_type(params, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
 
         initialValue = sp.fst(params)
         stabilityFee = sp.fst(sp.snd(params))
         numPeriods = sp.snd(sp.snd(params))
 
+        # return (initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION
         sp.result((initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION)
+        # sp.result(arg + 1)
+
+
+    # TODO(keefertaylor): Figure out how to enable this mess.
+    #     # internal = sp.build_lambda(self.compoundWithLinearApproximation)
+
+    #     sp.result(12)
+
+    # # Internal implementation of compoundWithLinearApproximation.
+    # #
+    # # Split into a function so that it can be reused in the private_lambda and the onchain_view, since onchain_views 
+    # # cannot call private lambdas.
+    # def compoundWithLinearApproximation(self, params):
+    #     sp.set_type(params, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
+
+    #     initialValue = sp.fst(params)
+    #     stabilityFee = sp.fst(sp.snd(params))
+    #     numPeriods = sp.snd(sp.snd(params))
+
+    #     return (initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION
+    #     # sp.result((initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION)
 
     # Compute the collateralization percentage from the given inputs
     # Output is in the form of 200_000_000 (= 200%)
-    @sp.global_lambda
-    def computeCollateralizationPercentage(params):
+    @sp.private_lambda(with_storage="read-only")
+    def computeCollateralizationPercentage(self, params):
         sp.set_type(params, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
 
         ovenBalance = sp.fst(params)
@@ -781,18 +940,22 @@ if __name__ == "__main__":
 
     # A Tester flass that wraps a lambda function to allow for unit testing.
     # See: https://smartpy.io/releases/20201220-f9f4ad18bd6ec2293f22b8c8812fefbde46d6b7d/ide?template=test_global_lambda.py
+    # This should compute for views with a param.
+    # TODO add tests for units
+    # TODO doc this can also be used for views
+    # TODO keefertaylor: Refactor this to be used everywhere in an imported file
     class Tester(sp.Contract):
-        def __init__(self, lambdaFunc):
-            self.lambdaFunc = sp.inline_result(lambdaFunc.f)
-            self.init(lambdaResult = sp.none)
+        def __init__(self, f):
+            self.f = f.f
+            self.init(result = sp.none)
 
+        # Compute the value of the given function if the funtion takes parameters.
         @sp.entry_point
-        def test(self, params):
-            self.data.lambdaResult = sp.some(self.lambdaFunc(params))
-
-        @sp.entry_point
-        def check(self, params, result):
-            sp.verify(self.lambdaFunc(params) == result)
+        def compute(self, data, param):
+            b = sp.bind_block()
+            with b:
+                self.f(sp.record(data = data), param)
+            self.data.result = sp.some(b.value)
 
     ################################################################
     # calculateNewAccruedInterest
@@ -807,31 +970,41 @@ if __name__ == "__main__":
         tester = Tester(minter.calculateNewAccruedInterest)
         scenario += tester
 
-        scenario += tester.check(
-            params = (sp.to_int(1 * Constants.PRECISION), (100 * Constants.PRECISION, (0 * Constants.PRECISION,  1100000000000000000))), 
-            result = 10 * Constants.PRECISION
+        scenario += tester.compute(
+            data = minter.data,
+            param = (sp.to_int(1 * Constants.PRECISION), (100 * Constants.PRECISION, (0 * Constants.PRECISION,  1100000000000000000)))
         )
-        scenario += tester.check(
-            params = (sp.int(1100000000000000000), (100 * Constants.PRECISION, (10 * Constants.PRECISION, 1210000000000000000))),
-            result = 11 * Constants.PRECISION
-        )
-        scenario += tester.check(
-            params = (sp.to_int(1 * Constants.PRECISION), (100 * Constants.PRECISION, (0 * Constants.PRECISION,  1210000000000000000))),
-            result = 21 * Constants.PRECISION
-        )
+        scenario.verify(tester.data.result.open_some() == 10 * Constants.PRECISION)
 
-        scenario += tester.check(
-            params = (sp.int(1100000000000000000), (100 * Constants.PRECISION, (0 * Constants.PRECISION,  1210000000000000000))),
-            result = 10 * Constants.PRECISION
+        scenario += tester.compute(
+            data = minter.data,
+            param = (sp.int(1100000000000000000), (100 * Constants.PRECISION, (10 * Constants.PRECISION, 1210000000000000000)))
         )
-        scenario += tester.check(
-            params = (sp.int(1210000000000000000), (100 * Constants.PRECISION, (10 * Constants.PRECISION, 1331000000000000000))),
-            result = 11 * Constants.PRECISION
+        scenario.verify(tester.data.result.open_some() == 11 * Constants.PRECISION)
+
+        scenario += tester.compute(
+            data = minter.data,
+            param = (sp.to_int(1 * Constants.PRECISION), (100 * Constants.PRECISION, (0 * Constants.PRECISION,  1210000000000000000)))
         )
-        scenario += tester.check(
-            params = (sp.int(1100000000000000000), (100 * Constants.PRECISION, (0 * Constants.PRECISION,  1331000000000000000))),
-            result = 21 * Constants.PRECISION
+        scenario.verify(tester.data.result.open_some() == 21 * Constants.PRECISION)
+
+        scenario += tester.compute(
+            data = minter.data,
+            param = (sp.int(1100000000000000000), (100 * Constants.PRECISION, (0 * Constants.PRECISION,  1210000000000000000)))
         )
+        scenario.verify(tester.data.result.open_some() == 10 * Constants.PRECISION)
+
+        scenario += tester.compute(
+            data = minter.data,
+            param = (sp.int(1210000000000000000), (100 * Constants.PRECISION, (10 * Constants.PRECISION, 1331000000000000000)))
+        )
+        scenario.verify(tester.data.result.open_some() == 11 * Constants.PRECISION)
+
+        scenario += tester.compute(
+            data = minter.data,
+            param = (sp.int(1100000000000000000), (100 * Constants.PRECISION, (0 * Constants.PRECISION,  1331000000000000000)))
+        )
+        scenario.verify(tester.data.result.open_some() == 21 * Constants.PRECISION)
         
     ################################################################
     # compoundWithLinearApproximation
@@ -847,20 +1020,23 @@ if __name__ == "__main__":
         scenario += tester
 
         # Two periods back to back
-        scenario += tester.check(
-            params = (1 * Constants.PRECISION, (100000000000000000, 1)), 
-            result = sp.nat(1100000000000000000)
+        scenario += tester.compute(
+            data = minter.data,
+            param = (1 * Constants.PRECISION, (100000000000000000, 1))
         )
-        scenario += tester.check(
-            params = (1100000000000000000,  (100000000000000000, 1)), 
-            result = 1210000000000000000
+        scenario.verify(tester.data.result.open_some() == sp.nat(1100000000000000000))
+        scenario += tester.compute(
+            data = minter.data,
+            param = (1100000000000000000,  (100000000000000000, 1))
         )
+        scenario.verify(tester.data.result.open_some() == sp.nat(1210000000000000000))       
 
         # Two periods in one update
-        scenario += tester.check(
-            params = (1 * Constants.PRECISION, (100000000000000000, 2)), 
-            result = 1200000000000000000
+        scenario += tester.compute(
+            data = minter.data,
+            param = (1 * Constants.PRECISION, (100000000000000000, 2))
         )
+        scenario.verify(tester.data.result.open_some() == sp.nat(1200000000000000000))       
 
     ###############################################################
     # Liquidate
@@ -3602,16 +3778,38 @@ if __name__ == "__main__":
     def test():
         scenario = sp.test_scenario()
 
-        # GIVEN a Minter contract
+        # GIVEN a Token contract.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
+
+        # AND a Minter contract
         initialInterestIndex = Constants.PRECISION
-        stabilityFee = Constants.PRECISION
+        stabilityFee = 100000000000000000 # 10%
         initialTime = sp.timestamp(0)
+        amountLoaned = 1 * Constants.PRECISION # 1 kUSD
+        devFundSplit = 100000000000000000 # 10%
         minter = MinterContract(
             interestIndex = initialInterestIndex,
             stabilityFee = stabilityFee,
-            lastInterestIndexUpdateTime = initialTime
+            lastInterestIndexUpdateTime = initialTime,
+            devFundSplit = devFundSplit,
+
+            tokenContractAddress = token.address,
+
+            developerFundContractAddress = Addresses.DEVELOPER_FUND_ADDRESS,
+            stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
+
+            amountLoaned = amountLoaned
         )
         scenario += minter
+
+        # AND the minter is set as the administrator of the token contract
+        scenario += token.setAdministrator(minter.address).run(
+            sender = governorAddress
+        )
 
         # AND a dummy contract to receive the callback.
         dummyContract = DummyContract.DummyContract()
@@ -3619,16 +3817,79 @@ if __name__ == "__main__":
 
         # WHEN getInterestIndex is called
         callback = sp.contract(sp.TNat, dummyContract.address, "natCallback").open_some()
+        onePeriodLater = sp.timestamp(Constants.SECONDS_PER_COMPOUND)
         scenario += minter.getInterestIndex(callback).run(
-            now = sp.timestamp_from_utc_now(),
+            now = onePeriodLater,
         )
 
-        # THEN interest is compounded in minter.
-        scenario.verify(minter.data.interestIndex > initialInterestIndex)
-        scenario.verify(minter.data.lastInterestIndexUpdateTime > initialTime)
+        # THEN interest index is updated in the minter
+        # expectedInterestIndex = initialIndex * (1 + (numPeriods * stabilityFee))
+        #                       = 1.0 * (1 + (1 * 0.1))
+        #                       = 1.0 * (1 + 0.1)
+        #                       = 1.0 * 1.1
+        #                       = 1.1
+        expectedInterestIndex = (initialInterestIndex * (Constants.PRECISION + (1 * stabilityFee))) // Constants.PRECISION
+        scenario.verify(expectedInterestIndex == 1100000000000000000)
+        scenario.verify(minter.data.interestIndex == expectedInterestIndex)
+
+        # And the last update time is increased.
+        scenario.verify(minter.data.lastInterestIndexUpdateTime == onePeriodLater)
+
+        # AND the total borrowed amount was updated
+        # expectedAmount = amountLoaned * (1 + (numPeriods * stabilityFee))
+        #                = 1 kUSD * (1 + (1 * 0.1))
+        #                = 1 kUSD * (1 + 0.1)
+        #                = 1 kUSD * 1.1
+        #                = 1.1 kUSD
+        expectedAmountLoaned = (amountLoaned * (Constants.PRECISION + (1 * stabilityFee))) // Constants.PRECISION
+        scenario.verify(expectedAmountLoaned == 1100000000000000000) # 1.1 kUSD
+        scenario.verify(minter.data.amountLoaned == expectedAmountLoaned)
+
+        # AND the dev and stability funds received the tokens
+        # devFundValue = (newAmountLoaned - oldAmountLoaned) * devFundSplit
+        #              = (1.1 - 1) * 0.1
+        #              = 0.1 * 0.1
+        #              = 0.01
+        #
+        # expectedStabilityFundValue = (newAmountLoaned - oldAmountLoaned) - expectedDevFundValue
+        #                            = (1.1 - 1) - 0.01
+        #                            = 0.1 - .01
+        #                            = 0.09
+        expectedDevFundValue = (sp.as_nat(expectedAmountLoaned - amountLoaned) * devFundSplit) // Constants.PRECISION
+        scenario.verify(expectedDevFundValue == 10000000000000000) # 0.01 kUSD
+        scenario.verify(token.data.balances[Addresses.DEVELOPER_FUND_ADDRESS].balance == expectedDevFundValue)
+
+        expectedStabilityFundValue = sp.as_nat(sp.as_nat(expectedAmountLoaned - amountLoaned) - expectedDevFundValue)
+        scenario.verify(expectedStabilityFundValue == 90000000000000000) # 0.09 kUSD
+        scenario.verify(token.data.balances[Addresses.STABILITY_FUND_ADDRESS].balance == expectedStabilityFundValue)
 
         # AND the callback returned the correct value.
         scenario.verify(dummyContract.data.natValue == minter.data.interestIndex)
+
+    @sp.add_test(name="getInterestIndex - fails if not initialized")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a Minter contract that is not initialized
+        minter = MinterContract(
+            initialized = False,
+        )
+        scenario += minter
+
+        # AND a dummy contract to receive the callback.
+        dummyContract = DummyContract.DummyContract()
+        scenario += dummyContract
+
+        # WHEN getInterestIndex is called with an amount 
+        # THEN the call fails with NOT_INITIALIZED
+        callback = sp.contract(sp.TNat, dummyContract.address, "natCallback").open_some()
+        scenario += minter.getInterestIndex(callback).run(
+            amount = sp.mutez(1),
+            now = sp.timestamp_from_utc_now(),
+
+            valid = False,
+            exception = Errors.NOT_INITIALIZED
+        )
 
     @sp.add_test(name="getInterestIndex - fails with amount")
     def test():
@@ -3642,12 +3903,15 @@ if __name__ == "__main__":
         dummyContract = DummyContract.DummyContract()
         scenario += dummyContract
 
-        # WHEN getInterestIndex is called with an amount THEN the call fails.
+        # WHEN getInterestIndex is called with an amount 
+        # THEN the call fails with AMOUNT_NOT_ALLOWED
         callback = sp.contract(sp.TNat, dummyContract.address, "natCallback").open_some()
         scenario += minter.getInterestIndex(callback).run(
             amount = sp.mutez(1),
-            valid = False,
             now = sp.timestamp_from_utc_now(),
+
+            valid = False,
+            exception = Errors.AMOUNT_NOT_ALLOWED
         )
 
     ################################################################
@@ -4403,5 +4667,185 @@ if __name__ == "__main__":
             valid = False,
             exception = Errors.NOT_GOVERNOR
         )
+
+    ################################################################
+    # getStabilityFee
+    ################################################################        
+
+    @sp.add_test(name = "getStabilityFee - returns the current stability fee")
+    def test():
+        scenario = sp.test_scenario()
+    
+        # GIVEN a minter contract with a stability fee
+        stabilityFee = 123
+        minter = MinterContract(
+            stabilityFee = stabilityFee
+        )
+        scenario += minter
+        
+        # WHEN the interest index is retrieved
+        # THEN the stability fee is returned
+        scenario.verify(minter.getStabilityFee() == stabilityFee)
+
+    ################################################################
+    # getStorage
+    ################################################################        
+
+    @sp.add_test(name = "getStorage - returns the contracts storage")
+    def test():
+        scenario = sp.test_scenario()
+    
+        # GIVEN a minter contract with a stability fee
+        stabilityFee = 123
+        minter = MinterContract(
+            stabilityFee = stabilityFee
+        )
+        scenario += minter
+        
+        # WHEN the storage is returned
+        # THEN the stability fee exists in it
+        scenario.verify(minter.getStorage().stabilityFee == stabilityFee)        
+
+    ################################################################
+    # getInterestIndex
+    ################################################################        
+
+    # TODO(keefertaylor): Document
+    # TODO(keefertaylor): Move to the correct location
+    # TODO(keefertaylor): Rename
+    class TestOnchainView(sp.Contract):
+        def __init__(self, f):
+            self.f = sp.build_lambda(f.f)
+            self.compoundWithLinearApproximation_implementation = MinterContract.compoundWithLinearApproximation_implementation
+            self.init(result = sp.none)
+
+        @sp.entry_point
+        def compute(self, data):
+            self.data.result = sp.some(self.f(sp.record(data = data)))
+
+        # tester = Tester(minter.compoundWithLinearApproximation)
+        # scenario += tester
+
+        # # Two periods back to back
+        # scenario += tester.compute(
+        #     data = minter.data,
+        #     param = (1 * Constants.PRECISION, (100000000000000000, 1))
+        # )
+        # scenario.verify(tester.data.result.open_some() == sp.nat(1100000000000000000))
+
+    @sp.add_test(name = "getCurrentInterestIndex - returns the correct interest index")
+    def test():
+        scenario = sp.test_scenario()
+    
+        # GIVEN a minter contract with a stability fee
+        interestIndex = Constants.PRECISION # 1.0
+        initialTime = sp.timestamp(0) # The beginning of time
+        minter = MinterContract(
+            interestIndex = interestIndex,
+            stabilityFee = Constants.PRECISION // 10, # 10%
+            lastInterestIndexUpdateTime = initialTime, 
+        )
+        scenario += minter
+    
+    #     # AND a tester to test the view at different points in time
+    #     tester = TestOnchainView(minter.getCurrentInterestIndex)
+    #     scenario += tester
+
+    #     # WHEN the tester is run after no interest periods
+    #     scenario += tester.computeWithUnitParam(
+    #         data = minter.data,
+    #     ).run(now = initialTime)
+
+    #     # THEN the original interestIndex is returned
+    #     scenario += tester.compute(minter.data, sp.unit).run(now = initialTime)
+    #     scenario.verify(tester.data.result == sp.some(interestIndex))
+
+    #     # WHEN the tester is run after one interest period
+    #     # THEN the original interestIndex is linearly approximated for one period
+    #     scenario += tester.compute(minter.data, sp.unit).run(now = initialTime + Constants.SECONDS_PER_COMPOUND)
+    #     scenario.verify(tester.data.result == sp.some(1100000000000000000))
+
+    #     # WHEN the tester is run after two interest periods
+    #     # THEN the original interestIndex is linearly approximated for two periods
+    #     scenario += tester.compute(minter.data, sp.unit).run(now = initialTime + (2 * Constants.SECONDS_PER_COMPOUND))
+    #     scenario.verify(tester.data.result == sp.some(1200000000000000000))
+
+    # @sp.add_test(name = "getAmountLoaned - returns the correct interest index after 0 periods")
+    # def test():
+    #     scenario = sp.test_scenario()
+    
+    #     # GIVEN a minter contract with a stability fee
+    #     amountLoaned = Constants.PRECISION # 1 kUSD
+    #     initialTime = sp.timestamp(0) # The beginning of time
+    #     minter = MinterContract(
+    #         amountLoaned = amountLoaned,
+    #         stabilityFee = Constants.PRECISION // 10, # 10%
+    #         lastInterestIndexUpdateTime = initialTime, 
+    #     )
+    #     scenario += minter
+
+    #     # AND a tester to test the view at different points in time
+    #     tester = TestOnchainView(minter.getAmountLoaned, minter)
+    #     scenario.register(tester)
+    #     onchainViewTester.compute(data = minter.data, params = 42).run(now = sp.timestamp(1))
+
+    #     # WHEN the tester is run after no interest periods
+    #     # THEN the original amountLoaned is returned
+    #     scenario += tester.compute(minter.data, sp.unit).run(now = initialTime)
+    #     scenario.verify(tester.data.result == sp.some(amountLoaned))
+
+    #     # WHEN the tester is run after one interest period
+    #     # THEN the original amountLoaned is linearly approximated for one period
+    #     scenario += tester.compute(minter.data, sp.unit).run(now = initialTime + Constants.SECONDS_PER_COMPOUND)
+    #     scenario.verify(tester.data.result == sp.some(1100000000000000000))
+
+    #     # WHEN the tester is run after two interest periods
+    #     # THEN the original amountLoaned is linearly approximated for two periods
+    #     scenario += tester.compute(minter.data, sp.unit).run(now = initialTime + (2 * Constants.SECONDS_PER_COMPOUND))
+    #     scenario.verify(tester.data.result == sp.some(1200000000000000000))
+
+    # @sp.add_test(name = "getOvenLoanAmount - returns the correct amount loaned from an oven")
+    # def test():
+    #     scenario = sp.test_scenario()
+    
+    #     # GIVEN a minter contract with a stability fee
+    #     initialInterestIndex = Constants.PRECISION # 1.0
+    #     initialTime = sp.timestamp(0) # The beginning of time
+    #     minter = MinterContract(
+    #         stabilityFee = Constants.PRECISION // 10, # 10%
+    #         lastInterestIndexUpdateTime = initialTime, 
+    #         interestIndex = initialInterestIndex
+    #     )
+    #     scenario += minter
+
+    #     # AND some parameters for an oven
+    #     ovenBorrowedTokens = 7 * Constants.PRECISION # 7 kUSD
+    #     ovenStabilityFeeTokens = sp.to_int(3 * Constants.PRECISION) # 3 kUSD
+    #     ovenInterestIndex = sp.to_int(initialInterestIndex)
+
+    #     # AND a tester to test the view at different points in time
+    #     tester = TestOnchainView(minter.getOvenLoanAmount, minter)
+    #     scenario.register(tester)
+    #     onchainViewTester.compute(data = minter.data, params = 42).run(now = sp.timestamp(1))
+
+    #     # WHEN the tester is run after no interest periods
+    #     # THEN the original amountLoaned is returned
+    #     param = sp.record(
+    #         ovenBorrowedTokens = ovenBorrowedTokens,
+    #         ovenStabilityFeeTokens = ovenStabilityFeeTokens,
+    #         ovenInterestIndex = ovenInterestIndex
+    #     )
+    #     scenario += tester.compute(minter.data, sp.unit).run(now = initialTime)
+    #     scenario.verify(tester.data.result == sp.some(10 * Constants.PRECISION)) # 10 kUSD - the original amount
+
+    #     # WHEN the tester is run after one interest period
+    #     # THEN the original amountLoaned is linearly approximated for one period
+    #     scenario += tester.compute(minter.data, sp.unit).run(now = initialTime + Constants.SECONDS_PER_COMPOUND)
+    #     scenario.verify(tester.data.result == sp.some(11000000000000000000)) # 11 kUSD
+
+    #     # WHEN the tester is run after two interest periods
+    #     # THEN the original amountLoaned is linearly approximated for two periods
+    #     scenario += tester.compute(minter.data, sp.unit).run(now = initialTime + (2 * Constants.SECONDS_PER_COMPOUND))
+    #     scenario.verify(tester.data.result == sp.some(12000000000000000000)) # 12 kUSD     
 
     sp.add_compilation_target("minter", MinterContract())
