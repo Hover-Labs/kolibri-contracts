@@ -138,6 +138,19 @@ code
               {
                 IF_LEFT
                   {
+                    PUSH bool True; # bool : @parameter%borrow : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    DUP 3;      # @storage : bool : @parameter%borrow : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    CAR;        # pair (pair (pair (nat %amountLoaned) (nat %collateralizationPercentage)) (pair (nat %devFundSplit) (address %developerFundContractAddress))) (pair (pair (address %governorContractAddress) (bool %initialized)) (pair (address %initializerContractAddress) (nat %interestIndex))) : bool : @parameter%borrow : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    GET 3;      # pair (address %governorContractAddress) (bool %initialized) : bool : @parameter%borrow : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    CDR;        # bool : bool : @parameter%borrow : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    COMPARE;    # int : @parameter%borrow : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    EQ;         # bool : @parameter%borrow : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    IF
+                      {}
+                      {
+                        PUSH int 31; # int : @parameter%borrow : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                        FAILWITH;   # FAILED
+                      }; # @parameter%borrow : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     SWAP;       # @storage : @parameter%borrow : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     DUP;        # @storage : @storage : @parameter%borrow : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     DUG 2;      # @storage : @parameter%borrow : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
@@ -714,6 +727,19 @@ code
                   {
                     DIG 2;      # lambda (pair nat (pair nat nat)) nat : @parameter%deposit : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     DROP;       # @parameter%deposit : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    PUSH bool True; # bool : @parameter%deposit : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    DUP 3;      # @storage : bool : @parameter%deposit : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    CAR;        # pair (pair (pair (nat %amountLoaned) (nat %collateralizationPercentage)) (pair (nat %devFundSplit) (address %developerFundContractAddress))) (pair (pair (address %governorContractAddress) (bool %initialized)) (pair (address %initializerContractAddress) (nat %interestIndex))) : bool : @parameter%deposit : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    GET 3;      # pair (address %governorContractAddress) (bool %initialized) : bool : @parameter%deposit : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    CDR;        # bool : bool : @parameter%deposit : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    COMPARE;    # int : @parameter%deposit : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    EQ;         # bool : @parameter%deposit : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    IF
+                      {}
+                      {
+                        PUSH int 31; # int : @parameter%deposit : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                        FAILWITH;   # FAILED
+                      }; # @parameter%deposit : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     SWAP;       # @storage : @parameter%deposit : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     DUP;        # @storage : @storage : @parameter%deposit : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     DUG 2;      # @storage : @parameter%deposit : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
@@ -1329,6 +1355,19 @@ code
               {
                 IF_LEFT
                   {
+                    PUSH bool True; # bool : @parameter%liquidate : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    DUP 3;      # @storage : bool : @parameter%liquidate : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    CAR;        # pair (pair (pair (nat %amountLoaned) (nat %collateralizationPercentage)) (pair (nat %devFundSplit) (address %developerFundContractAddress))) (pair (pair (address %governorContractAddress) (bool %initialized)) (pair (address %initializerContractAddress) (nat %interestIndex))) : bool : @parameter%liquidate : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    GET 3;      # pair (address %governorContractAddress) (bool %initialized) : bool : @parameter%liquidate : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    CDR;        # bool : bool : @parameter%liquidate : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    COMPARE;    # int : @parameter%liquidate : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    EQ;         # bool : @parameter%liquidate : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    IF
+                      {}
+                      {
+                        PUSH int 31; # int : @parameter%liquidate : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                        FAILWITH;   # FAILED
+                      }; # @parameter%liquidate : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     SWAP;       # @storage : @parameter%liquidate : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     DUP;        # @storage : @storage : @parameter%liquidate : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     DUG 2;      # @storage : @parameter%liquidate : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
@@ -2361,6 +2400,19 @@ code
                   {
                     DIG 2;      # lambda (pair nat (pair nat nat)) nat : @parameter%repay : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     DROP;       # @parameter%repay : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    PUSH bool True; # bool : @parameter%repay : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    DUP 3;      # @storage : bool : @parameter%repay : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    CAR;        # pair (pair (pair (nat %amountLoaned) (nat %collateralizationPercentage)) (pair (nat %devFundSplit) (address %developerFundContractAddress))) (pair (pair (address %governorContractAddress) (bool %initialized)) (pair (address %initializerContractAddress) (nat %interestIndex))) : bool : @parameter%repay : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    GET 3;      # pair (address %governorContractAddress) (bool %initialized) : bool : @parameter%repay : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    CDR;        # bool : bool : @parameter%repay : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    COMPARE;    # int : @parameter%repay : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    EQ;         # bool : @parameter%repay : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                    IF
+                      {}
+                      {
+                        PUSH int 31; # int : @parameter%repay : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                        FAILWITH;   # FAILED
+                      }; # @parameter%repay : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     SWAP;       # @storage : @parameter%repay : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     DUP;        # @storage : @storage : @parameter%repay : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                     DUG 2;      # @storage : @parameter%repay : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
@@ -3390,6 +3442,19 @@ code
                         PUSH int 4; # int : @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
                         FAILWITH;   # FAILED
                       }; # @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
+                    PUSH bool True; # bool : @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
+                    DUP 3;      # @storage : bool : @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
+                    CAR;        # pair (pair (pair (nat %amountLoaned) (nat %collateralizationPercentage)) (pair (nat %devFundSplit) (address %developerFundContractAddress))) (pair (pair (address %governorContractAddress) (bool %initialized)) (pair (address %initializerContractAddress) (nat %interestIndex))) : bool : @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
+                    GET 3;      # pair (address %governorContractAddress) (bool %initialized) : bool : @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
+                    CDR;        # bool : bool : @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
+                    COMPARE;    # int : @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
+                    EQ;         # bool : @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
+                    IF
+                      {}
+                      {
+                        PUSH int 31; # int : @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
+                        FAILWITH;   # FAILED
+                      }; # @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
                     PUSH nat 60; # nat : @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
                     DUP 3;      # @storage : nat : @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
                     GET 3;      # pair (pair (timestamp %lastInterestIndexUpdateTime) (nat %liquidationFeePercent)) (pair (address %liquidityPoolContractAddress) (address %ovenProxyContractAddress)) : nat : @parameter%setStabilityFee : @storage : lambda (pair nat (pair nat nat)) nat
@@ -3726,6 +3791,19 @@ code
                         NIL operation; # list operation : pair (pair (pair (pair (nat %amountLoaned) (nat %collateralizationPercentage)) (pair nat address)) (pair (pair (address %governorContractAddress) (bool %initialized)) (pair (address %initializerContractAddress) (nat %interestIndex)))) (pair (pair (pair (timestamp %lastInterestIndexUpdateTime) (nat %liquidationFeePercent)) (pair (address %liquidityPoolContractAddress) (address %ovenProxyContractAddress))) (pair (pair (nat %privateOwnerLiquidationThreshold) (nat %stabilityFee)) (pair (address %stabilityFundContractAddress) (address %tokenContractAddress))))
                       }
                       {
+                        PUSH bool True; # bool : @parameter%withdraw : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                        DUP 3;      # @storage : bool : @parameter%withdraw : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                        CAR;        # pair (pair (pair (nat %amountLoaned) (nat %collateralizationPercentage)) (pair (nat %devFundSplit) (address %developerFundContractAddress))) (pair (pair (address %governorContractAddress) (bool %initialized)) (pair (address %initializerContractAddress) (nat %interestIndex))) : bool : @parameter%withdraw : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                        GET 3;      # pair (address %governorContractAddress) (bool %initialized) : bool : @parameter%withdraw : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                        CDR;        # bool : bool : @parameter%withdraw : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                        COMPARE;    # int : @parameter%withdraw : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                        EQ;         # bool : @parameter%withdraw : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                        IF
+                          {}
+                          {
+                            PUSH int 31; # int : @parameter%withdraw : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
+                            FAILWITH;   # FAILED
+                          }; # @parameter%withdraw : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                         SWAP;       # @storage : @parameter%withdraw : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                         DUP;        # @storage : @storage : @parameter%withdraw : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat
                         DUG 2;      # @storage : @parameter%withdraw : @storage : lambda (pair nat (pair nat nat)) nat : lambda (pair nat (pair nat nat)) nat : lambda (pair int (pair nat (pair nat nat))) nat

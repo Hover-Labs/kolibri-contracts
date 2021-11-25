@@ -96,3 +96,6 @@ ALREADY_INITIALIZED = 29
 
 # The sender tried to repay more tokens than they owe.
 REPAID_MORE_THAN_OWED = 30
+
+# The call was made to a contract that wasn't initialized
+NOT_INITIALIZED = 31

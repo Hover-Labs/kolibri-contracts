@@ -37,7 +37,9 @@ class MinterContract(sp.Contract):
 
         # Initialization for KIP-009
         # See: https://discuss.kolibri.finance/t/kip-009-interest-at-accrual-time-rather-than-repayment-time/78/2
-        initialized = False,
+        # NOTE: In a production deploy, `initialized` should be set to False. We set it to True here to make it easy for
+        #       existing tests to continue passing
+        initialized = True,
         initializerContractAddress = Addresses.INITIALIZER_ADDRESS,
     ):
         self.exception_optimization_level = "DefaultUnit"
@@ -122,6 +124,9 @@ class MinterContract(sp.Contract):
     def borrow(self, param):
         sp.set_type(param, OvenApi.BORROW_PARAMETER_TYPE_ORACLE)
 
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
+
         # Verify the sender is the oven proxy.
         sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
 
@@ -203,6 +208,9 @@ class MinterContract(sp.Contract):
     @sp.entry_point
     def repay(self, param):
         sp.set_type(param, OvenApi.REPAY_PARAMETER_TYPE)
+
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
 
         # Verify the sender is the oven proxy.
         sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
@@ -292,6 +300,9 @@ class MinterContract(sp.Contract):
     def deposit(self, param):
         sp.set_type(param, OvenApi.DEPOSIT_PARAMETER_TYPE)
 
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
+
         # Verify the sender is a oven.
         sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
 
@@ -352,6 +363,9 @@ class MinterContract(sp.Contract):
     @sp.entry_point
     def withdraw(self, param):
         sp.set_type(param, OvenApi.WITHDRAW_PARAMETER_TYPE_ORACLE)
+
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
 
         # Verify the sender is a oven.
         sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
@@ -427,6 +441,9 @@ class MinterContract(sp.Contract):
     @sp.entry_point
     def liquidate(self, param):
         sp.set_type(param, OvenApi.LIQUIDATE_PARAMETER_TYPE_ORACLE)
+
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
 
         # Verify the sender is a oven.
         sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
@@ -530,6 +547,9 @@ class MinterContract(sp.Contract):
     @sp.entry_point
     def setStabilityFee(self, newStabilityFee):
         sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
 
         # Compound interest and update internal state.
         timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
@@ -1146,6 +1166,81 @@ if __name__ == "__main__":
         expectedStabilityFundValue = sp.as_nat(expectedTotalValuePaidToFunds - expectedDevFundValue)
         scenario.verify(expectedStabilityFundValue == 7200000000000000000) # 0.8 kUSD
         scenario.verify(token.data.balances[Addresses.STABILITY_FUND_ADDRESS].balance == expectedStabilityFundValue)
+    
+    @sp.add_test(name="liquidate - fails if contract is not initialized")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an OvenProxy contract
+        ovenProxy = MockOvenProxy.MockOvenProxyContract()
+        scenario += ovenProxy
+        
+        # AND a Token contract.
+        interimTokenAdministrator = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = interimTokenAdministrator
+        )
+        scenario += token
+
+        # AND a dummy contract that acts as the liquidity pool.
+        liquidityPool = DummyContract.DummyContract()
+        scenario += liquidityPool
+
+        # AND the liquidator has $1000 of tokens.
+        liquidatorTokens = 1000 * Constants.PRECISION 
+        mintForOvenOwnerParam = sp.record(address = liquidityPool.address, value = liquidatorTokens)
+        scenario += token.mint(mintForOvenOwnerParam).run(
+            sender = interimTokenAdministrator
+        )
+
+        # AND a Minter contract that is uninitialized
+        liquidationFeePercent = sp.nat(80000000000000000) # 8%
+        devFundSplit = sp.nat(100000000000000000) # 10%
+        ovenBorrowedTokens = 90 * Constants.PRECISION # $90 kUSD
+        ovenStabilityFeeTokens = sp.to_int(10 * Constants.PRECISION) # 10 kUSD
+        amountLoaned = liquidatorTokens + ovenBorrowedTokens + sp.as_nat(ovenStabilityFeeTokens) # 1100 = 1000 + 90 + 10
+        minter = MinterContract(
+            liquidationFeePercent = liquidationFeePercent,
+            ovenProxyContractAddress = ovenProxy.address,
+            stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
+            developerFundContractAddress = Addresses.DEVELOPER_FUND_ADDRESS,
+            tokenContractAddress = token.address,
+            liquidityPoolContractAddress = liquidityPool.address,
+            amountLoaned = amountLoaned,
+            initialized = False,
+        )
+        scenario += minter
+
+        # AND the Minter is the Token administrator
+        scenario += token.setAdministrator(minter.address).run(
+            sender = Addresses.GOVERNOR_ADDRESS
+        )
+
+        # WHEN liquidate is called on an undercollateralized oven.
+        ovenBalance = Constants.PRECISION # 1 XTZ
+        ovenBalanceMutez = sp.mutez(1000000) # 1 XTZ
+
+        xtzPrice = Constants.PRECISION # 1 XTZ / $1
+
+        ovenOwnerAddress =  Addresses.OVEN_OWNER_ADDRESS
+        ovenAddress = Addresses.OVEN_ADDRESS
+        isLiquidated = False
+
+        interestIndex = sp.to_int(Constants.PRECISION)
+
+        liquidatorAddress = liquidityPool.address
+
+        param = (xtzPrice, (ovenAddress, (ovenOwnerAddress, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (ovenStabilityFeeTokens, (interestIndex, liquidatorAddress))))))))
+
+        # THEN the call fails with NOT_INITIALIZED
+        scenario += minter.liquidate(param).run(
+            sender = ovenProxy.address,
+            amount = ovenBalanceMutez,
+            now = sp.timestamp_from_utc_now(),
+ 
+            valid = False,
+            exception = Errors.NOT_INITIALIZED,
+        )
 
     @sp.add_test(name="liquidate - liquidity pool can always liquidate")
     def test():
@@ -2182,7 +2277,71 @@ if __name__ == "__main__":
             valid = False
         )
 
-    @sp.add_test(name="repay - repays greater amount than owed")
+    @sp.add_test(name="repay - fails if contract is not initialized")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN a governor
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+
+        # AND an OvenProxy
+        ovenProxy = MockOvenProxy.MockOvenProxyContract()
+        scenario += ovenProxy
+
+        # AND an Oven owner
+        ovenOwner =  Addresses.OVEN_OWNER_ADDRESS
+
+        # AND a Token contract.
+        interimTokenAdministrator = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = interimTokenAdministrator
+        )
+        scenario += token
+
+        # AND a Minter contract that is uninitialized
+        ovenBorrowedTokens = sp.nat(12)
+        minter = MinterContract(
+            ovenProxyContractAddress = ovenProxy.address,
+            governorContractAddress = governorAddress,
+            tokenContractAddress = token.address,
+            stabilityFee = sp.nat(0),
+            amountLoaned = ovenBorrowedTokens,
+            initialized = False,
+        )
+        scenario += minter
+
+        # AND the Minter is the Token administrator
+        scenario += token.setAdministrator(minter.address).run(
+            sender = interimTokenAdministrator
+        )
+
+        # AND the oven owner has 100 tokens.
+        ovenOwnerTokens = sp.nat(100)
+        mintForOvenOwnerParam = sp.record(address = ovenOwner, value = ovenOwnerTokens)
+        scenario += token.mint(mintForOvenOwnerParam).run(
+            sender = minter.address
+        )
+
+        # WHEN repay is called with an amount less than stability fees
+        # THEN the call fails with NOT_INITIALIZED
+        ovenAddress = Addresses.OVEN_ADDRESS
+        ovenBalance = Constants.PRECISION # 1 XTZ
+        ovenBalanceMutez = sp.mutez(1000000) # 1 XTZ
+        isLiquidated = False
+        stabilityFeeTokens = sp.int(5)
+        interestIndex = sp.to_int(Constants.PRECISION)
+        tokensToRepay = sp.nat(4)
+        param = (ovenAddress, (ovenOwner, (ovenBalance, (ovenBorrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, tokensToRepay)))))))
+        scenario += minter.repay(param).run(
+            sender = ovenProxy.address,
+            amount = ovenBalanceMutez,
+            now = sp.timestamp_from_utc_now(),
+
+            valid = False,
+            exception = Errors.NOT_INITIALIZED
+        )
+
+    @sp.add_test(name="repay - fails if repaying greater amount than owed")
     def test():
         scenario = sp.test_scenario()
 
@@ -2537,6 +2696,62 @@ if __name__ == "__main__":
         # AND the remaining balance is passed back to the oven proxy
         scenario.verify(ovenProxy.balance == ovenBalanceMutez)
 
+    @sp.add_test(name="borrow - fails if contract is not initialized")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an OvenProxy contract
+        ovenProxy = MockOvenProxy.MockOvenProxyContract()
+        scenario += ovenProxy
+        
+        # AND a Token contract.
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
+
+        # AND a Minter contract that is uninitialized
+        minter = MinterContract(
+            ovenProxyContractAddress = ovenProxy.address,
+            tokenContractAddress = token.address,
+            initialized = False,
+        )
+        scenario += minter
+
+        # AND the Minter is the Token administrator
+        scenario += token.setAdministrator(minter.address).run(
+            sender = governorAddress
+        )
+
+        # WHEN borrow is called with valid inputs representing some tokens which are already borrowed.
+        ovenAddress = Addresses.OVEN_ADDRESS
+        ownerAddress = Addresses.OVEN_OWNER_ADDRESS
+        isLiquidated = False
+
+        xtzPrice = Constants.PRECISION # $1 / XTZ
+        ovenBalance = 4 * Constants.PRECISION # 4 XTZ / $4
+        ovenBalanceMutez = sp.mutez(2000000) # 4 XTZ / $4
+
+        borrowedTokens = Constants.PRECISION # $1 kUSD
+
+        interestIndex = sp.to_int(Constants.PRECISION)
+        stabilityFeeTokens = sp.int(0)
+
+        tokensToBorrow = Constants.PRECISION # $1 kUSD
+
+        param = (xtzPrice, (ovenAddress, (ownerAddress, (ovenBalance, (borrowedTokens, (isLiquidated, (stabilityFeeTokens, (interestIndex, tokensToBorrow))))))))
+
+        # THEN the call fails with NOT_INITIALIZED
+        scenario += minter.borrow(param).run(
+            sender = ovenProxy.address,
+            amount = ovenBalanceMutez,
+            now = sp.timestamp_from_utc_now(),
+
+            valid = False,
+            exception = Errors.NOT_INITIALIZED
+        )
+
     @sp.add_test(name="borrow - Fails if oven is undercollateralized")
     def test():
         scenario = sp.test_scenario()
@@ -2886,6 +3101,64 @@ if __name__ == "__main__":
         scenario.verify(ovenProxy.data.updateState_borrowedTokens == borrowedTokens)
         scenario.verify(ovenProxy.data.updateState_isLiquidated == isLiquidated)        
 
+    @sp.add_test(name="withdraw - Fails if contract is not initialized")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an OvenProxy contract
+        ovenProxy = MockOvenProxy.MockOvenProxyContract()
+        scenario += ovenProxy
+        
+        # AND a Minter contract that is uninitialized
+        minter = MinterContract(
+            ovenProxyContractAddress = ovenProxy.address,
+            initialized = False,
+        )
+        scenario += minter
+
+        # AND a dummy contract that acts as the Oven owner
+        dummyContract = DummyContract.DummyContract()
+        scenario += dummyContract
+
+        # AND given inputs that represent a properly collateralized oven at a 200% collateralization ratio
+        xtzPrice = 1 * Constants.PRECISION # $1 / XTZ
+        borrowedTokens = 10 * Constants.PRECISION # $10 kUSD
+        lockedCollateralMutez = sp.mutez(21000000) # 21XTZ / $21
+        lockedCollateral = 21 * Constants.PRECISION # 21 XTZ / $21
+
+        # WHEN withdraw is called with an amount that does not under collateralize the oven
+        amountToWithdrawMutez = sp.mutez(1000000) # 1 XTZ / $1 
+        ovenAddress = Addresses.OVEN_ADDRESS
+        ovenOwnerAddress = dummyContract.address
+        isLiquidated = False
+        param = (
+            xtzPrice, (
+                ovenAddress, (
+                    ovenOwnerAddress, (
+                        lockedCollateral, (
+                            borrowedTokens, (
+                                isLiquidated, (
+                                    sp.int(0), (
+                                        sp.to_int(Constants.PRECISION), amountToWithdrawMutez
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+
+        # THEN the call fails with NOT_INITIALIZED
+        scenario += minter.withdraw(param).run(
+            sender = ovenProxy.address,
+            amount = lockedCollateralMutez,
+            now = sp.timestamp_from_utc_now(),
+
+            valid = False,
+            exception = Errors.NOT_INITIALIZED
+        )
+
     @sp.add_test(name="withdraw - fails when withdraw will undercollateralize oven")
     def test():
         scenario = sp.test_scenario()
@@ -3232,6 +3505,54 @@ if __name__ == "__main__":
 
         # AND the mutez balance is sent to the oven proxy
         scenario.verify(ovenProxy.balance == balance)
+
+    @sp.add_test(name="deposit - fails if not initialized")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GIVEN an OvenProxy
+        ovenProxy = MockOvenProxy.MockOvenProxyContract()
+        scenario += ovenProxy
+
+        # AND a Minter contract that is uninitialized
+        minter = MinterContract(
+            ovenProxyContractAddress = ovenProxy.address,
+            initialized = False,
+        )
+        scenario += minter
+
+        # WHEN deposit is called
+        ovenAddress = Addresses.OVEN_ADDRESS
+        ownerAddress = Addresses.OVEN_OWNER_ADDRESS
+        balance = sp.mutez(1)
+        balanceNat = sp.nat(1)
+        borrowedTokens = sp.nat(2)
+        stabilityFeeTokens = sp.int(0)
+        interestIndex = sp.int(1000000000000000000)
+        param = (
+            ovenAddress, (
+                ownerAddress, (
+                    balanceNat, (
+                        borrowedTokens, (
+                            False, (
+                                stabilityFeeTokens,
+                                interestIndex
+                            )
+                        )
+                    )
+                )
+            )
+        )
+
+        # THEN the call fails with NOT_INITIALIZED
+        scenario += minter.deposit(param).run(
+            amount = balance,
+            sender = ovenProxy.address,
+            now = sp.timestamp_from_utc_now(),
+
+            valid = False,
+            exception = Errors.NOT_INITIALIZED
+        )
 
     @sp.add_test(name="deposit - fails when oven is liquidated")
     def test():
@@ -3675,6 +3996,30 @@ if __name__ == "__main__":
             sender = notGovernor,
             now = sp.timestamp_from_utc_now(),
             valid = False,
+        )
+
+    @sp.add_test(name="setStabilityFee - fails if not initialized")
+    def test():
+        scenario = sp.test_scenario()
+
+        # GVIEN a Minter contract that is uninitialized
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        minter = MinterContract(
+            governorContractAddress = governorAddress,
+            stabilityFee = sp.nat(1),
+            initialized = False,
+        )
+        scenario += minter
+
+        # WHEN setStabilityFee is called by the governor
+        # THEN the call fails with NOT_INITIALIZED
+        newStabilityFee = sp.nat(2)
+        scenario += minter.setStabilityFee(newStabilityFee).run(
+            sender = governorAddress,
+            now = sp.timestamp_from_utc_now(),
+
+            valid = False,
+            exception = Errors.NOT_INITIALIZED
         )
 
     ################################################################
