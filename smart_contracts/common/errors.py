@@ -93,3 +93,6 @@ BAD_SENDER = 28
 
 # The sender tried to initialize a contract that was already initialized
 ALREADY_INITIALIZED = 29
+
+# The sender tried to repay more tokens than they owe.
+REPAID_MORE_THAN_OWED = 30
