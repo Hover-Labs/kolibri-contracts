@@ -148,27 +148,13 @@ class MinterContract(sp.Contract):
         sp.result(self.data.stabilityFee)
 
     # Get the current interest index.
-    # @sp.onchain_view()
-    # def getCurrentInterestIndex(self):
-    # @sp.onchain_view()
-    # def viewWithUnitParam(self):
-        # Inline the implementation of myLambda, since we cannot call myLambda directly.
-        # sp.result(self.myLambdaInlined(1))
-
-        # # Compound interest
-        # # TODO(keefertaylor): This code is duplicated here, in getAmountLoaned and probably elsewhere. Attempt to dedupe.
-        # timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
-        # numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
-        # newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
-
-        # sp.result(newMinterInterestIndex)
-
-    # A view which builds a lambda from the implementation of private lambda
     @sp.onchain_view()
-    def viewWithUnitParam(self):
+    def getCurrentInterestIndex(self):
+        # # TODO(keefertaylor): This code is duplicated here, in getAmountLoaned and probably elsewhere. Attempt to dedupe.
         timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
         numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
         newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
+
         sp.result(newMinterInterestIndex)
 
     # # Get the current amount loaned
@@ -839,11 +825,17 @@ class MinterContract(sp.Contract):
 
     # Compound interest via a linear approximation.
     #
+    # This method is called from on chain views (which cannot call private lambdas) and entrypoints (which can call
+    # global lambdas). As a result, it is presented as a pure python function.
+    #
+    # This internal implementation is built into a global lambda (compoundWithLinearApproximation) in the initializer
+    # for entrypoints to call. It is also used to build an inline lambda in views, since views cannot call global
+    # lambdas.    
+    #
     # Parameters:
     # - initialValue: The initial value to compound
     # - stabilityFee: The interest rate compounding is occuring at
     # - numPeriods: The number of periods to compound for
-    # TODO(keefertaylor): Doc me, and why i'm not a global lambda
     def compoundWithLinearApproximation_implementation(self, params):
         sp.set_type(params, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
 
@@ -907,16 +899,10 @@ if __name__ == "__main__":
     # Helpers
     ################################################################
 
-    # A Tester flass that wraps a lambda function to allow for unit testing.
-    # See: https://smartpy.io/releases/20201220-f9f4ad18bd6ec2293f22b8c8812fefbde46d6b7d/ide?template=test_global_lambda.py
-    # This should compute for views with a param.
-    # TODO add tests for units
-    # TODO doc this can also be used for views
+    # A Tester flass that wraps a private_lambda function to allow for unit testing.
     # TODO Refactor this to be used everywhere in an imported file
-    # TODO Rename as lambda tester
-    # TODO Unify the parameter names between these classes
     # Tests a private_lambda
-    class Tester(sp.Contract):
+    class PrivateLambdaTester(sp.Contract):
         def __init__(self, f):
             self.f = f.f
             self.init(result = sp.none)
@@ -928,16 +914,6 @@ if __name__ == "__main__":
             with b:
                 self.f(sp.record(data = data), param)
             self.data.result = sp.some(b.value)
-
-    # class Tester(sp.Contract):
-    #     def __init__(self, method):
-    #         self.f = sp.build_lambda(method.f)
-    #         self.init(result = sp.none)
-    #         self.compoundWithLinearApproximation_implementation = MinterContract.compoundWithLinearApproximation_implementation
-
-    #     @sp.entry_point
-    #     def compute(self, scope):
-    #         self.data.result = sp.some(self.f(scope))
 
     # Test an on chain view that takes a Unit parameter.
     class OnChainViewTester(sp.Contract):
@@ -960,7 +936,7 @@ if __name__ == "__main__":
         minter = MinterContract()
         scenario += minter
 
-        tester = Tester(minter.calculateNewAccruedInterest)
+        tester = PrivateLambdaTester(minter.calculateNewAccruedInterest)
         scenario += tester
 
         scenario += tester.compute(
@@ -4724,7 +4700,7 @@ if __name__ == "__main__":
         scenario += minter
     
         # AND a tester to test the view at different points in time
-        tester = OnChainViewTester(minter.viewWithUnitParam)
+        tester = OnChainViewTester(minter.getCurrentInterestIndex)
         scenario += tester
 
         # WHEN the tester is run after no interest periods

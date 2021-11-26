@@ -5817,16 +5817,7 @@ code
     PAIR;       # pair (list operation) (pair (pair (pair (pair nat nat) (pair nat address)) (pair (pair address bool) (pair address nat))) (pair (pair (pair timestamp nat) (pair address address)) (pair (pair nat nat) (pair address address))))
   };
 view
-  "getStabilityFee" unit nat
-  {
-    GET 7;      # pair (nat %privateOwnerLiquidationThreshold) (nat %stabilityFee)
-    CDR;        # nat
-  };
-view
-  "getStorage" unit (pair (pair (pair (pair (nat %amountLoaned) (nat %collateralizationPercentage)) (pair (nat %devFundSplit) (address %developerFundContractAddress))) (pair (pair (address %governorContractAddress) (bool %initialized)) (pair (address %initializerContractAddress) (nat %interestIndex)))) (pair (pair (pair (timestamp %lastInterestIndexUpdateTime) (nat %liquidationFeePercent)) (pair (address %liquidityPoolContractAddress) (address %ovenProxyContractAddress))) (pair (pair (nat %privateOwnerLiquidationThreshold) (nat %stabilityFee)) (pair (address %stabilityFundContractAddress) (address %tokenContractAddress)))))
-  CDR;       ;
-view
-  "viewWithUnitParam" unit nat
+  "getCurrentInterestIndex" unit nat
   {
     CDR;        # @storage
     LAMBDA
@@ -5890,3 +5881,12 @@ view
     PAIR;       # pair nat (pair nat nat) : lambda (pair nat (pair nat nat)) nat
     EXEC;       # nat
   };
+view
+  "getStabilityFee" unit nat
+  {
+    GET 7;      # pair (nat %privateOwnerLiquidationThreshold) (nat %stabilityFee)
+    CDR;        # nat
+  };
+view
+  "getStorage" unit (pair (pair (pair (pair (nat %amountLoaned) (nat %collateralizationPercentage)) (pair (nat %devFundSplit) (address %developerFundContractAddress))) (pair (pair (address %governorContractAddress) (bool %initialized)) (pair (address %initializerContractAddress) (nat %interestIndex)))) (pair (pair (pair (timestamp %lastInterestIndexUpdateTime) (nat %liquidationFeePercent)) (pair (address %liquidityPoolContractAddress) (address %ovenProxyContractAddress))) (pair (pair (nat %privateOwnerLiquidationThreshold) (nat %stabilityFee)) (pair (address %stabilityFundContractAddress) (address %tokenContractAddress)))))
+  CDR;       ;
