@@ -171,12 +171,6 @@ class MinterContract(sp.Contract):
         newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
         sp.result(newMinterInterestIndex)
 
-        # Inline the implementation of myLambda, since we cannot call myLambda directly.
-        # sp.result(self.myLambdaInlined(1))
-        
-    def func(self, arg):
-        sp.result(arg + 1)
-
     def compoundWithLinearApproximation_implementation(self, params):
         sp.set_type(params, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
 
