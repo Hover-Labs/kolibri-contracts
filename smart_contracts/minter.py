@@ -171,19 +171,6 @@ class MinterContract(sp.Contract):
         newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
         sp.result(newMinterInterestIndex)
 
-    # TODO(keefertaylor): Move to helpers
-    def compoundWithLinearApproximation_implementation(self, params):
-        sp.set_type(params, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
-
-        initialValue = sp.fst(params)
-        stabilityFee = sp.fst(sp.snd(params))
-        numPeriods = sp.snd(sp.snd(params))
-
-        # return (initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION
-        sp.result((initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION)
-        # sp.result(arg + 1)
-
-
     # # Get the current amount loaned
     # @sp.onchain_view()
     # def getAmountLoaned(self):
@@ -856,43 +843,17 @@ class MinterContract(sp.Contract):
     # - initialValue: The initial value to compound
     # - stabilityFee: The interest rate compounding is occuring at
     # - numPeriods: The number of periods to compound for
-    # @sp.private_lambda(with_storage="read-only")
-    # def compoundWithLinearApproximation2(self, params):
-    #     sp.set_type(params, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
+    # TODO(keefertaylor): Doc me, and why i'm not a global lambda
+    def compoundWithLinearApproximation_implementation(self, params):
+        sp.set_type(params, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
 
-    #     initialValue = sp.fst(params)
-    #     stabilityFee = sp.fst(sp.snd(params))
-    #     numPeriods = sp.snd(sp.snd(params))
+        initialValue = sp.fst(params)
+        stabilityFee = sp.fst(sp.snd(params))
+        numPeriods = sp.snd(sp.snd(params))
 
-    #     sp.result((initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION)
-
-    # @sp.private_lambda(with_storage="read-only")
-    # def compoundWithLinearApproximation(self, params):
-    #     sp.set_type(params, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
-
-    #     myLambdaInlined = sp.build_lambda(self.func)
-    #     sp.result(myLambdaInlined(params))  
-        
-
-
-    # TODO(keefertaylor): Figure out how to enable this mess.
-    #     # internal = sp.build_lambda(self.compoundWithLinearApproximation)
-
-    #     sp.result(12)
-
-    # # Internal implementation of compoundWithLinearApproximation.
-    # #
-    # # Split into a function so that it can be reused in the private_lambda and the onchain_view, since onchain_views 
-    # # cannot call private lambdas.
-    # def compoundWithLinearApproximation(self, params):
-    #     sp.set_type(params, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
-
-    #     initialValue = sp.fst(params)
-    #     stabilityFee = sp.fst(sp.snd(params))
-    #     numPeriods = sp.snd(sp.snd(params))
-
-    #     return (initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION
-    #     # sp.result((initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION)
+        # return (initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION
+        sp.result((initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION)
+        # sp.result(arg + 1)
 
     # Compute the collateralization percentage from the given inputs
     # Output is in the form of 200_000_000 (= 200%)
@@ -4743,16 +4704,6 @@ if __name__ == "__main__":
         @sp.entry_point
         def compute(self, scope):
             self.data.result = sp.some(self.f(scope))
-
-        # tester = Tester(minter.compoundWithLinearApproximation)
-        # scenario += tester
-
-        # # Two periods back to back
-        # scenario += tester.compute(
-        #     data = minter.data,
-        #     param = (1 * Constants.PRECISION, (100000000000000000, 1))
-        # )
-        # scenario.verify(tester.data.result.open_some() == sp.nat(1100000000000000000))
 
     @sp.add_test(name = "getCurrentInterestIndex - returns the correct interest index")
     def test():
