@@ -203,46 +203,46 @@ class MinterContract(sp.Contract):
     # Public Interface
     ################################################################
 
-    # # Get interest index
-    # # DEPRECATED: This method will be removed in a future release. Please use the `getInterestIndex` on chain view
-    # #             instead.
-    # @sp.entry_point
-    # def getInterestIndex(self, param):        
-    #     sp.set_type(param, sp.TContract(sp.TNat))
+    # Get interest index
+    # DEPRECATED: This method will be removed in a future release. Please use the `getInterestIndex` on chain view
+    #             instead.
+    @sp.entry_point
+    def getInterestIndex(self, param):        
+        sp.set_type(param, sp.TContract(sp.TNat))
 
-    #     # Verify the contract is initialized.
-    #     sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
 
-    #     # Verify the call did not contain a balance.
-    #     sp.verify(sp.amount == sp.mutez(0), message = Errors.AMOUNT_NOT_ALLOWED)
+        # Verify the call did not contain a balance.
+        sp.verify(sp.amount == sp.mutez(0), message = Errors.AMOUNT_NOT_ALLOWED)
 
-    #     # Compound interest
-    #     timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
-    #     numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
-    #     newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
+        # Compound interest
+        timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
+        numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
+        newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
 
-    #     # Transfer results to requester.
-    #     sp.transfer(newMinterInterestIndex, sp.mutez(0), param)
+        # Transfer results to requester.
+        sp.transfer(newMinterInterestIndex, sp.mutez(0), param)
 
-    #     # Accrue interest on the global accumulator and mint to developer and stability fund and update the global accumulator
-    #     newAmountLoaned = sp.local(
-    #         'newAmountLoaned', 
-    #         self.compoundWithLinearApproximation(
-    #             (
-    #                 self.data.amountLoaned,
-    #                 (
-    #                     self.data.stabilityFee, 
-    #                     numPeriods
-    #                 )
-    #             )
-    #         )
-    #     )
-    #     self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
-    #     self.data.amountLoaned = newAmountLoaned.value
+        # Accrue interest on the global accumulator and mint to developer and stability fund and update the global accumulator
+        newAmountLoaned = sp.local(
+            'newAmountLoaned', 
+            self.compoundWithLinearApproximation(
+                (
+                    self.data.amountLoaned,
+                    (
+                        self.data.stabilityFee, 
+                        numPeriods
+                    )
+                )
+            )
+        )
+        self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
+        self.data.amountLoaned = newAmountLoaned.value
 
-    #     # Update internal state.
-    #     self.data.interestIndex = newMinterInterestIndex
-    #     self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        # Update internal state.
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
     # ################################################################
     # # Oven Interface
@@ -851,9 +851,7 @@ class MinterContract(sp.Contract):
         stabilityFee = sp.fst(sp.snd(params))
         numPeriods = sp.snd(sp.snd(params))
 
-        # return (initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION
         sp.result((initialValue * (Constants.PRECISION + (numPeriods * stabilityFee))) // Constants.PRECISION)
-        # sp.result(arg + 1)
 
     # Compute the collateralization percentage from the given inputs
     # Output is in the form of 200_000_000 (= 200%)
