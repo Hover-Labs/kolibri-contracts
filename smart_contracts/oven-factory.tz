@@ -104,32 +104,33 @@ code
                     FAILWITH;   # FAILED
                   }; # @parameter%makeOven_minterCallback : @storage
                 # create_contract_oven-factory_102 = sp.local("create_contract_oven-factory_102", create contract ...) # @parameter%makeOven_minterCallback : @storage
-                PUSH int 0; # int : @parameter%makeOven_minterCallback : @storage
-                DUP 3;      # @storage : int : @parameter%makeOven_minterCallback : @storage
-                CAR;        # pair (address %governorContractAddress) (pair (option %initialDelegate key_hash) (option %makeOvenOwner address)) : int : @parameter%makeOven_minterCallback : @storage
-                GET 4;      # option address : int : @parameter%makeOven_minterCallback : @storage
+                NIL operation; # list operation : @parameter%makeOven_minterCallback : @storage
+                PUSH int 0; # int : list operation : @parameter%makeOven_minterCallback : @storage
+                DUP 4;      # @storage : int : list operation : @parameter%makeOven_minterCallback : @storage
+                CAR;        # pair (address %governorContractAddress) (pair (option %initialDelegate key_hash) (option %makeOvenOwner address)) : int : list operation : @parameter%makeOven_minterCallback : @storage
+                GET 4;      # option address : int : list operation : @parameter%makeOven_minterCallback : @storage
                 IF_NONE
                   {
-                    UNIT;       # unit : int : @parameter%makeOven_minterCallback : @storage
+                    UNIT;       # unit : int : list operation : @parameter%makeOven_minterCallback : @storage
                     FAILWITH;   # FAILED
                   }
-                  {}; # @some : int : @parameter%makeOven_minterCallback : @storage
-                PAIR;       # pair @some int : @parameter%makeOven_minterCallback : @storage
-                DUP 3;      # @storage : pair @some int : @parameter%makeOven_minterCallback : @storage
-                GET 3;      # pair (address %minterContractAddress) (address %ovenProxyContractAddress) : pair @some int : @parameter%makeOven_minterCallback : @storage
-                CDR;        # address : pair @some int : @parameter%makeOven_minterCallback : @storage
-                PAIR;       # pair address (pair @some int) : @parameter%makeOven_minterCallback : @storage
-                PUSH bool False; # bool : pair address (pair @some int) : @parameter%makeOven_minterCallback : @storage
-                DIG 2;      # @parameter%makeOven_minterCallback : bool : pair address (pair @some int) : @storage
-                INT;        # int : bool : pair address (pair @some int) : @storage
-                PAIR;       # pair int bool : pair address (pair @some int) : @storage
-                PUSH nat 0; # nat : pair int bool : pair address (pair @some int) : @storage
-                PAIR;       # pair nat (pair int bool) : pair address (pair @some int) : @storage
-                PAIR;       # pair (pair nat (pair int bool)) (pair address (pair @some int)) : @storage
-                PUSH mutez 0; # mutez : pair (pair nat (pair int bool)) (pair address (pair @some int)) : @storage
-                DUP 3;      # @storage : mutez : pair (pair nat (pair int bool)) (pair address (pair @some int)) : @storage
-                CAR;        # pair (address %governorContractAddress) (pair (option %initialDelegate key_hash) (option %makeOvenOwner address)) : mutez : pair (pair nat (pair int bool)) (pair address (pair @some int)) : @storage
-                GET 3;      # option key_hash : mutez : pair (pair nat (pair int bool)) (pair address (pair @some int)) : @storage
+                  {}; # @some : int : list operation : @parameter%makeOven_minterCallback : @storage
+                PAIR;       # pair @some int : list operation : @parameter%makeOven_minterCallback : @storage
+                DUP 4;      # @storage : pair @some int : list operation : @parameter%makeOven_minterCallback : @storage
+                GET 3;      # pair (address %minterContractAddress) (address %ovenProxyContractAddress) : pair @some int : list operation : @parameter%makeOven_minterCallback : @storage
+                CDR;        # address : pair @some int : list operation : @parameter%makeOven_minterCallback : @storage
+                PAIR;       # pair address (pair @some int) : list operation : @parameter%makeOven_minterCallback : @storage
+                PUSH bool False; # bool : pair address (pair @some int) : list operation : @parameter%makeOven_minterCallback : @storage
+                DIG 3;      # @parameter%makeOven_minterCallback : bool : pair address (pair @some int) : list operation : @storage
+                INT;        # int : bool : pair address (pair @some int) : list operation : @storage
+                PAIR;       # pair int bool : pair address (pair @some int) : list operation : @storage
+                PUSH nat 0; # nat : pair int bool : pair address (pair @some int) : list operation : @storage
+                PAIR;       # pair nat (pair int bool) : pair address (pair @some int) : list operation : @storage
+                PAIR;       # pair (pair nat (pair int bool)) (pair address (pair @some int)) : list operation : @storage
+                PUSH mutez 0; # mutez : pair (pair nat (pair int bool)) (pair address (pair @some int)) : list operation : @storage
+                DUP 4;      # @storage : mutez : pair (pair nat (pair int bool)) (pair address (pair @some int)) : list operation : @storage
+                CAR;        # pair (address %governorContractAddress) (pair (option %initialDelegate key_hash) (option %makeOvenOwner address)) : mutez : pair (pair nat (pair int bool)) (pair address (pair @some int)) : list operation : @storage
+                GET 3;      # option key_hash : mutez : pair (pair nat (pair int bool)) (pair address (pair @some int)) : list operation : @storage
                 CREATE_CONTRACT
                  { parameter (or (or (nat %borrow) (or (unit %default) (unit %liquidate))) (or (or (nat %repay) (option %setDelegate key_hash)) (or (pair %updateState address (pair nat (pair int (pair int bool)))) (mutez %withdraw))));
                    storage   (pair (pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated))) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))));
@@ -589,13 +590,12 @@ code
                              }; # list operation : pair (pair nat (pair int bool)) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)))
                          }; # list operation : pair (pair nat (pair int bool)) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)))
                        PAIR;       # pair (list operation) (pair (pair nat (pair int bool)) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))))
-                     }}; # operation : address : @storage
-                PAIR;       # pair operation address : @storage
-                # sp.operations().push(create_contract_oven-factory_102.value.operation) # pair operation address : @storage
-                DUP;        # pair operation address : pair operation address : @storage
-                CAR;        # operation : pair operation address : @storage
-                NIL operation; # list operation : operation : pair operation address : @storage
-                SWAP;       # operation : list operation : pair operation address : @storage
+                     }}; # operation : address : list operation : @storage
+                PAIR;       # pair operation address : list operation : @storage
+                # sp.operations().push(create_contract_oven-factory_102.value.operation) # pair operation address : list operation : @storage
+                DUP;        # pair operation address : pair operation address : list operation : @storage
+                DUG 2;      # pair operation address : list operation : pair operation address : @storage
+                CAR;        # operation : list operation : pair operation address : @storage
                 CONS;       # list operation : pair operation address : @storage
                 # sp.transfer((create_contract_oven-factory_102.value.address, self.data.makeOvenOwner.open_some()), sp.tez(0), sp.contract(sp.TPair(sp.TAddress, sp.TAddress), self.data.ovenRegistryContractAddress, entry_point='addOven').open_some()) # list operation : pair operation address : @storage
                 DUP 3;      # @storage : list operation : pair operation address : @storage

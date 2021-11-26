@@ -153,7 +153,7 @@ class MinterContract(sp.Contract):
     # Get the current interest index.
     @sp.onchain_view()
     def getCurrentInterestIndex(self):
-        # # TODO(keefertaylor): This code is duplicated here, in getAmountLoaned and probably elsewhere. Attempt to dedupe.
+        # TODO(keefertaylor): This code is duplicated here, in getAmountLoaned and probably elsewhere. Attempt to dedupe.
         timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
         numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
         newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
@@ -912,63 +912,25 @@ if __name__ == "__main__":
     # Helpers
     ################################################################
 
-    # Tests a private_lambda
-    # class PrivateLambdaTester(sp.Contract):
-    #     def __init__(self, f):
-    #         self.f = f.f
-    #         self.init(result = sp.none)
-
-    #     # Compute the value of the given function if the function takes parameters.
-    #     @sp.entry_point
-    #     def compute(self, data, param):
-    #         b = sp.bind_block()
-    #         with b:
-    #             self.f(sp.record(data = data), param)
-    #         self.data.result = sp.some(b.value)
-
-    # # Test an on chain view that takes a Unit parameter.
-    # class OnChainViewTester(sp.Contract):
-    #     def __init__(self, method):
-    #         self.f = sp.build_lambda(method.f)
-    #         self.init(result = sp.none)
-    #         self.compoundWithLinearApproximation_implementation = MinterContract.compoundWithLinearApproximation_implementation
-
-    #     @sp.entry_point
-    #     def compute(self, scope):
-    #         self.data.result = sp.some(self.f(scope))
-
-    # # Rodrigo's omni tester
-    # # TODO(keefertaylor): Rename, dedupe and document.
-    # class OmniTester(sp.Contract):
-    #     def __init__(self, func):
-    #         self.f = func
-    #         self.init(result = sp.none)
-
-    #     @sp.entry_point
-    #     def compute(self, arg):
-    #         self.data.result = sp.some(self.f(arg))  
-
-    # Master
-
+    # A tester that can test views with a unit parameter at different points in time.
+    # TODO(keefertaylor): This class may be able to be removed in a future release of SmartPy. Evaluate effects on space
+    #                     and consider updating these tests. See: https://smartpy.io/releases/20211126-3f67de4e33ea031876bb05e16f919f8d9f0bef0b/ide?cid=QmWksbE2M8pfSqU7Q32ZB3mgnMSCpe6gWpLLrFj3cdzt2U&k=e0ae21439cde91ee0a99    
     class UnitViewTester(sp.Contract):
         def __init__(self, method):
             self.f = sp.build_lambda(method.f)
             self.init(result = sp.none)
 
-            # TODO(keefertaylor): Is this needed if it's passed in the scope below?
-            self.compoundWithLinearApproximation = MinterContract.compoundWithLinearApproximation_implementation
-            self.calculateNewAccruedInterest = MinterContract.calculateNewAccruedInterest_implementation
-
         @sp.entry_point
         def compute(self, scope):
             self.data.result = sp.some(self.f(scope))                      
 
+    # A tester that can test views with a non-unit parameter at different points in time.
+    # TODO(keefertaylor): This class may be able to be removed in a future release of SmartPy. Evaluate effects on space
+    #                     and consider updating these tests. See: https://smartpy.io/releases/20211126-3f67de4e33ea031876bb05e16f919f8d9f0bef0b/ide?cid=QmWksbE2M8pfSqU7Q32ZB3mgnMSCpe6gWpLLrFj3cdzt2U&k=e0ae21439cde91ee0a99    
     class ParamViewTester(sp.Contract):
         def __init__(self, method):
             self.f = method.f
             self.init(result = sp.none)
-            self.func = MinterContract.compoundWithLinearApproximation_implementation
-            self.calculateNewAccruedInterest = MinterContract.calculateNewAccruedInterest_implementation
 
         @sp.entry_point
         def compute(self, data, param):
@@ -977,12 +939,11 @@ if __name__ == "__main__":
                 self.f(data, param)
             self.data.result = sp.some(b.value)
 
+    # Class which can test private lambdas.
     class LambdaTester(sp.Contract):
         def __init__(self, method):
             self.f = method
             self.init(result = sp.none)
-            self.func = MinterContract.compoundWithLinearApproximation_implementation
-            self.calculateNewAccruedInterest = MinterContract.calculateNewAccruedInterest_implementation
 
         @sp.entry_point
         def compute(self, param):
@@ -992,8 +953,7 @@ if __name__ == "__main__":
     # calculateNewAccruedInterest
     ################################################################
 
-    # TODO(keefertaylor): Rename
-    @sp.add_test(name="calculateNewAccruedInterest - omni tester")
+    @sp.add_test(name="calculateNewAccruedInterest - correctly calculates accrued interest")
     def test():
         scenario = sp.test_scenario()
         minter = MinterContract()
@@ -1036,8 +996,7 @@ if __name__ == "__main__":
     # compoundWithLinearApproximation
     ################################################################
         
-    # TODO(keefertaylor): Rename
-    @sp.add_test(name="compoundWithLinearApproximation - omni tester")
+    @sp.add_test(name="compoundWithLinearApproximation - correctly calculates results")
     def test():
         scenario = sp.test_scenario()
         minter = MinterContract()
