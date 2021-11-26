@@ -30,6 +30,7 @@ test:
 
 ###### COMPILE AND TEST ###### 
 
+# TODO(keefertaylor): Collate all rules here.
 minter:
 	make compile-minter
 	make test-minter
