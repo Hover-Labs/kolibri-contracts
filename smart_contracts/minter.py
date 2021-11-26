@@ -171,6 +171,7 @@ class MinterContract(sp.Contract):
         newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
         sp.result(newMinterInterestIndex)
 
+    # TODO(keefertaylor): Move to helpers
     def compoundWithLinearApproximation_implementation(self, params):
         sp.set_type(params, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
 
@@ -4737,7 +4738,7 @@ if __name__ == "__main__":
         def __init__(self, method):
             self.f = sp.build_lambda(method.f)
             self.init(result = sp.none)
-            self.func = MinterContract.func
+            self.compoundWithLinearApproximation_implementation = MinterContract.compoundWithLinearApproximation_implementation
 
         @sp.entry_point
         def compute(self, scope):
