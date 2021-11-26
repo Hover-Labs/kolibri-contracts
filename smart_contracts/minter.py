@@ -66,7 +66,7 @@ class MinterContract(sp.Contract):
             initializerContractAddress = initializerContractAddress,
         )
 
-        self.myLambdaInlined = sp.build_lambda(self.compoundWithLinearApproximation_implementation)
+        self.compoundWithLinearApproximation = sp.build_lambda(self.compoundWithLinearApproximation_implementation)
 
     ################################################################
     # KIP-009
@@ -168,7 +168,7 @@ class MinterContract(sp.Contract):
     def viewWithUnitParam(self):
         timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
         numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
-        newMinterInterestIndex = self.myLambdaInlined((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
+        newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
         sp.result(newMinterInterestIndex)
 
         # Inline the implementation of myLambda, since we cannot call myLambda directly.
@@ -4743,7 +4743,7 @@ if __name__ == "__main__":
         def __init__(self, method):
             self.f = sp.build_lambda(method.f)
             self.init(result = sp.none)
-            self.func = MyContract.func
+            self.func = MinterContract.func
 
         @sp.entry_point
         def compute(self, scope):
@@ -4780,7 +4780,12 @@ if __name__ == "__main__":
         # WHEN the tester is run after no interest periods
         # THEN the original interestIndex is returned
         noTimeLater = initialTime
-        scenario += tester.compute(sp.record(data = minter.data, myLambdaInlined = minter.myLambdaInlined)).run(
+        scenario += tester.compute(
+            sp.record(
+                data = minter.data, 
+                compoundWithLinearApproximation = minter.compoundWithLinearApproximation
+            )
+        ).run(
             now = noTimeLater
         )
         scenario.verify(tester.data.result.open_some() == interestIndex)
@@ -4788,7 +4793,12 @@ if __name__ == "__main__":
         # WHEN the tester is run after one interest period
         # THEN the original interestIndex is linearly approximated for one period
         onePeriodLater = initialTime.add_seconds(Constants.SECONDS_PER_COMPOUND)
-        scenario += tester.compute(sp.record(data = minter.data, myLambdaInlined = minter.myLambdaInlined)).run(
+        scenario += tester.compute(
+            sp.record(
+                data = minter.data, 
+                compoundWithLinearApproximation = minter.compoundWithLinearApproximation
+            )
+        ).run(
             now = onePeriodLater
         )
         scenario.verify(tester.data.result == sp.some(1100000000000000000))
@@ -4796,7 +4806,12 @@ if __name__ == "__main__":
         # WHEN the tester is run after two interest periods
         # THEN the original interestIndex is linearly approximated for two periods
         twoPeriodsLater = onePeriodLater.add_seconds(Constants.SECONDS_PER_COMPOUND)
-        scenario += tester.compute(sp.record(data = minter.data, myLambdaInlined = minter.myLambdaInlined)).run(
+        scenario += tester.compute(
+            sp.record(
+                data = minter.data, 
+                compoundWithLinearApproximation = minter.compoundWithLinearApproximation
+            )
+        ).run(
             now = twoPeriodsLater
         )
         scenario.verify(tester.data.result == sp.some(1200000000000000000))
