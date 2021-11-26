@@ -9,47 +9,6 @@ OvenApi = sp.io.import_script_from_url("file:common/oven-api.py")
 # Contract
 ################################################################
 
-class MyContract(sp.Contract):
-    def __init__(self, **kargs):
-        self.init(x = 0, **kargs)
-
-        self.myLambdaInlined = sp.build_lambda(self.func)
-
-    # An entrypoint that uses a private lambda
-    @sp.entry_point
-    def entryPointThatCallsLambda(self):
-        self.data.x = self.myLambdaInlined(1)
-
-    # A view which builds a lambda from the implementation of private lambda
-    @sp.onchain_view()
-    def viewWithUnitParam(self):
-        # Inline the implementation of myLambda, since we cannot call myLambda directly.
-        sp.result(self.myLambdaInlined(1))
-        
-    def func(self, arg):
-        sp.result(arg + 1)
-
-class TestOnchainView(sp.Contract):
-    def __init__(self, method):
-        self.f = sp.build_lambda(method.f)
-        self.init(result = sp.none)
-        self.func = MyContract.func
-
-    @sp.entry_point
-    def compute(self, scope):
-        self.data.result = sp.some(self.f(scope))
-
-@sp.add_test(name = "Empty Test to Placate Compiler")
-def test():
-    scenario = sp.test_scenario()
-    c1 = MyContract()
-    scenario += c1
-
-    tester = TestOnchainView(c1.viewWithUnitParam)
-    scenario += tester
-
-    scenario += tester.compute(sp.record(data = c1.data, myLambdaInlined = c1.myLambdaInlined))
-
 class MinterContract(sp.Contract):
     def __init__(
         self,
