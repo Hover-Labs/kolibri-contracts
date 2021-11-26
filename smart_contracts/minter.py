@@ -244,532 +244,532 @@ class MinterContract(sp.Contract):
         self.data.interestIndex = newMinterInterestIndex
         self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
-    # ################################################################
-    # # Oven Interface
-    # ################################################################
+    ################################################################
+    # Oven Interface
+    ################################################################
 
-    # # borrow
-    # @sp.entry_point
-    # def borrow(self, param):
-    #     sp.set_type(param, OvenApi.BORROW_PARAMETER_TYPE_ORACLE)
+    # borrow
+    @sp.entry_point
+    def borrow(self, param):
+        sp.set_type(param, OvenApi.BORROW_PARAMETER_TYPE_ORACLE)
 
-    #     # Verify the contract is initialized.
-    #     sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
 
-    #     # Verify the sender is the oven proxy.
-    #     sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
+        # Verify the sender is the oven proxy.
+        sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
 
-    #     # Destructure input params.        
-    #     oraclePrice,           pair1 = sp.match_pair(param)
-    #     ovenAddress,           pair2 = sp.match_pair(pair1)
-    #     ownerAddress,          pair3 = sp.match_pair(pair2)
-    #     ovenBalance,           pair4 = sp.match_pair(pair3)
-    #     borrowedTokens,        pair5 = sp.match_pair(pair4)
-    #     isLiquidated,          pair6 = sp.match_pair(pair5)
-    #     stabilityFeeTokensInt, pair7 = sp.match_pair(pair6)
-    #     interestIndex                = sp.fst(pair7)
-    #     tokensToBorrow               = sp.snd(pair7)
+        # Destructure input params.        
+        oraclePrice,           pair1 = sp.match_pair(param)
+        ovenAddress,           pair2 = sp.match_pair(pair1)
+        ownerAddress,          pair3 = sp.match_pair(pair2)
+        ovenBalance,           pair4 = sp.match_pair(pair3)
+        borrowedTokens,        pair5 = sp.match_pair(pair4)
+        isLiquidated,          pair6 = sp.match_pair(pair5)
+        stabilityFeeTokensInt, pair7 = sp.match_pair(pair6)
+        interestIndex                = sp.fst(pair7)
+        tokensToBorrow               = sp.snd(pair7)
 
-    #     stabilityFeeTokens = sp.as_nat(stabilityFeeTokensInt)
+        stabilityFeeTokens = sp.as_nat(stabilityFeeTokensInt)
 
-    #     sp.set_type(oraclePrice, sp.TNat)
-    #     sp.set_type(ovenAddress, sp.TAddress)
-    #     sp.set_type(ownerAddress, sp.TAddress)
-    #     sp.set_type(ovenBalance, sp.TNat)
-    #     sp.set_type(borrowedTokens, sp.TNat)
-    #     sp.set_type(isLiquidated, sp.TBool)
-    #     sp.set_type(stabilityFeeTokens, sp.TNat)
-    #     sp.set_type(interestIndex, sp.TInt)
-    #     sp.set_type(tokensToBorrow, sp.TNat)
+        sp.set_type(oraclePrice, sp.TNat)
+        sp.set_type(ovenAddress, sp.TAddress)
+        sp.set_type(ownerAddress, sp.TAddress)
+        sp.set_type(ovenBalance, sp.TNat)
+        sp.set_type(borrowedTokens, sp.TNat)
+        sp.set_type(isLiquidated, sp.TBool)
+        sp.set_type(stabilityFeeTokens, sp.TNat)
+        sp.set_type(interestIndex, sp.TInt)
+        sp.set_type(tokensToBorrow, sp.TNat)
 
-    #     # Calculate new interest indices for the minter and the oven.
-    #     timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
-    #     numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
-    #     newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
+        # Calculate new interest indices for the minter and the oven.
+        timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
+        numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
+        newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
 
-    #     # Disallow repay operations on liquidated ovens.
-    #     sp.verify(isLiquidated == False, message = Errors.LIQUIDATED)
+        # Disallow repay operations on liquidated ovens.
+        sp.verify(isLiquidated == False, message = Errors.LIQUIDATED)
 
-    #     # Calculate newly accrued stability fees and determine total fees.
-    #     accruedStabilityFeeTokens = self.calculateNewAccruedInterest((interestIndex, (borrowedTokens, (stabilityFeeTokens, (newMinterInterestIndex)))))
-    #     newStabilityFeeTokens = stabilityFeeTokens + accruedStabilityFeeTokens
+        # Calculate newly accrued stability fees and determine total fees.
+        accruedStabilityFeeTokens = self.calculateNewAccruedInterest((interestIndex, (borrowedTokens, (stabilityFeeTokens, (newMinterInterestIndex)))))
+        newStabilityFeeTokens = stabilityFeeTokens + accruedStabilityFeeTokens
 
-    #     # Compute new borrowed amount.
-    #     newTotalBorrowedTokens = borrowedTokens + tokensToBorrow
-    #     sp.set_type(newTotalBorrowedTokens, sp.TNat)
+        # Compute new borrowed amount.
+        newTotalBorrowedTokens = borrowedTokens + tokensToBorrow
+        sp.set_type(newTotalBorrowedTokens, sp.TNat)
 
-    #     # Verify the oven is not under-collateralized. 
-    #     totalOutstandingTokens = sp.local('totalOutstandingTokens', newTotalBorrowedTokens + newStabilityFeeTokens)
-    #     sp.if totalOutstandingTokens.value > 0:
-    #         newCollateralizationPercentage = self.computeCollateralizationPercentage((ovenBalance, (oraclePrice, totalOutstandingTokens.value)))
-    #         sp.verify(newCollateralizationPercentage >= self.data.collateralizationPercentage, message = Errors.OVEN_UNDER_COLLATERALIZED)
+        # Verify the oven is not under-collateralized. 
+        totalOutstandingTokens = sp.local('totalOutstandingTokens', newTotalBorrowedTokens + newStabilityFeeTokens)
+        sp.if totalOutstandingTokens.value > 0:
+            newCollateralizationPercentage = self.computeCollateralizationPercentage((ovenBalance, (oraclePrice, totalOutstandingTokens.value)))
+            sp.verify(newCollateralizationPercentage >= self.data.collateralizationPercentage, message = Errors.OVEN_UNDER_COLLATERALIZED)
 
-    #     # Call mint in token contract
-    #     self.mintTokens(tokensToBorrow, ownerAddress)
+        # Call mint in token contract
+        self.mintTokens(tokensToBorrow, ownerAddress)
 
-    #     # Inform oven of new state.
-    #     self.updateOvenState(ovenAddress, newTotalBorrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, sp.balance)
+        # Inform oven of new state.
+        self.updateOvenState(ovenAddress, newTotalBorrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, sp.balance)
 
-    #     # Accrue interest on the global accumulator and mint to developer and stability fund.
-    #     newAmountLoaned = sp.local(
-    #         'newAmountLoaned', 
-    #         self.compoundWithLinearApproximation(
-    #             (
-    #                 self.data.amountLoaned,
-    #                 (
-    #                     self.data.stabilityFee, 
-    #                     numPeriods
-    #                 )
-    #             )
-    #         )
-    #     )
-    #     self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
+        # Accrue interest on the global accumulator and mint to developer and stability fund.
+        newAmountLoaned = sp.local(
+            'newAmountLoaned', 
+            self.compoundWithLinearApproximation(
+                (
+                    self.data.amountLoaned,
+                    (
+                        self.data.stabilityFee, 
+                        numPeriods
+                    )
+                )
+            )
+        )
+        self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
 
-    #     # Update the total amountLoaned 
-    #     # New total loaned = value of amountLoaned after accruing interest until now + newly borrowed tokens
-    #     self.data.amountLoaned = newAmountLoaned.value + tokensToBorrow
+        # Update the total amountLoaned 
+        # New total loaned = value of amountLoaned after accruing interest until now + newly borrowed tokens
+        self.data.amountLoaned = newAmountLoaned.value + tokensToBorrow
 
-    #     # Update internal state
-    #     self.data.interestIndex = newMinterInterestIndex
-    #     self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        # Update internal state
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
-    # # repay
-    # @sp.entry_point
-    # def repay(self, param):
-    #     sp.set_type(param, OvenApi.REPAY_PARAMETER_TYPE)
+    # repay
+    @sp.entry_point
+    def repay(self, param):
+        sp.set_type(param, OvenApi.REPAY_PARAMETER_TYPE)
 
-    #     # Verify the contract is initialized.
-    #     sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
 
-    #     # Verify the sender is the oven proxy.
-    #     sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
+        # Verify the sender is the oven proxy.
+        sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
 
-    #     # Destructure input params.        
-    #     ovenAddress,           pair1 = sp.match_pair(param)
-    #     ownerAddress,          pair2 = sp.match_pair(pair1)
-    #     ovenBalance,           pair3 = sp.match_pair(pair2)
-    #     borrowedTokens,        pair4 = sp.match_pair(pair3)
-    #     isLiquidated,          pair5 = sp.match_pair(pair4)
-    #     stabilityFeeTokensInt, pair6 = sp.match_pair(pair5)
-    #     interestIndex                = sp.fst(pair6)
-    #     tokensToRepay                = sp.snd(pair6)
+        # Destructure input params.        
+        ovenAddress,           pair1 = sp.match_pair(param)
+        ownerAddress,          pair2 = sp.match_pair(pair1)
+        ovenBalance,           pair3 = sp.match_pair(pair2)
+        borrowedTokens,        pair4 = sp.match_pair(pair3)
+        isLiquidated,          pair5 = sp.match_pair(pair4)
+        stabilityFeeTokensInt, pair6 = sp.match_pair(pair5)
+        interestIndex                = sp.fst(pair6)
+        tokensToRepay                = sp.snd(pair6)
 
-    #     stabilityFeeTokens = sp.as_nat(stabilityFeeTokensInt)
+        stabilityFeeTokens = sp.as_nat(stabilityFeeTokensInt)
 
-    #     sp.set_type(ovenAddress, sp.TAddress)
-    #     sp.set_type(ownerAddress, sp.TAddress)
-    #     sp.set_type(ovenBalance, sp.TNat)
-    #     sp.set_type(borrowedTokens, sp.TNat)
-    #     sp.set_type(isLiquidated, sp.TBool)
-    #     sp.set_type(stabilityFeeTokens, sp.TNat)
-    #     sp.set_type(interestIndex, sp.TInt)
-    #     sp.set_type(tokensToRepay, sp.TNat)
+        sp.set_type(ovenAddress, sp.TAddress)
+        sp.set_type(ownerAddress, sp.TAddress)
+        sp.set_type(ovenBalance, sp.TNat)
+        sp.set_type(borrowedTokens, sp.TNat)
+        sp.set_type(isLiquidated, sp.TBool)
+        sp.set_type(stabilityFeeTokens, sp.TNat)
+        sp.set_type(interestIndex, sp.TInt)
+        sp.set_type(tokensToRepay, sp.TNat)
 
-    #     # Calculate new interest indices for the minter and the oven.
-    #     timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
-    #     numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
-    #     newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
+        # Calculate new interest indices for the minter and the oven.
+        timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
+        numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
+        newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
 
-    #     # Disallow repay operations on liquidated ovens.
-    #     sp.verify(isLiquidated == False, message = Errors.LIQUIDATED)
+        # Disallow repay operations on liquidated ovens.
+        sp.verify(isLiquidated == False, message = Errors.LIQUIDATED)
 
-    #     # Calculate newly accrued stability fees and determine total fees.
-    #     accruedStabilityFeeTokens = self.calculateNewAccruedInterest((interestIndex, (borrowedTokens, (stabilityFeeTokens, (newMinterInterestIndex)))))
-    #     newStabilityFeeTokens = stabilityFeeTokens + accruedStabilityFeeTokens
+        # Calculate newly accrued stability fees and determine total fees.
+        accruedStabilityFeeTokens = self.calculateNewAccruedInterest((interestIndex, (borrowedTokens, (stabilityFeeTokens, (newMinterInterestIndex)))))
+        newStabilityFeeTokens = stabilityFeeTokens + accruedStabilityFeeTokens
 
-    #     # Verify the user is not trying to repay more tokens than they owe.
-    #     totalOwedFromOven = newStabilityFeeTokens + borrowedTokens
-    #     sp.verify(tokensToRepay <= totalOwedFromOven, Errors.REPAID_MORE_THAN_OWED)
+        # Verify the user is not trying to repay more tokens than they owe.
+        totalOwedFromOven = newStabilityFeeTokens + borrowedTokens
+        sp.verify(tokensToRepay <= totalOwedFromOven, Errors.REPAID_MORE_THAN_OWED)
 
-    #     # Determine new values for stability fee tokens and borrowed token value. 
-    #     # Also, note down the number of stability fee tokens repaid.
-    #     stabilityFeeTokensRepaid = sp.local("stabilityFeeTokensRepaid", 0)
-    #     remainingStabilityFeeTokens = sp.local("remainingStabilityFeeTokens", 0)
-    #     remainingBorrowedTokenBalance = sp.local("remainingBorrowedTokenBalance", 0)
-    #     sp.if tokensToRepay < newStabilityFeeTokens:
-    #         stabilityFeeTokensRepaid.value = tokensToRepay
-    #         remainingStabilityFeeTokens.value = sp.as_nat(newStabilityFeeTokens - tokensToRepay)
-    #         remainingBorrowedTokenBalance.value = borrowedTokens
-    #     sp.else:
-    #         stabilityFeeTokensRepaid.value = newStabilityFeeTokens
-    #         remainingStabilityFeeTokens.value = sp.nat(0)
-    #         remainingBorrowedTokenBalance.value = sp.as_nat(borrowedTokens - sp.as_nat(tokensToRepay - newStabilityFeeTokens))
+        # Determine new values for stability fee tokens and borrowed token value. 
+        # Also, note down the number of stability fee tokens repaid.
+        stabilityFeeTokensRepaid = sp.local("stabilityFeeTokensRepaid", 0)
+        remainingStabilityFeeTokens = sp.local("remainingStabilityFeeTokens", 0)
+        remainingBorrowedTokenBalance = sp.local("remainingBorrowedTokenBalance", 0)
+        sp.if tokensToRepay < newStabilityFeeTokens:
+            stabilityFeeTokensRepaid.value = tokensToRepay
+            remainingStabilityFeeTokens.value = sp.as_nat(newStabilityFeeTokens - tokensToRepay)
+            remainingBorrowedTokenBalance.value = borrowedTokens
+        sp.else:
+            stabilityFeeTokensRepaid.value = newStabilityFeeTokens
+            remainingStabilityFeeTokens.value = sp.nat(0)
+            remainingBorrowedTokenBalance.value = sp.as_nat(borrowedTokens - sp.as_nat(tokensToRepay - newStabilityFeeTokens))
 
-    #     # Burn the tokens repaid.
-    #     self.burnTokens(tokensToRepay, ownerAddress)
+        # Burn the tokens repaid.
+        self.burnTokens(tokensToRepay, ownerAddress)
 
-    #     # Accrue interest on the global accumulator and mint to developer and stability fund.
-    #     newAmountLoaned = sp.local(
-    #         'newAmountLoaned', 
-    #         self.compoundWithLinearApproximation(
-    #             (
-    #                 self.data.amountLoaned,
-    #                 (
-    #                     self.data.stabilityFee, 
-    #                     numPeriods
-    #                 )
-    #             )
-    #         )
-    #     )
-    #     self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
+        # Accrue interest on the global accumulator and mint to developer and stability fund.
+        newAmountLoaned = sp.local(
+            'newAmountLoaned', 
+            self.compoundWithLinearApproximation(
+                (
+                    self.data.amountLoaned,
+                    (
+                        self.data.stabilityFee, 
+                        numPeriods
+                    )
+                )
+            )
+        )
+        self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
 
-    #     # Update the total amountLoaned 
-    #     # New total loaned = value of amountLoaned after accruing interest until now - newly repaid tokens
-    #     self.data.amountLoaned = sp.as_nat(newAmountLoaned.value - tokensToRepay)
+        # Update the total amountLoaned 
+        # New total loaned = value of amountLoaned after accruing interest until now - newly repaid tokens
+        self.data.amountLoaned = sp.as_nat(newAmountLoaned.value - tokensToRepay)
 
-    #     # Inform oven of new state.
-    #     self.updateOvenState(ovenAddress, remainingBorrowedTokenBalance.value, remainingStabilityFeeTokens.value, newMinterInterestIndex, isLiquidated, sp.balance)
+        # Inform oven of new state.
+        self.updateOvenState(ovenAddress, remainingBorrowedTokenBalance.value, remainingStabilityFeeTokens.value, newMinterInterestIndex, isLiquidated, sp.balance)
 
-    #     # Update internal state
-    #     self.data.interestIndex = newMinterInterestIndex
-    #     self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        # Update internal state
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
-    # # deposit
-    # @sp.entry_point
-    # def deposit(self, param):
-    #     sp.set_type(param, OvenApi.DEPOSIT_PARAMETER_TYPE)
+    # deposit
+    @sp.entry_point
+    def deposit(self, param):
+        sp.set_type(param, OvenApi.DEPOSIT_PARAMETER_TYPE)
 
-    #     # Verify the contract is initialized.
-    #     sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
 
-    #     # Verify the sender is a oven.
-    #     sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
+        # Verify the sender is a oven.
+        sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
 
-    #     # Destructure input params.        
-    #     ovenAddress,           pair1 = sp.match_pair(param)
-    #     ownerAddress,          pair2 = sp.match_pair(pair1)
-    #     ovenBalance,           pair3 = sp.match_pair(pair2)
-    #     borrowedTokens,        pair4 = sp.match_pair(pair3)
-    #     isLiquidated,          pair5 = sp.match_pair(pair4)
-    #     stabilityFeeTokensInt        = sp.fst(pair5)
-    #     interestIndex                = sp.snd(pair5)
+        # Destructure input params.        
+        ovenAddress,           pair1 = sp.match_pair(param)
+        ownerAddress,          pair2 = sp.match_pair(pair1)
+        ovenBalance,           pair3 = sp.match_pair(pair2)
+        borrowedTokens,        pair4 = sp.match_pair(pair3)
+        isLiquidated,          pair5 = sp.match_pair(pair4)
+        stabilityFeeTokensInt        = sp.fst(pair5)
+        interestIndex                = sp.snd(pair5)
 
-    #     stabilityFeeTokens = sp.as_nat(stabilityFeeTokensInt)
+        stabilityFeeTokens = sp.as_nat(stabilityFeeTokensInt)
 
-    #     sp.set_type(ovenAddress, sp.TAddress)
-    #     sp.set_type(ownerAddress, sp.TAddress)
-    #     sp.set_type(ovenBalance, sp.TNat)
-    #     sp.set_type(borrowedTokens, sp.TNat)
-    #     sp.set_type(isLiquidated, sp.TBool)
-    #     sp.set_type(stabilityFeeTokens, sp.TNat)
-    #     sp.set_type(interestIndex, sp.TInt)
+        sp.set_type(ovenAddress, sp.TAddress)
+        sp.set_type(ownerAddress, sp.TAddress)
+        sp.set_type(ovenBalance, sp.TNat)
+        sp.set_type(borrowedTokens, sp.TNat)
+        sp.set_type(isLiquidated, sp.TBool)
+        sp.set_type(stabilityFeeTokens, sp.TNat)
+        sp.set_type(interestIndex, sp.TInt)
 
-    #     # Calculate new interest indices for the minter and the oven.
-    #     timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
-    #     numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
-    #     newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
+        # Calculate new interest indices for the minter and the oven.
+        timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
+        numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
+        newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
 
-    #     # Disallow deposit operations on liquidated ovens.
-    #     sp.verify(isLiquidated == False, message = Errors.LIQUIDATED)
+        # Disallow deposit operations on liquidated ovens.
+        sp.verify(isLiquidated == False, message = Errors.LIQUIDATED)
 
-    #     # Calculate newly accrued stability fees and determine total fees.
-    #     accruedStabilityFeeTokens = self.calculateNewAccruedInterest((interestIndex, (borrowedTokens, (stabilityFeeTokens, (newMinterInterestIndex)))))
-    #     newStabilityFeeTokens = stabilityFeeTokens + accruedStabilityFeeTokens
+        # Calculate newly accrued stability fees and determine total fees.
+        accruedStabilityFeeTokens = self.calculateNewAccruedInterest((interestIndex, (borrowedTokens, (stabilityFeeTokens, (newMinterInterestIndex)))))
+        newStabilityFeeTokens = stabilityFeeTokens + accruedStabilityFeeTokens
 
-    #     # Intentional no-op. Pass value back to oven.
-    #     self.updateOvenState(ovenAddress, borrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, sp.balance)
+        # Intentional no-op. Pass value back to oven.
+        self.updateOvenState(ovenAddress, borrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, sp.balance)
 
-    #     # Update the global accumulator and mint new tokens
-    #     newAmountLoaned = sp.local(
-    #         'newAmountLoaned', 
-    #         self.compoundWithLinearApproximation(
-    #             (
-    #                 self.data.amountLoaned,
-    #                 (
-    #                     self.data.stabilityFee, 
-    #                     numPeriods
-    #                 )
-    #             )
-    #         )
-    #     )
-    #     self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
-    #     self.data.amountLoaned = newAmountLoaned.value
+        # Update the global accumulator and mint new tokens
+        newAmountLoaned = sp.local(
+            'newAmountLoaned', 
+            self.compoundWithLinearApproximation(
+                (
+                    self.data.amountLoaned,
+                    (
+                        self.data.stabilityFee, 
+                        numPeriods
+                    )
+                )
+            )
+        )
+        self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
+        self.data.amountLoaned = newAmountLoaned.value
 
-    #     # Update internal state
-    #     self.data.interestIndex = newMinterInterestIndex
-    #     self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        # Update internal state
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
-    # @sp.entry_point
-    # def withdraw(self, param):
-    #     sp.set_type(param, OvenApi.WITHDRAW_PARAMETER_TYPE_ORACLE)
+    @sp.entry_point
+    def withdraw(self, param):
+        sp.set_type(param, OvenApi.WITHDRAW_PARAMETER_TYPE_ORACLE)
 
-    #     # Verify the contract is initialized.
-    #     sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
 
-    #     # Verify the sender is a oven.
-    #     sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
+        # Verify the sender is a oven.
+        sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
 
-    #     # Destructure input params.        
-    #     oraclePrice,           pair1 = sp.match_pair(param)
-    #     ovenAddress,           pair2 = sp.match_pair(pair1)
-    #     ownerAddress,          pair3 = sp.match_pair(pair2)
-    #     ovenBalance,           pair4 = sp.match_pair(pair3)
-    #     borrowedTokens,        pair5 = sp.match_pair(pair4)
-    #     isLiquidated,          pair6 = sp.match_pair(pair5)
-    #     stabilityFeeTokensInt, pair7 = sp.match_pair(pair6)
-    #     interestIndex                = sp.fst(pair7)
-    #     mutezToWithdraw              = sp.snd(pair7)
+        # Destructure input params.        
+        oraclePrice,           pair1 = sp.match_pair(param)
+        ovenAddress,           pair2 = sp.match_pair(pair1)
+        ownerAddress,          pair3 = sp.match_pair(pair2)
+        ovenBalance,           pair4 = sp.match_pair(pair3)
+        borrowedTokens,        pair5 = sp.match_pair(pair4)
+        isLiquidated,          pair6 = sp.match_pair(pair5)
+        stabilityFeeTokensInt, pair7 = sp.match_pair(pair6)
+        interestIndex                = sp.fst(pair7)
+        mutezToWithdraw              = sp.snd(pair7)
 
-    #     stabilityFeeTokens = sp.as_nat(stabilityFeeTokensInt)
+        stabilityFeeTokens = sp.as_nat(stabilityFeeTokensInt)
 
-    #     sp.set_type(oraclePrice, sp.TNat)
-    #     sp.set_type(ovenAddress, sp.TAddress)
-    #     sp.set_type(ownerAddress, sp.TAddress)
-    #     sp.set_type(ovenBalance, sp.TNat)
-    #     sp.set_type(borrowedTokens, sp.TNat)
-    #     sp.set_type(isLiquidated, sp.TBool)
-    #     sp.set_type(stabilityFeeTokens, sp.TNat)
-    #     sp.set_type(interestIndex, sp.TInt)
-    #     sp.set_type(mutezToWithdraw, sp.TMutez)
+        sp.set_type(oraclePrice, sp.TNat)
+        sp.set_type(ovenAddress, sp.TAddress)
+        sp.set_type(ownerAddress, sp.TAddress)
+        sp.set_type(ovenBalance, sp.TNat)
+        sp.set_type(borrowedTokens, sp.TNat)
+        sp.set_type(isLiquidated, sp.TBool)
+        sp.set_type(stabilityFeeTokens, sp.TNat)
+        sp.set_type(interestIndex, sp.TInt)
+        sp.set_type(mutezToWithdraw, sp.TMutez)
 
-    #     # Calculate new interest indices for the minter and the oven.
-    #     timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
-    #     numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
-    #     newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
+        # Calculate new interest indices for the minter and the oven.
+        timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
+        numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
+        newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
 
-    #     # Calculate newly accrued stability fees and determine total fees.
-    #     accruedStabilityFeeTokens = self.calculateNewAccruedInterest((interestIndex, (borrowedTokens, (stabilityFeeTokens, (newMinterInterestIndex)))))
-    #     newStabilityFeeTokens = stabilityFeeTokens + accruedStabilityFeeTokens
+        # Calculate newly accrued stability fees and determine total fees.
+        accruedStabilityFeeTokens = self.calculateNewAccruedInterest((interestIndex, (borrowedTokens, (stabilityFeeTokens, (newMinterInterestIndex)))))
+        newStabilityFeeTokens = stabilityFeeTokens + accruedStabilityFeeTokens
 
-    #     # Verify the oven has not become under-collateralized.
-    #     totalOutstandingTokens = borrowedTokens + newStabilityFeeTokens
-    #     sp.if totalOutstandingTokens > 0:
-    #         withdrawAmount = sp.fst(sp.ediv(mutezToWithdraw, sp.mutez(1)).open_some()) * Constants.MUTEZ_TO_KOLIBRI_CONVERSION
-    #         newOvenBalance = sp.as_nat(ovenBalance - withdrawAmount)
-    #         newCollateralizationPercentage = self.computeCollateralizationPercentage((newOvenBalance, (oraclePrice, totalOutstandingTokens))) 
-    #         sp.verify(newCollateralizationPercentage >= self.data.collateralizationPercentage, message = Errors.OVEN_UNDER_COLLATERALIZED)
+        # Verify the oven has not become under-collateralized.
+        totalOutstandingTokens = borrowedTokens + newStabilityFeeTokens
+        sp.if totalOutstandingTokens > 0:
+            withdrawAmount = sp.fst(sp.ediv(mutezToWithdraw, sp.mutez(1)).open_some()) * Constants.MUTEZ_TO_KOLIBRI_CONVERSION
+            newOvenBalance = sp.as_nat(ovenBalance - withdrawAmount)
+            newCollateralizationPercentage = self.computeCollateralizationPercentage((newOvenBalance, (oraclePrice, totalOutstandingTokens))) 
+            sp.verify(newCollateralizationPercentage >= self.data.collateralizationPercentage, message = Errors.OVEN_UNDER_COLLATERALIZED)
 
-    #     # Withdraw mutez to the owner.
-    #     sp.send(ownerAddress, mutezToWithdraw)
+        # Withdraw mutez to the owner.
+        sp.send(ownerAddress, mutezToWithdraw)
 
-    #     # Update the oven's state and return the remaining mutez to it.
-    #     remainingMutez = sp.utils.nat_to_mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION) - mutezToWithdraw
-    #     self.updateOvenState(ovenAddress, borrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, remainingMutez)
+        # Update the oven's state and return the remaining mutez to it.
+        remainingMutez = sp.utils.nat_to_mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION) - mutezToWithdraw
+        self.updateOvenState(ovenAddress, borrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, remainingMutez)
         
-    #     # Update the global accumulator and mint new tokens
-    #     newAmountLoaned = sp.local(
-    #         'newAmountLoaned', 
-    #         self.compoundWithLinearApproximation(
-    #             (
-    #                 self.data.amountLoaned,
-    #                 (
-    #                     self.data.stabilityFee, 
-    #                     numPeriods
-    #                 )
-    #             )
-    #         )
-    #     )
-    #     self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
-    #     self.data.amountLoaned = newAmountLoaned.value
+        # Update the global accumulator and mint new tokens
+        newAmountLoaned = sp.local(
+            'newAmountLoaned', 
+            self.compoundWithLinearApproximation(
+                (
+                    self.data.amountLoaned,
+                    (
+                        self.data.stabilityFee, 
+                        numPeriods
+                    )
+                )
+            )
+        )
+        self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
+        self.data.amountLoaned = newAmountLoaned.value
 
-    #     # Update internal state
-    #     self.data.interestIndex = newMinterInterestIndex
-    #     self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        # Update internal state
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
-    # # liquidate
-    # @sp.entry_point
-    # def liquidate(self, param):
-    #     sp.set_type(param, OvenApi.LIQUIDATE_PARAMETER_TYPE_ORACLE)
+    # liquidate
+    @sp.entry_point
+    def liquidate(self, param):
+        sp.set_type(param, OvenApi.LIQUIDATE_PARAMETER_TYPE_ORACLE)
 
-    #     # Verify the contract is initialized.
-    #     sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
 
-    #     # Verify the sender is a oven.
-    #     sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
+        # Verify the sender is a oven.
+        sp.verify(sp.sender == self.data.ovenProxyContractAddress, message = Errors.NOT_OVEN_PROXY)
 
-    #     # Destructure input params.        
-    #     oraclePrice,           pair1 = sp.match_pair(param)
-    #     ovenAddress,           pair2 = sp.match_pair(pair1)
-    #     ownerAddress,          pair3 = sp.match_pair(pair2)
-    #     ovenBalance,           pair4 = sp.match_pair(pair3)
-    #     borrowedTokens,        pair5 = sp.match_pair(pair4)
-    #     isLiquidated,          pair6 = sp.match_pair(pair5)
-    #     stabilityFeeTokensInt, pair7 = sp.match_pair(pair6)
-    #     interestIndex                = sp.fst(pair7)
-    #     liquidatorAddress            = sp.snd(pair7)
+        # Destructure input params.        
+        oraclePrice,           pair1 = sp.match_pair(param)
+        ovenAddress,           pair2 = sp.match_pair(pair1)
+        ownerAddress,          pair3 = sp.match_pair(pair2)
+        ovenBalance,           pair4 = sp.match_pair(pair3)
+        borrowedTokens,        pair5 = sp.match_pair(pair4)
+        isLiquidated,          pair6 = sp.match_pair(pair5)
+        stabilityFeeTokensInt, pair7 = sp.match_pair(pair6)
+        interestIndex                = sp.fst(pair7)
+        liquidatorAddress            = sp.snd(pair7)
 
-    #     stabilityFeeTokens = sp.as_nat(stabilityFeeTokensInt)
+        stabilityFeeTokens = sp.as_nat(stabilityFeeTokensInt)
 
-    #     sp.set_type(oraclePrice, sp.TNat)
-    #     sp.set_type(ovenAddress, sp.TAddress)
-    #     sp.set_type(ownerAddress, sp.TAddress)
-    #     sp.set_type(ovenBalance, sp.TNat)
-    #     sp.set_type(borrowedTokens, sp.TNat)
-    #     sp.set_type(isLiquidated, sp.TBool)
-    #     sp.set_type(stabilityFeeTokens, sp.TNat)
-    #     sp.set_type(interestIndex, sp.TInt)
-    #     sp.set_type(liquidatorAddress, sp.TAddress)
+        sp.set_type(oraclePrice, sp.TNat)
+        sp.set_type(ovenAddress, sp.TAddress)
+        sp.set_type(ownerAddress, sp.TAddress)
+        sp.set_type(ovenBalance, sp.TNat)
+        sp.set_type(borrowedTokens, sp.TNat)
+        sp.set_type(isLiquidated, sp.TBool)
+        sp.set_type(stabilityFeeTokens, sp.TNat)
+        sp.set_type(interestIndex, sp.TInt)
+        sp.set_type(liquidatorAddress, sp.TAddress)
 
-    #     # Calculate new interest indices for the minter and the oven.
-    #     timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
-    #     numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
-    #     newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
+        # Calculate new interest indices for the minter and the oven.
+        timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
+        numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
+        newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
 
-    #     # Disallow additional liquidate operations on liquidated ovens.
-    #     sp.verify(isLiquidated == False, message = Errors.LIQUIDATED)
+        # Disallow additional liquidate operations on liquidated ovens.
+        sp.verify(isLiquidated == False, message = Errors.LIQUIDATED)
 
-    #     # Calculate newly accrued stability fees and determine total fees.
-    #     accruedStabilityFeeTokens = self.calculateNewAccruedInterest((interestIndex, (borrowedTokens, (stabilityFeeTokens, (newMinterInterestIndex)))))
-    #     newStabilityFeeTokens = stabilityFeeTokens + accruedStabilityFeeTokens
+        # Calculate newly accrued stability fees and determine total fees.
+        accruedStabilityFeeTokens = self.calculateNewAccruedInterest((interestIndex, (borrowedTokens, (stabilityFeeTokens, (newMinterInterestIndex)))))
+        newStabilityFeeTokens = stabilityFeeTokens + accruedStabilityFeeTokens
 
-    #     # Verify oven is under collateralized
-    #     totalOutstandingTokens = borrowedTokens + newStabilityFeeTokens
-    #     collateralizationPercentage = self.computeCollateralizationPercentage((ovenBalance, (oraclePrice, totalOutstandingTokens)))
-    #     sp.verify(collateralizationPercentage < self.data.collateralizationPercentage, message = Errors.NOT_UNDER_COLLATERALIZED)
+        # Verify oven is under collateralized
+        totalOutstandingTokens = borrowedTokens + newStabilityFeeTokens
+        collateralizationPercentage = self.computeCollateralizationPercentage((ovenBalance, (oraclePrice, totalOutstandingTokens)))
+        sp.verify(collateralizationPercentage < self.data.collateralizationPercentage, message = Errors.NOT_UNDER_COLLATERALIZED)
 
-    #     # Verify liquidation is allowed.
-    #     # Undercollateralization is performed as a check above.
-    #     # Liquidity Pool and Stability Fund can always liquidate, others must be below privateLiquidationFeePercentage
-    #     privateLiquidationRequirement = sp.as_nat(self.data.collateralizationPercentage - self.data.privateOwnerLiquidationThreshold)
-    #     sp.verify(
-    #         (liquidatorAddress == self.data.liquidityPoolContractAddress) | # sender is liquidity pool
-    #         (liquidatorAddress == self.data.stabilityFundContractAddress) | # sender is stability fund
-    #         (collateralizationPercentage < privateLiquidationRequirement), # sender is private and collateralization is below privateLiquidationFeePercentage
-    #         Errors.NOT_ALLOWED_TO_LIQUIDATE
-    #     )
+        # Verify liquidation is allowed.
+        # Undercollateralization is performed as a check above.
+        # Liquidity Pool and Stability Fund can always liquidate, others must be below privateLiquidationFeePercentage
+        privateLiquidationRequirement = sp.as_nat(self.data.collateralizationPercentage - self.data.privateOwnerLiquidationThreshold)
+        sp.verify(
+            (liquidatorAddress == self.data.liquidityPoolContractAddress) | # sender is liquidity pool
+            (liquidatorAddress == self.data.stabilityFundContractAddress) | # sender is stability fund
+            (collateralizationPercentage < privateLiquidationRequirement), # sender is private and collateralization is below privateLiquidationFeePercentage
+            Errors.NOT_ALLOWED_TO_LIQUIDATE
+        )
 
-    #     # Calculate a liquidation fee.
-    #     liquidationFee = (totalOutstandingTokens * self.data.liquidationFeePercent) // Constants.PRECISION
+        # Calculate a liquidation fee.
+        liquidationFee = (totalOutstandingTokens * self.data.liquidationFeePercent) // Constants.PRECISION
 
-    #     # Burn tokens from the liquidator to pay for the Oven.
-    #     self.burnTokens((totalOutstandingTokens + liquidationFee), liquidatorAddress)
+        # Burn tokens from the liquidator to pay for the Oven.
+        self.burnTokens((totalOutstandingTokens + liquidationFee), liquidatorAddress)
                 
-    #     # Send collateral to liquidator.
-    #     sp.send(liquidatorAddress, sp.utils.nat_to_mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION))
+        # Send collateral to liquidator.
+        sp.send(liquidatorAddress, sp.utils.nat_to_mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION))
 
-    #     # Inform oven it is liquidated, clear owed tokens and return no collateral.
-    #     self.updateOvenState(ovenAddress, sp.nat(0), sp.nat(0), newMinterInterestIndex, True, sp.mutez(0))
+        # Inform oven it is liquidated, clear owed tokens and return no collateral.
+        self.updateOvenState(ovenAddress, sp.nat(0), sp.nat(0), newMinterInterestIndex, True, sp.mutez(0))
 
-    #     # Accrue interest on the global accumulator
-    #     newAmountLoaned = sp.local(
-    #         'newAmountLoaned', 
-    #         self.compoundWithLinearApproximation(
-    #             (
-    #                 self.data.amountLoaned,
-    #                 (
-    #                     self.data.stabilityFee, 
-    #                     numPeriods
-    #                 )
-    #             )
-    #         )
-    #     )
+        # Accrue interest on the global accumulator
+        newAmountLoaned = sp.local(
+            'newAmountLoaned', 
+            self.compoundWithLinearApproximation(
+                (
+                    self.data.amountLoaned,
+                    (
+                        self.data.stabilityFee, 
+                        numPeriods
+                    )
+                )
+            )
+        )
 
-    #     # Mint tokens to the developer and stability funds. 
-    #     # Amount to mint = new interest accrued globally + liquidation fee
-    #     self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned) + liquidationFee)
+        # Mint tokens to the developer and stability funds. 
+        # Amount to mint = new interest accrued globally + liquidation fee
+        self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned) + liquidationFee)
 
-    #     # Update the total amountLoaned 
-    #     # New total loaned = value of amountLoaned after accruing interest until now - tokens repaid to liquidate oven
-    #     self.data.amountLoaned = sp.as_nat(newAmountLoaned.value - totalOutstandingTokens)
+        # Update the total amountLoaned 
+        # New total loaned = value of amountLoaned after accruing interest until now - tokens repaid to liquidate oven
+        self.data.amountLoaned = sp.as_nat(newAmountLoaned.value - totalOutstandingTokens)
         
-    #     # Update internal state
-    #     self.data.interestIndex = newMinterInterestIndex
-    #     self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        # Update internal state
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
-    # ################################################################
-    # # Governance
-    # #
-    # # Some of these are lumped together to avoid excessive contract
-    # # size.
-    # ################################################################
+    ################################################################
+    # Governance
+    #
+    # Some of these are lumped together to avoid excessive contract
+    # size.
+    ################################################################
 
-    # @sp.entry_point
-    # def setStabilityFee(self, newStabilityFee):
-    #     sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+    @sp.entry_point
+    def setStabilityFee(self, newStabilityFee):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
 
-    #     # Verify the contract is initialized.
-    #     sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
+        # Verify the contract is initialized.
+        sp.verify(self.data.initialized == True, message = Errors.NOT_INITIALIZED)
 
-    #     # Compound interest and update internal state.
-    #     timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
-    #     numPeriods = sp.local('numPeriods', timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
-    #     newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods.value)))
-    #     self.data.interestIndex = newMinterInterestIndex
-    #     self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods.value * Constants.SECONDS_PER_COMPOUND))
+        # Compound interest and update internal state.
+        timeDeltaSeconds = sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime)
+        numPeriods = sp.local('numPeriods', timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND)
+        newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods.value)))
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods.value * Constants.SECONDS_PER_COMPOUND))
 
-    #     # Update the global accumulator and mint new tokens
-    #     newAmountLoaned = sp.local(
-    #         'newAmountLoaned', 
-    #         self.compoundWithLinearApproximation(
-    #             (
-    #                 self.data.amountLoaned,
-    #                 (
-    #                     self.data.stabilityFee, 
-    #                     numPeriods.value
-    #                 )
-    #             )
-    #         )
-    #     )
-    #     self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
-    #     self.data.amountLoaned = newAmountLoaned.value
+        # Update the global accumulator and mint new tokens
+        newAmountLoaned = sp.local(
+            'newAmountLoaned', 
+            self.compoundWithLinearApproximation(
+                (
+                    self.data.amountLoaned,
+                    (
+                        self.data.stabilityFee, 
+                        numPeriods.value
+                    )
+                )
+            )
+        )
+        self.mintTokensToStabilityAndDevFund(sp.as_nat(newAmountLoaned.value - self.data.amountLoaned))
+        self.data.amountLoaned = newAmountLoaned.value
 
-    #     self.data.stabilityFee = newStabilityFee
+        self.data.stabilityFee = newStabilityFee
 
-    # @sp.entry_point
-    # def setLiquidationFeePercent(self, newLiquidationFeePercent):
-    #     sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-    #     self.data.liquidationFeePercent = newLiquidationFeePercent
+    @sp.entry_point
+    def setLiquidationFeePercent(self, newLiquidationFeePercent):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.liquidationFeePercent = newLiquidationFeePercent
 
-    # @sp.entry_point
-    # def setCollateralizationPercentage(self, newCollateralizationPercentage):
-    #     sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-    #     self.data.collateralizationPercentage = newCollateralizationPercentage
+    @sp.entry_point
+    def setCollateralizationPercentage(self, newCollateralizationPercentage):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.collateralizationPercentage = newCollateralizationPercentage
 
-    # @sp.entry_point
-    # def setLiquidityPoolContract(self, newLiquidityPoolContract):
-    #     sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-    #     self.data.liquidityPoolContractAddress = newLiquidityPoolContract
+    @sp.entry_point
+    def setLiquidityPoolContract(self, newLiquidityPoolContract):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.liquidityPoolContractAddress = newLiquidityPoolContract
 
-    # @sp.entry_point
-    # def setPrivateLiquidationThreshold(self, newValue):
-    #     sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-    #     self.data.privateOwnerLiquidationThreshold = newValue
+    @sp.entry_point
+    def setPrivateLiquidationThreshold(self, newValue):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.privateOwnerLiquidationThreshold = newValue
 
-    # @sp.entry_point   
-    # def setGovernorContract(self, newGovernorContract):
-    #     sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-    #     self.data.governorContractAddress = newGovernorContract
+    @sp.entry_point   
+    def setGovernorContract(self, newGovernorContract):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.governorContractAddress = newGovernorContract
 
-    # @sp.entry_point
-    # def setTokenContract(self, newTokenContract):
-    #     sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-    #     self.data.tokenContractAddress = newTokenContract
+    @sp.entry_point
+    def setTokenContract(self, newTokenContract):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.tokenContractAddress = newTokenContract
 
-    # @sp.entry_point
-    # def setOvenProxyContract(self, newOvenProxyContract):
-    #     sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-    #     self.data.ovenProxyContractAddress = newOvenProxyContract       
+    @sp.entry_point
+    def setOvenProxyContract(self, newOvenProxyContract):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.ovenProxyContractAddress = newOvenProxyContract       
 
-    # @sp.entry_point
-    # def setStabilityFundContract(self, newStabilityFund):
-    #     sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-    #     self.data.stabilityFundContractAddress = newStabilityFund
+    @sp.entry_point
+    def setStabilityFundContract(self, newStabilityFund):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.stabilityFundContractAddress = newStabilityFund
         
-    # @sp.entry_point
-    # def setDeveloperFundContract(self, newDeveloperFund):
-    #     sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-    #     self.data.developerFundContractAddress = newDeveloperFund      
+    @sp.entry_point
+    def setDeveloperFundContract(self, newDeveloperFund):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.developerFundContractAddress = newDeveloperFund      
 
-    # @sp.entry_point
-    # def setInitializerContract(self, newInitializer):
-    #     sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-    #     self.data.initializerContractAddress = newInitializer      
+    @sp.entry_point
+    def setInitializerContract(self, newInitializer):
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        self.data.initializerContractAddress = newInitializer      
 
-    # # Update the splits between the funds
-    # @sp.entry_point
-    # def updateFundSplits(self, newSplits):
-    #     sp.set_type(newSplits, sp.TRecord(
-    #         developerFundSplit = sp.TNat,
-    #         stabilityFundSplit = sp.TNat,
-    #     ).layout(("developerFundSplit", "stabilityFundSplit")))
+    # Update the splits between the funds
+    @sp.entry_point
+    def updateFundSplits(self, newSplits):
+        sp.set_type(newSplits, sp.TRecord(
+            developerFundSplit = sp.TNat,
+            stabilityFundSplit = sp.TNat,
+        ).layout(("developerFundSplit", "stabilityFundSplit")))
 
-    #     # Verify splits sum to 1.0
-    #     sp.verify((newSplits.developerFundSplit + newSplits.stabilityFundSplit) == Constants.PRECISION, Errors.BAD_SPLITS)
+        # Verify splits sum to 1.0
+        sp.verify((newSplits.developerFundSplit + newSplits.stabilityFundSplit) == Constants.PRECISION, Errors.BAD_SPLITS)
 
-    #     # Verify sender is the governor
-    #     sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
+        # Verify sender is the governor
+        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
 
-    #     self.data.devFundSplit = newSplits.developerFundSplit
+        self.data.devFundSplit = newSplits.developerFundSplit
      
     ################################################################
     # Helpers
@@ -936,6 +936,50 @@ if __name__ == "__main__":
     #     def compute(self, scope):
     #         self.data.result = sp.some(self.f(scope))
 
+    # TODO(keefertaylor): Document
+    # TODO(keefertaylor): Rename
+    # TODO(keefertaylor): Can I unify these?
+    class TestOnchainView(sp.Contract):
+        def __init__(self, method):
+            self.f = sp.build_lambda(method.f)
+            self.init(result = sp.none)
+            self.compoundWithLinearApproximation_implementation = MinterContract.compoundWithLinearApproximation_implementation
+
+        @sp.entry_point
+        def compute(self, scope):
+            self.data.result = sp.some(self.f(scope))
+
+    # @sp.add_test(name = "getCurrentInterestIndex - returns the correct interest index")
+    # def test():
+    #     scenario = sp.test_scenario()
+    
+    #     # GIVEN a minter contract with a stability fee
+    #     interestIndex = Constants.PRECISION # 1.0
+    #     initialTime = sp.timestamp(0) # The beginning of time
+    #     minter = MinterContract(
+    #         interestIndex = interestIndex,
+    #         stabilityFee = Constants.PRECISION // 10, # 10%
+    #         lastInterestIndexUpdateTime = initialTime, 
+    #     )
+    #     scenario += minter
+    
+    #     # AND a tester to test the view at different points in time
+    #     tester = TestOnchainView(minter.viewWithUnitParam)
+    #     scenario += tester
+
+    #     # WHEN the tester is run after no interest periods
+    #     # THEN the original interestIndex is returned
+    #     noTimeLater = initialTime
+    #     scenario += tester.compute(
+    #         sp.record(
+    #             data = minter.data, 
+    #             compoundWithLinearApproximation = minter.compoundWithLinearApproximation
+    #         )
+    #     ).run(
+    #         now = noTimeLater
+    #     )
+    #     scenario.verify(tester.data.result.open_some() == interestIndex)
+
     ################################################################
     # calculateNewAccruedInterest
     ################################################################
@@ -985,9 +1029,9 @@ if __name__ == "__main__":
     #     )
     #     scenario.verify(tester.data.result.open_some() == 21 * Constants.PRECISION)
         
-    # ################################################################
-    # # compoundWithLinearApproximation
-    # ################################################################
+    ################################################################
+    # compoundWithLinearApproximation
+    ################################################################
         
     # @sp.add_test(name="compoundWithLinearApproximation")
     # def test():
