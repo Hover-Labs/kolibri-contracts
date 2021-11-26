@@ -939,10 +939,8 @@ if __name__ == "__main__":
     #     def compute(self, scope):
     #         self.data.result = sp.some(self.f(scope))
 
-    # TODO(keefertaylor): Document
-    # TODO(keefertaylor): Rename
-    # TODO(keefertaylor): Can I unify these?
-    class TestOnchainView(sp.Contract):
+    # Test an on chain view that takes a Unit parameter.
+    class OnChainViewTester(sp.Contract):
         def __init__(self, method):
             self.f = sp.build_lambda(method.f)
             self.init(result = sp.none)
@@ -4709,19 +4707,7 @@ if __name__ == "__main__":
     # getInterestIndex
     ################################################################        
 
-    # TODO(keefertaylor): Document
-    # TODO(keefertaylor): Move to the correct location
-    # TODO(keefertaylor): Rename
-    # TODO(keefertaylor): Can I unify these?
-    class TestOnchainView(sp.Contract):
-        def __init__(self, method):
-            self.f = sp.build_lambda(method.f)
-            self.init(result = sp.none)
-            self.compoundWithLinearApproximation_implementation = MinterContract.compoundWithLinearApproximation_implementation
-
-        @sp.entry_point
-        def compute(self, scope):
-            self.data.result = sp.some(self.f(scope))
+    
 
     @sp.add_test(name = "getCurrentInterestIndex - returns the correct interest index")
     def test():
@@ -4738,7 +4724,7 @@ if __name__ == "__main__":
         scenario += minter
     
         # AND a tester to test the view at different points in time
-        tester = TestOnchainView(minter.viewWithUnitParam)
+        tester = OnChainViewTester(minter.viewWithUnitParam)
         scenario += tester
 
         # WHEN the tester is run after no interest periods
