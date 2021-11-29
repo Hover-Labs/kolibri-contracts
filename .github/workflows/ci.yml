@@ -31,7 +31,6 @@ jobs:
     - name: "Build and Test Smart Contracts"
       run: |
         cd smart_contracts
-        ./compile.sh
         make all
 
   lint_and_build_deploy_scripts:
@@ -73,7 +72,20 @@ jobs:
     - name: "Build and lint deploy scripts"
       run: |
         cd migrations/contracts-1.2
-        npm i        
+        npm i      
+
+  build_contracts_1_3_migration:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+    - name: "Install Dependencies"
+      run: |
+        sudo apt-get update && sudo apt-get install build-essential git libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+    - name: "Build and lint deploy scripts"
+      run: |
+        cd migrations/contracts-1.3
+        npm i                
 
   notify_complete:
     runs-on: ubuntu-latest

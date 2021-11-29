@@ -154,7 +154,7 @@ compile-dev-fund:
 compile-minter:
 	$(SMART_PY_CLI) compile minter.py $(OUT_DIR)
 	cp $(OUT_DIR)/minter/step_000_cont_0_contract.tz minter.tz
-	rm -rf $(OUT_DIR)
+#	rm -rf $(OUT_DIR)
 
 # Compile the Oracle
 compile-oracle:
