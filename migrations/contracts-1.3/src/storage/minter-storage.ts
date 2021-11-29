@@ -1,0 +1,4 @@
+export const generateMinterStorage = () => {
+  // TODO(keefertaylor): Generate real storage here.
+  return `(Pair (Pair (Pair (Pair 0 200000000000000000000) (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" True) (Pair "tz1RCFbB9GpALpsZtu6J58sb74dm8qe6XBzv" 1000000000000000000))) (Pair (Pair (Pair "2020-10-05T04:17:36Z" 80000000000000000) (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm")) (Pair (Pair 20000000000000000000 0) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))))`
+}
