@@ -20,9 +20,9 @@ export const KOLIBRI_CONFIG: KolibriConfig = {
 
 export const MIGRATION_CONFIG = {
   // Initial Interest Rate for Savings Pool 
-  // 7% Interest
-  // See https://www.wolframalpha.com/input/?i=ln%281+%2B+0.07%29+%2F+%2860+*+24+*+365%29
-  initialInterestRate: new BigNumber('128726500140'),
+  // 10% Interest
+  // See: https://www.wolframalpha.com/input/?i=%281+%2B+0.000000181335958532%29%5E%28365+*+24+*+60%29
+  initialInterestRate: new BigNumber('181335958532'),
 
   // Configuration for the Multisig that will become governor of the old stability fund
   stabilityFundMsig: {
