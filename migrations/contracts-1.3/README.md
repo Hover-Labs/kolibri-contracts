@@ -48,3 +48,4 @@ ts-node src/flows/migrate.ts
 - post proposal verifications
 - validate that we can init the contract
 - fix any TODOs
+- amountLoaned == amountMinted

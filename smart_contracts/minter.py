@@ -75,9 +75,30 @@ class MinterContract(sp.Contract):
     # KIP-009
     ################################################################
       
-    # Initialize the global accumulator
+    # Initialize the Minter.
+    #
+    # This entrypoint initializes a global accumulator of the total amount of kUSD minted in the minter (amountLoaned).
+    # It also "trues up" the developer and stability fund, by minting the unrealized interest 
+    # (amountLoaned - amountMinted) to the funds. 
+    #
+    # After this method is completed, token.totalSupply should always be equivalent to minter.amountLoaned
+    # 
+    # Parameters:
+    # - amountLoaned (nat): The current amount of money loaned across all ovens, including interest which has not yet
+    #                       been realized. This value should be computed by totalling the liabilities of all ovens at
+    #                       the same block height.
+    # - amountMinted (nat): The amount of kUSD that is currently in existence. This value should be taken from
+    #                       TokenContract.totalSupply
     @sp.entry_point
-    def initialize(self, amountLoaned):
+    def initialize(self, params):
+        sp.set_type(
+            params,
+            sp.TRecord(
+                amountLoaned = sp.TNat,
+                amountMinted = sp.TNat,
+            ) 
+        )
+
         # Verify contract is not already initialized.
         sp.verify(self.data.initialized == False, Errors.ALREADY_INITIALIZED)
 
@@ -85,7 +106,11 @@ class MinterContract(sp.Contract):
         sp.verify(sp.sender == self.data.initializerContractAddress, Errors.BAD_SENDER)
 
         # Set up global interest accumulator.
-        self.data.amountLoaned = amountLoaned
+        self.data.amountLoaned = params.amountLoaned
+
+        # Mint the delta
+        delta = sp.as_nat(params.amountLoaned - params.amountMinted)
+        self.mintTokensToStabilityAndDevFund(delta)
 
         # Set contract to be initialized
         self.data.initialized = True
@@ -4775,23 +4800,64 @@ if __name__ == "__main__":
     def test():
         scenario = sp.test_scenario()
 
-        # GIVEN an unitialized Minter contract
+        # GIVEN a token contract
+        governorAddress = Addresses.GOVERNOR_ADDRESS
+        token = Token.FA12(
+            admin = governorAddress
+        )
+        scenario += token
+
+        # AND an unitialized Minter contract
         initializer = Addresses.INITIALIZER_ADDRESS
+        devFundSplit = sp.nat(100000000000000000)
         minter = MinterContract(
+            tokenContractAddress = token.address,
+            developerFundContractAddress = Addresses.DEVELOPER_FUND_ADDRESS,
+            stabilityFundContractAddress = Addresses.STABILITY_FUND_ADDRESS,
+
+            devFundSplit = devFundSplit,
+
             initializerContractAddress = initializer,
             initialized = False,
             amountLoaned = sp.nat(0)
         )
         scenario += minter
 
+
+        # AND the minter is set as the administrator of the token contract
+        scenario += token.setAdministrator(minter.address).run(
+            sender = governorAddress
+        )
+
         # WHEN initialize is called
-        amountLoaned = sp.nat(123)
-        scenario += minter.initialize(amountLoaned).run(
+        amountLoaned = sp.nat(100)
+        amountMinted = sp.nat(0)
+        param = sp.record(
+            amountLoaned = amountLoaned,
+            amountMinted = amountMinted
+        )
+        scenario += minter.initialize(param).run(
             sender = initializer
         )
 
         # THEN the contract initializes amountLoaned storage variable
         scenario.verify(minter.data.amountLoaned == amountLoaned)
+
+        # AND the amount loaned matches the total supply in the token contract
+        scenario.verify(minter.data.amountLoaned == token.data.totalSupply)
+
+        # AND the developer and stability fund received the interest that was trued up.
+        # Expected Dev Fund Amount = (amountLoaned - amountMinted) * devFundSplit
+        #                          = (100 - 0) * 0.1
+        #                          = 100 * 0.1
+        #                          = 10
+        #
+        # Expected Stability Fund Amount = (amountLoaned - amountMinted) - expectedDevFundAmount
+        #                                = (100 - 0) - 10
+        #                                = 100 - 10
+        #                                = 90
+        scenario.verify(token.data.balances[Addresses.DEVELOPER_FUND_ADDRESS].balance == 10)
+        scenario.verify(token.data.balances[Addresses.STABILITY_FUND_ADDRESS].balance == 90)        
 
         # AND the contract is set to be initialized
         scenario.verify(minter.data.initialized == True)
@@ -4812,7 +4878,12 @@ if __name__ == "__main__":
         # WHEN initialize is called
         # THEN the call fails with ALREADY_INITIALIZED
         amountLoaned = sp.nat(123)
-        scenario += minter.initialize(amountLoaned).run(
+        amountMinted = sp.nat(0)
+        param = sp.record(
+            amountLoaned = amountLoaned,
+            amountMinted = amountMinted
+        )
+        scenario += minter.initialize(param).run(
             sender = initializer,
             
             valid = False,
@@ -4836,7 +4907,12 @@ if __name__ == "__main__":
         # THEN the call fails with BAD_SENDER
         notInitializer = Addresses.NULL_ADDRESS
         amountLoaned = sp.nat(123)
-        scenario += minter.initialize(amountLoaned).run(
+        amountMinted = sp.nat(0)
+        param = sp.record(
+            amountLoaned = amountLoaned,
+            amountMinted = amountMinted
+        )
+        scenario += minter.initialize(param).run(
             sender = notInitializer,
             
             valid = False,
