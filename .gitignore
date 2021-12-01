@@ -10,3 +10,5 @@ node_modules/
 
 # Smart contract build artifacts
 smart_contracts/.smartpy_out
+
+.idea/
