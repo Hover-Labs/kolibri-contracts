@@ -21,7 +21,7 @@ const main = async () => {
     console.log("Deployer initialized!")
     console.log('')
 
-    // Load Contract Soruces
+    // Load Contract Sources
     console.log("Loading Contracts...")
     const contractSources = {
       stabilityFundContractSource: loadContract(`${__dirname}/../../../../smart_contracts/stability-fund.tz`),
