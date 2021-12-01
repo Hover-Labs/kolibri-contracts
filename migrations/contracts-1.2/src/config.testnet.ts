@@ -13,9 +13,9 @@ export const NETWORK_CONFIG: NetworkConfig = {
 
 export const KOLIBRI_CONFIG: KolibriConfig = {
   contracts: CONTRACTS.TEST,
-  escrowAmount: 1000000000000000000000,
-  governanceVoteLength: 10080,
-  governanceTimelockLength: 4320,
+  escrowAmount: 1,
+  governanceVoteLength: 10,
+  governanceTimelockLength: 6,
 }
 
 export const MIGRATION_CONFIG = {
@@ -26,12 +26,10 @@ export const MIGRATION_CONFIG = {
 
   // Configuration for the Multisig that will become governor of the old stability fund
   stabilityFundMsig: {
-    threshold: 2,
+    threshold: 1,
     timelockSeconds: 0,
     publicKeys: [
-      'edpkuLh768382911CBbWkCN9joZkaZinKKeqPeMnxSoUb3X4TV7GpJ', // tz1YeYpdJshsXxkPdSdKUJaF1QmH1ngCrJ7V, Keefer
-      'edpktxA2V59rHy8FyHyfkiayz3y4cTYBcTWpooKJnREgBzJzLV7ZMT', // tz1Zygasw3bGh9uer7ue2KABjGFYpPsZVazZ, Luke
-      'edpkuPu3FQqWPFTXRT21BBCy5pstVoM6ynwzz9SaFnr6TVrg5Z7GrK', // tz1Xh11mHYWxbYHv55AVhsPPPJeSp8PunERB, Ryan
+      'edpkuLautNoSUnM3ynaYfkPgnJD9jLKj8VvFYieipoUYx3M5kjYenx', // tz1hover5EYqdWBtwxDfNVwQ1vvZ67u3ax1N, Hover Testnet Key, held by Keefer
     ],
   }
 }
