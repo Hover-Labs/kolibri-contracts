@@ -101,10 +101,6 @@ npm run install-submodules
 rm -rf src/config.ts deploy-data.json
 ```
 
-**Reset Sandbox**
-
-Use the Discord bot!
-
 **Run Migration**
 
 NOTE: The DEPLOY_SK account needs $3 of kUSD on it to complete this migration.
