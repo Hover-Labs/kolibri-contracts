@@ -172,7 +172,7 @@ NOTE: The DEPLOY_SK account needs $3 of kUSD on it to complete this migration.
 
 ```
 export DEPLOY_SK=esdk...
-cp src/config.testnet.ts src/config.ts
+cp src/config.mainnet.ts src/config.ts
 ts-node src/flows/migrate.ts
 ```
 
