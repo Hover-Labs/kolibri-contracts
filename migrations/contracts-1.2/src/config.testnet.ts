@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js";
 
 export const NETWORK_CONFIG: NetworkConfig = {
   name: 'Granada Testnet',
-  tezosNodeUrl: 'https://rpctest.tzbeta.net',
+  tezosNodeUrl: "https://granadanet.api.tez.ie/",
   betterCallDevUrl: 'https://api.better-call.dev/v1',
   requiredConfirmations: 2,
   maxConfirmationPollingRetries: 10,
@@ -19,7 +19,7 @@ export const KOLIBRI_CONFIG: KolibriConfig = {
 }
 
 export const MIGRATION_CONFIG = {
-  // Initial Interest Rate for Savings Pool 
+  // Initial Interest Rate for Savings Pool
   // 10% Interest
   // See: https://www.wolframalpha.com/input/?i=%281+%2B+0.000000181335958532%29%5E%28365+*+24+*+60%29
   initialInterestRate: new BigNumber('181335958532'),
