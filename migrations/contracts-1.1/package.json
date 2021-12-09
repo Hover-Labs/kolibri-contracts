@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@hover-labs/kolibri-js": "^3.0.2",
+    "@hover-labs/kolibri-js": "3.0.3",
     "@tacoinfra/harbinger-lib": "^1.7.1",
     "@taquito/signer": "9.1.0",
     "@taquito/taquito": "9.1.0",

@@ -4,7 +4,7 @@ This script migrates contracts to the Contracts 1.1 branch (`keefertaylor/contra
 
 ## Runbooks
 
-### Testnet
+### SandboxNet
 
 **Ensure up to date and clean checkout**
 ```
@@ -21,7 +21,7 @@ sh <(curl -s https://smartpy.io/releases/20210708-4662b0f8b1fe2186a243078f9f1ba0
 **Remove any stale data**
 ```
 npm run install-submodules
-rm -f src/config.ts deploy-data.json
+rm -rf src/config.ts deploy-data.json
 ```
 
 **Reset Sandbox**
@@ -54,6 +54,44 @@ ts-node src/flows/generate-governance-lambda.ts
 Validate the following in [the sandbox](https://sandbox.kolibri.finance/):
 - A new oven can be created (tests that oven factory is wired correctly)
 - New kUSD can be minted from the oven (tests that oven proxy and token are wired correctly)
+
+### Testnet
+
+**Ensure up to date and clean checkout**
+```
+$ git pull
+$ git status
+```
+
+**Ensure correct SmartPy Version**
+
+```
+sh <(curl -s https://smartpy.io/releases/20210708-4662b0f8b1fe2186a243078f9f1ba0a4aa1c6f16/cli/install.sh)
+```
+
+**Remove any stale data**
+```
+npm run install-submodules
+rm -f src/config.ts deploy-data.json
+```
+
+**Run Migration**
+```
+export DEPLOY_SK=esdk...
+cp src/config.testnet.ts src/config.ts
+ts-node src/flows/migrate.ts
+```
+
+**Validate Results**
+
+```
+ts-node src/verifications/verify-storage.ts
+```
+
+**Generate Governance Lambda**
+```
+ts-node src/flows/generate-governance-lambda.ts
+```
 
 
 ### Mainnet
