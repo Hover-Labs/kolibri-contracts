@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js";
 
 export const NETWORK_CONFIG: NetworkConfig = {
   name: 'Mainnet',
-  tezosNodeUrl: 'https://rpc.tzbeta.net/',
+  tezosNodeUrl: 'https://mainnet.smartpy.io',
   betterCallDevUrl: 'https://api.better-call.dev/v1',
   requiredConfirmations: 2,
   maxConfirmationPollingRetries: 10,
@@ -28,9 +28,9 @@ export const MIGRATION_CONFIG = {
     threshold: 2,
     timelockSeconds: 0,
     publicKeys: [
-      'edpkuLh768382911CBbWkCN9joZkaZinKKeqPeMnxSoUb3X4TV7GpJ', // tz1YeYpdJshsXxkPdSdKUJaF1QmH1ngCrJ7V, Keefer
-      'edpktxA2V59rHy8FyHyfkiayz3y4cTYBcTWpooKJnREgBzJzLV7ZMT', // tz1Zygasw3bGh9uer7ue2KABjGFYpPsZVazZ, Luke
-      'edpkuPu3FQqWPFTXRT21BBCy5pstVoM6ynwzz9SaFnr6TVrg5Z7GrK', // tz1Xh11mHYWxbYHv55AVhsPPPJeSp8PunERB, Ryan
+      'edpkvVfi9djFLdHaHwAJLygUDYYPsv3M7JhJxYZEGrWCi6y1Q8rEDG', // Discord:yoursoulismine, Community Member
+      'edpktrq8HSok3LaMHuK17kn8yShsC5AQnpb4WKkYApQcHZNAsewt5B', // Gabe Cohen, Community Member & Founder at EcoMint
+      'edpkuLh768382911CBbWkCN9joZkaZinKKeqPeMnxSoUb3X4TV7GpJ', // Keefer Taylor, Hover Labs
     ],
   }
 }
