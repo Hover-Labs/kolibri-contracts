@@ -20,7 +20,7 @@ const main = async () => {
     // Grab the current value in the stability fund.
     const tezos = await getTezos(NETWORK_CONFIG)
     const oldStabilityFundBalance: BigNumber = await getTokenBalanceFromDefaultSmartPyContract(oldStabilityFundContract, tokenContract, tezos)
-    console.log(`FYI: got balance of ${JSON.stringify(oldStabilityFundBalance)}`)
+    console.log(`FYI: got balance of ${JSON.stringify(oldStabilityFundBalance.toFixed(0))}`)
 
     const program = `
 import smartpy as sp
@@ -53,7 +53,7 @@ def moveStabilityFundLambda(unit):
         "sendTokens"
     ).open_some()
 
-    param = (sp.nat(${oldStabilityFundBalance.toString()}), sp.address("${newStabilityFundContract}"))
+    param = (sp.nat(${oldStabilityFundBalance.toFixed(0)}), sp.address("${newStabilityFundContract}"))
     sp.result(
         [
             sp.transfer_operation(
