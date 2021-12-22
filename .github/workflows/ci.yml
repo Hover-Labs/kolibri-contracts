@@ -99,6 +99,21 @@ jobs:
         npm i                
         npx tsc -d
 
+  build_contracts_1_2_migration:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '14.17.6'    
+    - name: "Install Dependencies"
+      run: |
+        sudo apt-get update && sudo apt-get install build-essential git libusb-1.0-0 libusb-1.0-0-dev libudev-dev
+    - name: "Build and lint deploy scripts"
+      run: |
+        cd migrations/contracts-1.2
+        npm i        
+
   notify_complete:
     runs-on: ubuntu-latest
     needs:
