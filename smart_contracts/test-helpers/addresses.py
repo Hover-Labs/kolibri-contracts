@@ -55,3 +55,23 @@ NULL_ADDRESS = sp.address("tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA")
 
 # The address which acts as the liquidity pool
 LIQUIDITY_POOL_ADDRESS = sp.address("tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D")
+
+# The address of the savings account.
+SAVINGS_ACCOUNT_ADDRESS = sp.address("tz1gfArv665EUkSg2ojMBzcbfwuPxAvqPvjo")
+
+# The address which acts as the Token Admin
+TOKEN_ADMIN_ADDRESS = sp.address("tz1eEnQhbwf6trb8Q8mPb2RaPkNk2rN7BKi8")
+
+# An series of named addresses with no particular role.
+# These are used for token transfer tests.
+ALICE_ADDRESS = sp.address("tz1VQnqCCqX4K5sP3FNkVSNKTdCAMJDd3E1n")
+BOB_ADDRESS = sp.address("tz2FCNBrERXtaTtNX6iimR1UJ5JSDxvdHM93")
+CHARLIE_ADDRESS = sp.address("tz3S6BBeKgJGXxvLyZ1xzXzMPn11nnFtq5L9")
+
+# An address of a Baker
+BAKER_PUBLIC_KEY_HASH = "tz3RDC3Jdn4j15J7bBHZd29EUee9gVB1CxD9"
+BAKER_ADDRESS = sp.address(BAKER_PUBLIC_KEY_HASH)
+BAKER_KEY_HASH = sp.key_hash(BAKER_PUBLIC_KEY_HASH)
+VOTING_POWERS = {
+  BAKER_KEY_HASH: 8000,
+}

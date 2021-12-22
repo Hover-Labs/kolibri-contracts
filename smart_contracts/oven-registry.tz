@@ -2,21 +2,18 @@ parameter (or (or (pair %addOven address address) (unit %default)) (or (address 
 storage   (pair (address %governorContractAddress) (pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address)));
 code
   {
-    DUP;        # pair @parameter @storage : pair @parameter @storage
-    CDR;        # @storage : pair @parameter @storage
-    SWAP;       # pair @parameter @storage : @storage
-    CAR;        # @parameter : @storage
+    UNPAIR;     # @parameter : @storage
     IF_LEFT
       {
         IF_LEFT
           {
             SWAP;       # @storage : @parameter%addOven
             # == addOven ==
-            # sp.verify(sp.sender == self.data.ovenFactoryContractAddress, message = 7) # @storage : @parameter%addOven
+            # sp.verify(sp.sender == self.data.ovenFactoryContractAddress, 7) # @storage : @parameter%addOven
             DUP;        # @storage : @storage : @parameter%addOven
             DUG 2;      # @storage : @parameter%addOven : @storage
-            CDAR;       # address : @parameter%addOven : @storage
-            SENDER;     # address : address : @parameter%addOven : @storage
+            GET 3;      # address : @parameter%addOven : @storage
+            SENDER;     # @sender : address : @parameter%addOven : @storage
             COMPARE;    # int : @parameter%addOven : @storage
             EQ;         # bool : @parameter%addOven : @storage
             IF
@@ -28,40 +25,29 @@ code
             SWAP;       # @storage : @parameter%addOven
             # self.data.ovenMap[sp.fst(params)] = sp.snd(params) # @storage : @parameter%addOven
             DUP;        # @storage : @storage : @parameter%addOven
-            CAR;        # address : @storage : @parameter%addOven
-            SWAP;       # @storage : address : @parameter%addOven
-            CDR;        # pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address) : address : @parameter%addOven
-            DUP;        # pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address) : pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address) : address : @parameter%addOven
-            CAR;        # address : pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address) : address : @parameter%addOven
-            SWAP;       # pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address) : address : address : @parameter%addOven
-            CDR;        # big_map address address : address : address : @parameter%addOven
-            DIG 3;      # @parameter%addOven : big_map address address : address : address
-            DUP;        # @parameter%addOven : @parameter%addOven : big_map address address : address : address
-            CAR;        # address : @parameter%addOven : big_map address address : address : address
-            SWAP;       # @parameter%addOven : address : big_map address address : address : address
-            CDR;        # address : address : big_map address address : address : address
-            SOME;       # option address : address : big_map address address : address : address
-            SWAP;       # address : option address : big_map address address : address : address
-            UPDATE;     # big_map address address : address : address
-            SWAP;       # address : big_map address address : address
-            PAIR;       # pair address (big_map address address) : address
-            SWAP;       # address : pair address (big_map address address)
-            PAIR;       # pair address (pair address (big_map address address))
+            GET 4;      # big_map address address : @storage : @parameter%addOven
+            DUP 3;      # @parameter%addOven : big_map address address : @storage : @parameter%addOven
+            CDR;        # address : big_map address address : @storage : @parameter%addOven
+            SOME;       # option address : big_map address address : @storage : @parameter%addOven
+            DIG 3;      # @parameter%addOven : option address : big_map address address : @storage
+            CAR;        # address : option address : big_map address address : @storage
+            UPDATE;     # big_map address address : @storage
+            UPDATE 4;   # @storage
           }
           {
             PUSH int 19; # int : @parameter%default : @storage
             FAILWITH;   # FAILED
-          }; # pair address (pair address (big_map address address))
+          }; # @storage
       }
       {
         IF_LEFT
           {
             SWAP;       # @storage : @parameter%isOven
             # == isOven ==
-            # sp.verify(self.data.ovenMap.contains(params), message = 1) # @storage : @parameter%isOven
+            # sp.verify(self.data.ovenMap.contains(params), 1) # @storage : @parameter%isOven
             DUP;        # @storage : @storage : @parameter%isOven
             DUG 2;      # @storage : @parameter%isOven : @storage
-            CDDR;       # big_map address address : @parameter%isOven : @storage
+            GET 4;      # big_map address address : @parameter%isOven : @storage
             SWAP;       # @parameter%isOven : big_map address address : @storage
             MEM;        # bool : @storage
             IF
@@ -70,9 +56,9 @@ code
                 PUSH int 1; # int : @storage
                 FAILWITH;   # FAILED
               }; # @storage
-            # sp.verify(sp.amount == sp.tez(0), message = 15) # @storage
+            # sp.verify(sp.amount == sp.tez(0), 15) # @storage
             PUSH mutez 0; # mutez : @storage
-            AMOUNT;     # mutez : mutez : @storage
+            AMOUNT;     # @amount : mutez : @storage
             COMPARE;    # int : @storage
             EQ;         # bool : @storage
             IF
@@ -87,11 +73,11 @@ code
               {
                 SWAP;       # @storage : @parameter%setGovernorContract
                 # == setGovernorContract ==
-                # sp.verify(sp.sender == self.data.governorContractAddress, message = 4) # @storage : @parameter%setGovernorContract
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setGovernorContract
                 DUP;        # @storage : @storage : @parameter%setGovernorContract
                 DUG 2;      # @storage : @parameter%setGovernorContract : @storage
                 CAR;        # address : @parameter%setGovernorContract : @storage
-                SENDER;     # address : address : @parameter%setGovernorContract : @storage
+                SENDER;     # @sender : address : @parameter%setGovernorContract : @storage
                 COMPARE;    # int : @parameter%setGovernorContract : @storage
                 EQ;         # bool : @parameter%setGovernorContract : @storage
                 IF
@@ -100,20 +86,17 @@ code
                     PUSH int 4; # int : @parameter%setGovernorContract : @storage
                     FAILWITH;   # FAILED
                   }; # @parameter%setGovernorContract : @storage
-                SWAP;       # @storage : @parameter%setGovernorContract
-                # self.data.governorContractAddress = params # @storage : @parameter%setGovernorContract
-                CDR;        # pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address) : @parameter%setGovernorContract
-                SWAP;       # @parameter%setGovernorContract : pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address)
-                PAIR;       # pair @parameter%setGovernorContract (pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address))
+                # self.data.governorContractAddress = params # @parameter%setGovernorContract : @storage
+                UPDATE 1;   # @storage
               }
               {
                 SWAP;       # @storage : @parameter%setOvenFactoryContract
                 # == setOvenFactoryContract ==
-                # sp.verify(sp.sender == self.data.governorContractAddress, message = 4) # @storage : @parameter%setOvenFactoryContract
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setOvenFactoryContract
                 DUP;        # @storage : @storage : @parameter%setOvenFactoryContract
                 DUG 2;      # @storage : @parameter%setOvenFactoryContract : @storage
                 CAR;        # address : @parameter%setOvenFactoryContract : @storage
-                SENDER;     # address : address : @parameter%setOvenFactoryContract : @storage
+                SENDER;     # @sender : address : @parameter%setOvenFactoryContract : @storage
                 COMPARE;    # int : @parameter%setOvenFactoryContract : @storage
                 EQ;         # bool : @parameter%setOvenFactoryContract : @storage
                 IF
@@ -122,19 +105,11 @@ code
                     PUSH int 4; # int : @parameter%setOvenFactoryContract : @storage
                     FAILWITH;   # FAILED
                   }; # @parameter%setOvenFactoryContract : @storage
-                SWAP;       # @storage : @parameter%setOvenFactoryContract
-                # self.data.ovenFactoryContractAddress = params # @storage : @parameter%setOvenFactoryContract
-                DUP;        # @storage : @storage : @parameter%setOvenFactoryContract
-                CAR;        # address : @storage : @parameter%setOvenFactoryContract
-                SWAP;       # @storage : address : @parameter%setOvenFactoryContract
-                CDDR;       # big_map address address : address : @parameter%setOvenFactoryContract
-                DIG 2;      # @parameter%setOvenFactoryContract : big_map address address : address
-                PAIR;       # pair @parameter%setOvenFactoryContract (big_map address address) : address
-                SWAP;       # address : pair @parameter%setOvenFactoryContract (big_map address address)
-                PAIR;       # pair address (pair @parameter%setOvenFactoryContract (big_map address address))
-              }; # pair @parameter%setGovernorContract (pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address))
+                # self.data.ovenFactoryContractAddress = params # @parameter%setOvenFactoryContract : @storage
+                UPDATE 3;   # @storage
+              }; # @storage
           }; # @storage
-      }; # pair address (pair address (big_map address address))
-    NIL operation; # list operation : pair address (pair address (big_map address address))
-    PAIR;       # pair (list operation) (pair address (pair address (big_map address address)))
+      }; # @storage
+    NIL operation; # list operation : @storage
+    PAIR;       # pair (list operation) @storage
   };

@@ -4,7 +4,7 @@ import { KeyStore } from "conseiljs";
 
 type CrossCheckResult = {
     keystore: KeyStore,
-    contractSources: object
+    contractSources: any
 }
 
 export default async function crosscheck(config: any): Promise<CrossCheckResult> {
