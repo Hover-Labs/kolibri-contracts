@@ -1,0 +1,17 @@
+[
+ {
+  "shortname": "operation",
+  "longname": "operation",
+  "scenario": [
+   {
+    "action": "show",
+    "compile": true,
+    "expression": "(lambda 0 \"\" (\"\" -1) ((set_type (lambdaParams 0 \"\" (\"\" -1) (unknown 1)) \"unit\" (\"tmp-break-glass-compilation/operation.py\" 47)) (result (list (\"tmp-break-glass-compilation/operation.py\" 61) (transfer (lambda 1 \"\" (\"tmp-break-glass-compilation/operation.py\" 63) ((set_type (lambdaParams 1 \"\" (\"tmp-break-glass-compilation/operation.py\" 63) (unknown 2)) \"unit\" (\"tmp-break-glass-compilation/operation.py\" 26)) (result (list (\"tmp-break-glass-compilation/operation.py\" 36) (transfer (tuple (\"tmp-break-glass-compilation/operation.py\" 38) (literal (nat 67890) (\"tmp-break-glass-compilation/operation.py\" 34)) (literal (address \"tz1Ke2h7sDdakHJQh8WX4Z372du1KChsksyU\") (\"tmp-break-glass-compilation/operation.py\" 34))) (literal (mutez 0) (\"tmp-break-glass-compilation/operation.py\" 40)) (openVariant (contract \"send\" \"address\" (literal (address \"KT1LHbDjwPmVnPRY9iWr5DYABTPQgEja7Vuc\") (\"tmp-break-glass-compilation/operation.py\" 30)) (\"tmp-break-glass-compilation/operation.py\" 28)) \"Some\" \"None\" (\"tmp-break-glass-compilation/operation.py\" 28)) (\"tmp-break-glass-compilation/operation.py\" 38))) (\"tmp-break-glass-compilation/operation.py\" 36)))) (literal (mutez 0) (\"tmp-break-glass-compilation/operation.py\" 63)) (openVariant (contract \"runLambda\" (lambda \"unit\" (list \"operation\")) (literal (address \"KT1DfZhyFqaa1EXAxv3A5TrY7QRQurtPaxcL\") (\"tmp-break-glass-compilation/operation.py\" 57)) (\"tmp-break-glass-compilation/operation.py\" 55)) \"Some\" \"None\" (\"tmp-break-glass-compilation/operation.py\" 55)) (\"tmp-break-glass-compilation/operation.py\" 63)) (transfer (lambda 2 \"\" (\"tmp-break-glass-compilation/operation.py\" 64) ((set_type (lambdaParams 2 \"\" (\"tmp-break-glass-compilation/operation.py\" 64) (unknown 3)) \"unit\" (\"tmp-break-glass-compilation/operation.py\" 5)) (result (list (\"tmp-break-glass-compilation/operation.py\" 15) (transfer (tuple (\"tmp-break-glass-compilation/operation.py\" 17) (literal (nat 12345) (\"tmp-break-glass-compilation/operation.py\" 13)) (literal (address \"tz1Ke2h7sDdakHJQh8WX4Z372du1KChsksyU\") (\"tmp-break-glass-compilation/operation.py\" 13))) (literal (mutez 0) (\"tmp-break-glass-compilation/operation.py\" 19)) (openVariant (contract \"sendTokens\" \"address\" (literal (address \"KT1FHE7qiuZDJejQrK3qikbzjj9r8X7FqGkg\") (\"tmp-break-glass-compilation/operation.py\" 9)) (\"tmp-break-glass-compilation/operation.py\" 7)) \"Some\" \"None\" (\"tmp-break-glass-compilation/operation.py\" 7)) (\"tmp-break-glass-compilation/operation.py\" 17))) (\"tmp-break-glass-compilation/operation.py\" 15)))) (literal (mutez 0) (\"tmp-break-glass-compilation/operation.py\" 64)) (openVariant (contract \"runLambda\" (lambda \"unit\" (list \"operation\")) (literal (address \"KT1FZKgkpZCuuVgtwihryUeN8BC3du36eM2i\") (\"tmp-break-glass-compilation/operation.py\" 51)) (\"tmp-break-glass-compilation/operation.py\" 49)) \"Some\" \"None\" (\"tmp-break-glass-compilation/operation.py\" 49)) (\"tmp-break-glass-compilation/operation.py\" 64))) (\"tmp-break-glass-compilation/operation.py\" 61))))",
+    "html": true,
+    "line_no": "(\"\" -1)",
+    "stripStrings": false
+   }
+  ],
+  "kind": "compilation"
+ }
+]
