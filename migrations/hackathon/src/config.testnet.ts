@@ -3,8 +3,8 @@ import { CONTRACTS } from '@hover-labs/kolibri-js'
 import BigNumber from "bignumber.js";
 
 export const NETWORK_CONFIG: NetworkConfig = {
-  name: 'Granada Testnet',
-  tezosNodeUrl: "https://granadanet.api.tez.ie/",
+  name: 'Mainnet',
+  tezosNodeUrl: 'https://mainnet.smartpy.io',
   betterCallDevUrl: 'https://api.better-call.dev/v1',
   requiredConfirmations: 2,
   maxConfirmationPollingRetries: 10,
@@ -12,17 +12,18 @@ export const NETWORK_CONFIG: NetworkConfig = {
 }
 
 export const KOLIBRI_CONFIG: KolibriConfig = {
-  contracts: CONTRACTS.TEST,
-  escrowAmount: 1,
-  governanceVoteLength: 10,
-  governanceTimelockLength: 6,
+  contracts: CONTRACTS.MAIN,
+  escrowAmount: 1000000000000000000000,
+  governanceVoteLength: 10080,
+  governanceTimelockLength: 4320,
 }
 
 export const MIGRATION_CONFIG = {
-  recipient: "tz1Ke2h7sDdakHJQh8WX4Z372du1KChsksyU",
-  amountkUSD: new BigNumber(12345),
-  amountkDAO: new BigNumber(67890),
+  recipient: "KT1ABbTyFcAUsqo5d59ppUswQG8WxucrDGBd",
+  amountkUSD: new BigNumber(9001000000000000000000),
+  amountkDAO: new BigNumber(741000000000000000000),
 
   newSavingsRate: new BigNumber(2468),
   newStabilityFee: new BigNumber(13579)
 }
+
