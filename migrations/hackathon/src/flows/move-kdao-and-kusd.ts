@@ -13,39 +13,67 @@ const main = async () => {
     const program = `
 import smartpy as sp
 
-def movekusd(unit):
+def movekUSD(unit):
     sp.set_type(unit, sp.TUnit)
 
     contractHandle = sp.contract(
-        sp.TAddress,
+        sp.TPair(sp.TNat, sp.TAddress),
         sp.address("${devFundContract}"),
         "sendTokens"
     ).open_some()
 
-    param = (sp.nat(${amountKUSD.toFixed()}), sp.address("${recipientAddress}"))
+    param = (sp.nat(${MIGRATION_CONFIG.amountkUSD.toFixed()}), sp.address("${MIGRATION_CONFIG.recipient}"))
 
     sp.result(
         [
             sp.transfer_operation(
-                sp.address("${nullAdddress}"),
+                param,
                 sp.mutez(0),
                 contractHandle
             )
         ]
     )  
 
-def governanceLambda(unit):
+def movekDAO(unit):
     sp.set_type(unit, sp.TUnit)
 
-    liquidityPoolBreakGlassLambda = sp.contract(
-        sp.TLambda(sp.TUnit, sp.TList(sp.TOperation)),
-        sp.address("${liquidityPoolBreakGlassContract}"),
-        "runLambda"
+    contractHandle = sp.contract(
+        sp.TPair(sp.TNat, sp.TAddress),
+        sp.address("${communityFundContract}"),
+        "send"
     ).open_some()
+
+    param = (sp.nat(${MIGRATION_CONFIG.amountkDAO.toFixed()}), sp.address("${MIGRATION_CONFIG.recipient}"))
 
     sp.result(
         [
-            sp.transfer_operation(setQuipuswapPoolLambda, sp.mutez(0), liquidityPoolBreakGlassLambda),
+            sp.transfer_operation(
+                param,
+                sp.mutez(0),
+                contractHandle
+            )
+        ]
+    )
+
+def governanceLambda(unit):
+    sp.set_type(unit, sp.TUnit)
+
+    devFundBreakGlassLambda = sp.contract(
+        sp.TLambda(sp.TUnit, sp.TList(sp.TOperation)),
+        sp.address("${devFundBreakGlassContract}"),
+        "runLambda"
+    ).open_some()
+
+    communityFundBreakGlassLambda = sp.contract(
+        sp.TLambda(sp.TUnit, sp.TList(sp.TOperation)),
+        sp.address("${communityFundBreakGlassContract}"),
+        "runLambda"
+    ).open_some()    
+
+    sp.result(
+        [
+            sp.transfer_operation(movekDAO, sp.mutez(0), communityFundBreakGlassLambda),
+            sp.transfer_operation(movekUSD, sp.mutez(0), devFundBreakGlassLambda),
         ]
     )
 

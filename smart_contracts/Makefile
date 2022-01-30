@@ -76,7 +76,7 @@ test-e2e:
 compile-dev-fund:
 	$(SMART_PY_CLI) compile dev-fund.py $(OUT_DIR)
 	cp $(OUT_DIR)/dev-fund/step_000_cont_2_contract.tz dev-fund.tz
-	rm -rf $(OUT_DIR)
+#	rm -rf $(OUT_DIR)
 
 # Compile the Minter
 compile-minter:
