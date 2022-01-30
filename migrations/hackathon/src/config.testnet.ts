@@ -21,5 +21,8 @@ export const KOLIBRI_CONFIG: KolibriConfig = {
 export const MIGRATION_CONFIG = {
   recipient: "tz1Ke2h7sDdakHJQh8WX4Z372du1KChsksyU",
   amountkUSD: new BigNumber(12345),
-  amountkDAO: new BigNumber(67890)
+  amountkDAO: new BigNumber(67890),
+
+  newSavingsRate: new BigNumber(2468),
+  newStabilityFee: new BigNumber(13579)
 }

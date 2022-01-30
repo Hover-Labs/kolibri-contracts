@@ -11,8 +11,10 @@ const main = async () => {
   // Load contracts
   const tezos = await getTezos(NETWORK_CONFIG)
   const savingsContract = KOLIBRI_CONFIG.contracts.SAVINGS_POOL
+  const minterContract = KOLIBRI_CONFIG.contracts.MINTER
 
   // Check the savings rate matches the new rate.
   await validateStorageValue(savingsContract, 'interestRate', MIGRATION_CONFIG.newSavingsRate, tezos)
+  await validateStorageValue(minterContract, 'stabilityFee', MIGRATION_CONFIG.newStabilityFee, tezos)
 }
 main()

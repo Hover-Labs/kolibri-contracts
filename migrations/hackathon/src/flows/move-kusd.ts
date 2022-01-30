@@ -4,11 +4,9 @@ import { KOLIBRI_CONFIG, MIGRATION_CONFIG } from '../config'
 const main = async () => {
     // Contracts
     const devFundContract = KOLIBRI_CONFIG.contracts.DEVELOPER_FUND!
-    const communityFundContract = KOLIBRI_CONFIG.contracts.DAO_COMMUNITY_FUND!
 
     // Break Glasses
     const devFundBreakGlassContract = KOLIBRI_CONFIG.contracts.BREAK_GLASS_CONTRACTS.DEVELOPER_FUND
-    const communityFundBreakGlassContract = KOLIBRI_CONFIG.contracts.BREAK_GLASS_CONTRACTS.DAO_COMMUNITY_FUND
 
     const program = `
 import smartpy as sp
