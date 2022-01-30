@@ -13,6 +13,7 @@ compile:
 	make compile-minter
 	make compile-oven
 	make compile-oven-proxy
+	make compile-quipuswap-proxy
 	make compile-savings-pool
 	make compile-stability-fund
 	make compile-token
@@ -23,6 +24,7 @@ test:
 	make test-minter
 	make test-oven
 	make test-oven-proxy
+	make compile-quipuswap-proxy
 	make test-savings-pool
 	make test-stability-fund
 	make test-token	
@@ -48,6 +50,11 @@ test-oven:
 # Run tests for the Oven Proxy contract
 test-oven-proxy:
 	$(SMART_PY_CLI) test oven-proxy.py $(OUT_DIR)
+	rm -rf $(OUT_DIR)
+
+# Run tests for the Quipuswap Proxy contract
+test-quipuswap-proxy:
+	$(SMART_PY_CLI) test quipuswap-proxy.py $(OUT_DIR)
 	rm -rf $(OUT_DIR)
 
 # Run tests for the Savings Pool contract
@@ -94,6 +101,12 @@ compile-oven:
 compile-oven-proxy:
 	$(SMART_PY_CLI) compile oven-proxy.py $(OUT_DIR)
 	cp $(OUT_DIR)/oven-proxy/step_000_cont_0_contract.tz oven-proxy.tz
+	rm -rf $(OUT_DIR)
+
+# Compile the Quipuswap Proxy
+compile-quipuswap-proxy:
+	$(SMART_PY_CLI) compile quipuswap-proxy.py $(OUT_DIR)
+	cp $(OUT_DIR)/quipuswap-proxy/step_000_cont_0_contract.tz quipuswap-proxy.tz
 	rm -rf $(OUT_DIR)
 
 # Compile the Savings Pool

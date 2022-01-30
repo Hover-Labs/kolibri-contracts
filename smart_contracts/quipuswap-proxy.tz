@@ -1,0 +1,428 @@
+parameter (or (or (or (unit %pause) (address %setGovernorContract)) (or (address %setHarbingerContract) (or (address %setLiquidityPoolContract) (nat %setMaxDataDelaySec)))) (or (or (address %setPauseGuardianContract) (address %setQuipuswapContract)) (or (nat %setSlippageTolerance) (or (pair %tezToTokenPayment nat address) (unit %unpause)))));
+storage   (pair (pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))) (pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))));
+code
+  {
+    UNPAIR;     # @parameter : @storage
+    IF_LEFT
+      {
+        IF_LEFT
+          {
+            IF_LEFT
+              {
+                DROP;       # @storage
+                # == pause ==
+                # sp.verify(sp.sender == self.data.pauseGuardianContractAddress, 9) # @storage
+                DUP;        # @storage : @storage
+                GET 3;      # pair (address %pauseGuardianContractAddress) (bool %paused) : @storage
+                CAR;        # address : @storage
+                SENDER;     # @sender : address : @storage
+                COMPARE;    # int : @storage
+                EQ;         # bool : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 9; # int : @storage
+                    FAILWITH;   # FAILED
+                  }; # @storage
+                # self.data.paused = True # @storage
+                UNPAIR;     # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                SWAP;       # pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                UNPAIR;     # pair (address %pauseGuardianContractAddress) (bool %paused) : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                CAR;        # address : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                PUSH bool True; # bool : address : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                SWAP;       # address : bool : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                PAIR;       # pair address bool : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                PAIR;       # pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                SWAP;       # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                PAIR;       # pair (pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))) (pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+              }
+              {
+                SWAP;       # @storage : @parameter%setGovernorContract
+                # == setGovernorContract ==
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setGovernorContract
+                DUP;        # @storage : @storage : @parameter%setGovernorContract
+                DUG 2;      # @storage : @parameter%setGovernorContract : @storage
+                CAR;        # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @parameter%setGovernorContract : @storage
+                CAR;        # pair (address %governorContractAddress) (address %harbingerContractAddress) : @parameter%setGovernorContract : @storage
+                CAR;        # address : @parameter%setGovernorContract : @storage
+                SENDER;     # @sender : address : @parameter%setGovernorContract : @storage
+                COMPARE;    # int : @parameter%setGovernorContract : @storage
+                EQ;         # bool : @parameter%setGovernorContract : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 4; # int : @parameter%setGovernorContract : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%setGovernorContract : @storage
+                SWAP;       # @storage : @parameter%setGovernorContract
+                # self.data.governorContractAddress = params # @storage : @parameter%setGovernorContract
+                UNPAIR;     # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setGovernorContract
+                UNPAIR;     # pair (address %governorContractAddress) (address %harbingerContractAddress) : pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setGovernorContract
+                CDR;        # address : pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setGovernorContract
+                DIG 3;      # @parameter%setGovernorContract : address : pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                PAIR;       # pair @parameter%setGovernorContract address : pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                PAIR;       # pair (pair @parameter%setGovernorContract address) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                PAIR;       # pair (pair (pair @parameter%setGovernorContract address) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))) (pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+              }; # pair (pair (pair address address) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))) (pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+          }
+          {
+            IF_LEFT
+              {
+                SWAP;       # @storage : @parameter%setHarbingerContract
+                # == setHarbingerContract ==
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setHarbingerContract
+                DUP;        # @storage : @storage : @parameter%setHarbingerContract
+                DUG 2;      # @storage : @parameter%setHarbingerContract : @storage
+                CAR;        # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @parameter%setHarbingerContract : @storage
+                CAR;        # pair (address %governorContractAddress) (address %harbingerContractAddress) : @parameter%setHarbingerContract : @storage
+                CAR;        # address : @parameter%setHarbingerContract : @storage
+                SENDER;     # @sender : address : @parameter%setHarbingerContract : @storage
+                COMPARE;    # int : @parameter%setHarbingerContract : @storage
+                EQ;         # bool : @parameter%setHarbingerContract : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 4; # int : @parameter%setHarbingerContract : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%setHarbingerContract : @storage
+                SWAP;       # @storage : @parameter%setHarbingerContract
+                # self.data.harbingerContractAddress = params # @storage : @parameter%setHarbingerContract
+                UNPAIR;     # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setHarbingerContract
+                UNPAIR;     # pair (address %governorContractAddress) (address %harbingerContractAddress) : pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setHarbingerContract
+                CAR;        # address : pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setHarbingerContract
+                DIG 3;      # @parameter%setHarbingerContract : address : pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                SWAP;       # address : @parameter%setHarbingerContract : pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                PAIR;       # pair address @parameter%setHarbingerContract : pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                PAIR;       # pair (pair address @parameter%setHarbingerContract) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                PAIR;       # pair (pair (pair address @parameter%setHarbingerContract) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))) (pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+              }
+              {
+                IF_LEFT
+                  {
+                    SWAP;       # @storage : @parameter%setLiquidityPoolContract
+                    # == setLiquidityPoolContract ==
+                    # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setLiquidityPoolContract
+                    DUP;        # @storage : @storage : @parameter%setLiquidityPoolContract
+                    DUG 2;      # @storage : @parameter%setLiquidityPoolContract : @storage
+                    CAR;        # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @parameter%setLiquidityPoolContract : @storage
+                    CAR;        # pair (address %governorContractAddress) (address %harbingerContractAddress) : @parameter%setLiquidityPoolContract : @storage
+                    CAR;        # address : @parameter%setLiquidityPoolContract : @storage
+                    SENDER;     # @sender : address : @parameter%setLiquidityPoolContract : @storage
+                    COMPARE;    # int : @parameter%setLiquidityPoolContract : @storage
+                    EQ;         # bool : @parameter%setLiquidityPoolContract : @storage
+                    IF
+                      {}
+                      {
+                        PUSH int 4; # int : @parameter%setLiquidityPoolContract : @storage
+                        FAILWITH;   # FAILED
+                      }; # @parameter%setLiquidityPoolContract : @storage
+                    SWAP;       # @storage : @parameter%setLiquidityPoolContract
+                    # self.data.liquidityPoolContractAddress = params # @storage : @parameter%setLiquidityPoolContract
+                    UNPAIR;     # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setLiquidityPoolContract
+                    UNPAIR;     # pair (address %governorContractAddress) (address %harbingerContractAddress) : pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setLiquidityPoolContract
+                    SWAP;       # pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec) : pair (address %governorContractAddress) (address %harbingerContractAddress) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setLiquidityPoolContract
+                    CDR;        # nat : pair (address %governorContractAddress) (address %harbingerContractAddress) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setLiquidityPoolContract
+                    DIG 3;      # @parameter%setLiquidityPoolContract : nat : pair (address %governorContractAddress) (address %harbingerContractAddress) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                    PAIR;       # pair @parameter%setLiquidityPoolContract nat : pair (address %governorContractAddress) (address %harbingerContractAddress) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                    SWAP;       # pair (address %governorContractAddress) (address %harbingerContractAddress) : pair @parameter%setLiquidityPoolContract nat : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                    PAIR;       # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair @parameter%setLiquidityPoolContract nat) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                    PAIR;       # pair (pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair @parameter%setLiquidityPoolContract nat)) (pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+                  }
+                  {
+                    SWAP;       # @storage : @parameter%setMaxDataDelaySec
+                    # == setMaxDataDelaySec ==
+                    # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setMaxDataDelaySec
+                    DUP;        # @storage : @storage : @parameter%setMaxDataDelaySec
+                    DUG 2;      # @storage : @parameter%setMaxDataDelaySec : @storage
+                    CAR;        # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @parameter%setMaxDataDelaySec : @storage
+                    CAR;        # pair (address %governorContractAddress) (address %harbingerContractAddress) : @parameter%setMaxDataDelaySec : @storage
+                    CAR;        # address : @parameter%setMaxDataDelaySec : @storage
+                    SENDER;     # @sender : address : @parameter%setMaxDataDelaySec : @storage
+                    COMPARE;    # int : @parameter%setMaxDataDelaySec : @storage
+                    EQ;         # bool : @parameter%setMaxDataDelaySec : @storage
+                    IF
+                      {}
+                      {
+                        PUSH int 4; # int : @parameter%setMaxDataDelaySec : @storage
+                        FAILWITH;   # FAILED
+                      }; # @parameter%setMaxDataDelaySec : @storage
+                    SWAP;       # @storage : @parameter%setMaxDataDelaySec
+                    # self.data.maxDataDelaySec = params # @storage : @parameter%setMaxDataDelaySec
+                    UNPAIR;     # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setMaxDataDelaySec
+                    UNPAIR;     # pair (address %governorContractAddress) (address %harbingerContractAddress) : pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setMaxDataDelaySec
+                    SWAP;       # pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec) : pair (address %governorContractAddress) (address %harbingerContractAddress) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setMaxDataDelaySec
+                    CAR;        # address : pair (address %governorContractAddress) (address %harbingerContractAddress) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setMaxDataDelaySec
+                    DIG 3;      # @parameter%setMaxDataDelaySec : address : pair (address %governorContractAddress) (address %harbingerContractAddress) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                    SWAP;       # address : @parameter%setMaxDataDelaySec : pair (address %governorContractAddress) (address %harbingerContractAddress) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                    PAIR;       # pair address @parameter%setMaxDataDelaySec : pair (address %governorContractAddress) (address %harbingerContractAddress) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                    SWAP;       # pair (address %governorContractAddress) (address %harbingerContractAddress) : pair address @parameter%setMaxDataDelaySec : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                    PAIR;       # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair address @parameter%setMaxDataDelaySec) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                    PAIR;       # pair (pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair address @parameter%setMaxDataDelaySec)) (pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+                  }; # pair (pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair address nat)) (pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+              }; # pair (pair (pair address address) (pair address nat)) (pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+          }; # pair (pair (pair address address) (pair address nat)) (pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+        NIL operation; # list operation : pair (pair (pair address address) (pair address nat)) (pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+      }
+      {
+        IF_LEFT
+          {
+            IF_LEFT
+              {
+                SWAP;       # @storage : @parameter%setPauseGuardianContract
+                # == setPauseGuardianContract ==
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setPauseGuardianContract
+                DUP;        # @storage : @storage : @parameter%setPauseGuardianContract
+                DUG 2;      # @storage : @parameter%setPauseGuardianContract : @storage
+                CAR;        # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @parameter%setPauseGuardianContract : @storage
+                CAR;        # pair (address %governorContractAddress) (address %harbingerContractAddress) : @parameter%setPauseGuardianContract : @storage
+                CAR;        # address : @parameter%setPauseGuardianContract : @storage
+                SENDER;     # @sender : address : @parameter%setPauseGuardianContract : @storage
+                COMPARE;    # int : @parameter%setPauseGuardianContract : @storage
+                EQ;         # bool : @parameter%setPauseGuardianContract : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 4; # int : @parameter%setPauseGuardianContract : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%setPauseGuardianContract : @storage
+                SWAP;       # @storage : @parameter%setPauseGuardianContract
+                # self.data.pauseGuardianContractAddress = params # @storage : @parameter%setPauseGuardianContract
+                UNPAIR;     # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : @parameter%setPauseGuardianContract
+                SWAP;       # pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @parameter%setPauseGuardianContract
+                UNPAIR;     # pair (address %pauseGuardianContractAddress) (bool %paused) : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @parameter%setPauseGuardianContract
+                CDR;        # bool : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @parameter%setPauseGuardianContract
+                DIG 3;      # @parameter%setPauseGuardianContract : bool : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                PAIR;       # pair @parameter%setPauseGuardianContract bool : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                PAIR;       # pair (pair @parameter%setPauseGuardianContract bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                SWAP;       # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : pair (pair @parameter%setPauseGuardianContract bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                PAIR;       # pair (pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))) (pair (pair @parameter%setPauseGuardianContract bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+              }
+              {
+                SWAP;       # @storage : @parameter%setQuipuswapContract
+                # == setQuipuswapContract ==
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setQuipuswapContract
+                DUP;        # @storage : @storage : @parameter%setQuipuswapContract
+                DUG 2;      # @storage : @parameter%setQuipuswapContract : @storage
+                CAR;        # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @parameter%setQuipuswapContract : @storage
+                CAR;        # pair (address %governorContractAddress) (address %harbingerContractAddress) : @parameter%setQuipuswapContract : @storage
+                CAR;        # address : @parameter%setQuipuswapContract : @storage
+                SENDER;     # @sender : address : @parameter%setQuipuswapContract : @storage
+                COMPARE;    # int : @parameter%setQuipuswapContract : @storage
+                EQ;         # bool : @parameter%setQuipuswapContract : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 4; # int : @parameter%setQuipuswapContract : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%setQuipuswapContract : @storage
+                # self.data.quipuswapContractAddress = params # @parameter%setQuipuswapContract : @storage
+                UPDATE 5;   # @storage
+              }; # pair (pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))) (pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+            NIL operation; # list operation : pair (pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))) (pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+          }
+          {
+            IF_LEFT
+              {
+                SWAP;       # @storage : @parameter%setSlippageTolerance
+                # == setSlippageTolerance ==
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setSlippageTolerance
+                DUP;        # @storage : @storage : @parameter%setSlippageTolerance
+                DUG 2;      # @storage : @parameter%setSlippageTolerance : @storage
+                CAR;        # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @parameter%setSlippageTolerance : @storage
+                CAR;        # pair (address %governorContractAddress) (address %harbingerContractAddress) : @parameter%setSlippageTolerance : @storage
+                CAR;        # address : @parameter%setSlippageTolerance : @storage
+                SENDER;     # @sender : address : @parameter%setSlippageTolerance : @storage
+                COMPARE;    # int : @parameter%setSlippageTolerance : @storage
+                EQ;         # bool : @parameter%setSlippageTolerance : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 4; # int : @parameter%setSlippageTolerance : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%setSlippageTolerance : @storage
+                # self.data.slippageTolerance = params # @parameter%setSlippageTolerance : @storage
+                UPDATE 6;   # @storage
+                NIL operation; # list operation : @storage
+              }
+              {
+                IF_LEFT
+                  {
+                    DROP;       # @storage
+                    # == tezToTokenPayment ==
+                    # sp.verify(sp.sender == self.data.liquidityPoolContractAddress, 28) # @storage
+                    DUP;        # @storage : @storage
+                    CAR;        # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @storage
+                    GET 3;      # address : @storage
+                    SENDER;     # @sender : address : @storage
+                    COMPARE;    # int : @storage
+                    EQ;         # bool : @storage
+                    IF
+                      {}
+                      {
+                        PUSH int 28; # int : @storage
+                        FAILWITH;   # FAILED
+                      }; # @storage
+                    # sp.verify(self.data.paused == False, 18) # @storage
+                    DUP;        # @storage : @storage
+                    GET 3;      # pair (address %pauseGuardianContractAddress) (bool %paused) : @storage
+                    CDR;        # bool : @storage
+                    PUSH bool False; # bool : bool : @storage
+                    COMPARE;    # int : @storage
+                    EQ;         # bool : @storage
+                    IF
+                      {}
+                      {
+                        PUSH int 18; # int : @storage
+                        FAILWITH;   # FAILED
+                      }; # @storage
+                    # sp.verify(sp.as_nat(sp.now - sp.fst(sp.view("getPrice", self.data.harbingerContractAddress, 'XTZ-USD', sp.TPair(sp.TTimestamp, sp.TNat)).open_some())) < self.data.maxDataDelaySec, 17) # @storage
+                    DUP;        # @storage : @storage
+                    CAR;        # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @storage
+                    GET 4;      # nat : @storage
+                    SWAP;       # @storage : nat
+                    DUP;        # @storage : @storage : nat
+                    DUG 2;      # @storage : nat : @storage
+                    CAR;        # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : nat : @storage
+                    CAR;        # pair (address %governorContractAddress) (address %harbingerContractAddress) : nat : @storage
+                    CDR;        # address : nat : @storage
+                    PUSH string "XTZ-USD"; # string : address : nat : @storage
+                    VIEW "getPrice" (pair timestamp nat); # option (pair timestamp nat) : nat : @storage
+                    IF_NONE
+                      {
+                        PUSH int 59; # int : nat : @storage
+                        FAILWITH;   # FAILED
+                      }
+                      {}; # @some : nat : @storage
+                    CAR;        # timestamp : nat : @storage
+                    NOW;        # @now : timestamp : nat : @storage
+                    SUB;        # int : nat : @storage
+                    ISNAT;      # option nat : nat : @storage
+                    IF_NONE
+                      {
+                        PUSH int 67; # int : nat : @storage
+                        FAILWITH;   # FAILED
+                      }
+                      {}; # @some : nat : @storage
+                    COMPARE;    # int : @storage
+                    LT;         # bool : @storage
+                    IF
+                      {}
+                      {
+                        PUSH int 17; # int : @storage
+                        FAILWITH;   # FAILED
+                      }; # @storage
+                    # sp.transfer((((((sp.snd(sp.view("getPrice", self.data.harbingerContractAddress, 'XTZ-USD', sp.TPair(sp.TTimestamp, sp.TNat)).open_some()) * 1000000000000) * (sp.fst(sp.ediv(sp.amount, sp.mutez(1)).open_some(message = sp.unit)) * 1000000000000)) // 1000000000000000000) * sp.as_nat(100 - self.data.slippageTolerance)) // 100, self.data.liquidityPoolContractAddress), sp.amount, sp.contract(sp.TPair(sp.TNat, sp.TAddress), self.data.quipuswapContractAddress, entry_point='tezToTokenPayment').open_some()) # @storage
+                    DUP;        # @storage : @storage
+                    GET 5;      # address : @storage
+                    CONTRACT %tezToTokenPayment (pair nat address); # option (contract (pair nat address)) : @storage
+                    IF_NONE
+                      {
+                        PUSH int 88; # int : @storage
+                        FAILWITH;   # FAILED
+                      }
+                      {}; # @some : @storage
+                    NIL operation; # list operation : @some : @storage
+                    SWAP;       # @some : list operation : @storage
+                    AMOUNT;     # @amount : @some : list operation : @storage
+                    DUP 4;      # @storage : @amount : @some : list operation : @storage
+                    CAR;        # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @amount : @some : list operation : @storage
+                    GET 3;      # address : @amount : @some : list operation : @storage
+                    PUSH nat 100; # nat : address : @amount : @some : list operation : @storage
+                    DUP 6;      # @storage : nat : address : @amount : @some : list operation : @storage
+                    GET 6;      # nat : nat : address : @amount : @some : list operation : @storage
+                    PUSH nat 100; # nat : nat : nat : address : @amount : @some : list operation : @storage
+                    SUB;        # int : nat : address : @amount : @some : list operation : @storage
+                    ISNAT;      # option nat : nat : address : @amount : @some : list operation : @storage
+                    IF_NONE
+                      {
+                        PUSH int 80; # int : nat : address : @amount : @some : list operation : @storage
+                        FAILWITH;   # FAILED
+                      }
+                      {}; # @some : nat : address : @amount : @some : list operation : @storage
+                    PUSH nat 1000000000000000000; # nat : @some : nat : address : @amount : @some : list operation : @storage
+                    PUSH nat 1000000000000; # nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    PUSH mutez 1; # mutez : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    AMOUNT;     # @amount : mutez : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    EDIV;       # option (pair nat mutez) : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    IF_NONE
+                      {
+                        UNIT;       # unit : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                        FAILWITH;   # FAILED
+                      }
+                      {}; # @some : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    CAR;        # nat : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    MUL;        # nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    PUSH nat 1000000000000; # nat : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    DUP 10;     # @storage : nat : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    CAR;        # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : nat : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    CAR;        # pair (address %governorContractAddress) (address %harbingerContractAddress) : nat : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    CDR;        # address : nat : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    PUSH string "XTZ-USD"; # string : address : nat : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    VIEW "getPrice" (pair timestamp nat); # option (pair timestamp nat) : nat : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    IF_NONE
+                      {
+                        PUSH int 59; # int : nat : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                        FAILWITH;   # FAILED
+                      }
+                      {}; # @some : nat : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    CDR;        # nat : nat : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    MUL;        # nat : nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    MUL;        # nat : nat : @some : nat : address : @amount : @some : list operation : @storage
+                    EDIV;       # option (pair nat nat) : @some : nat : address : @amount : @some : list operation : @storage
+                    IF_NONE
+                      {
+                        PUSH int 76; # int : @some : nat : address : @amount : @some : list operation : @storage
+                        FAILWITH;   # FAILED
+                      }
+                      {
+                        CAR;        # nat : @some : nat : address : @amount : @some : list operation : @storage
+                      }; # nat : @some : nat : address : @amount : @some : list operation : @storage
+                    MUL;        # nat : nat : address : @amount : @some : list operation : @storage
+                    EDIV;       # option (pair nat nat) : address : @amount : @some : list operation : @storage
+                    IF_NONE
+                      {
+                        PUSH int 81; # int : address : @amount : @some : list operation : @storage
+                        FAILWITH;   # FAILED
+                      }
+                      {
+                        CAR;        # nat : address : @amount : @some : list operation : @storage
+                      }; # nat : address : @amount : @some : list operation : @storage
+                    PAIR;       # pair nat address : @amount : @some : list operation : @storage
+                    TRANSFER_TOKENS; # operation : list operation : @storage
+                    CONS;       # list operation : @storage
+                  }
+                  {
+                    DROP;       # @storage
+                    # == unpause ==
+                    # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage
+                    DUP;        # @storage : @storage
+                    CAR;        # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : @storage
+                    CAR;        # pair (address %governorContractAddress) (address %harbingerContractAddress) : @storage
+                    CAR;        # address : @storage
+                    SENDER;     # @sender : address : @storage
+                    COMPARE;    # int : @storage
+                    EQ;         # bool : @storage
+                    IF
+                      {}
+                      {
+                        PUSH int 4; # int : @storage
+                        FAILWITH;   # FAILED
+                      }; # @storage
+                    # self.data.paused = False # @storage
+                    UNPAIR;     # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                    SWAP;       # pair (pair (address %pauseGuardianContractAddress) (bool %paused)) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                    UNPAIR;     # pair (address %pauseGuardianContractAddress) (bool %paused) : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                    CAR;        # address : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                    PUSH bool False; # bool : address : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                    SWAP;       # address : bool : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                    PAIR;       # pair address bool : pair (address %quipuswapContractAddress) (nat %slippageTolerance) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                    PAIR;       # pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)) : pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))
+                    SWAP;       # pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec)) : pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))
+                    PAIR;       # pair (pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))) (pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+                    NIL operation; # list operation : pair (pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))) (pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+                  }; # list operation : pair (pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))) (pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+              }; # list operation : pair (pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))) (pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+          }; # list operation : pair (pair (pair (address %governorContractAddress) (address %harbingerContractAddress)) (pair (address %liquidityPoolContractAddress) (nat %maxDataDelaySec))) (pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+      }; # list operation : pair (pair (pair address address) (pair address nat)) (pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance)))
+    PAIR;       # pair (list operation) (pair (pair (pair address address) (pair address nat)) (pair (pair address bool) (pair (address %quipuswapContractAddress) (nat %slippageTolerance))))
+  };

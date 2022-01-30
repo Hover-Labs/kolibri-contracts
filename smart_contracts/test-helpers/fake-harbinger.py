@@ -26,7 +26,7 @@ class FakeHarbingerContract(sp.Contract):
     def update(self):
         pass
 
-    # Get - Returns the static value in the initializer
+    # Get - Returns the static value in the initializer via a callback.
     @sp.entry_point
     def get(self, requestPair):
         sp.set_type(requestPair, sp.TPair(sp.TString, sp.TContract(Constants.HARBINGER_DATA_TYPE)))
@@ -35,3 +35,9 @@ class FakeHarbingerContract(sp.Contract):
 
         result = (self.data.harbingerAsset, (self.data.harbingerUpdateTime, self.data.harbingerValue))
         sp.transfer(result, sp.mutez(0), callback) 
+
+    # getPrice - returns the static value in the initializer via an onchain view. 
+    @sp.onchain_view()
+    def getPrice(self, assetCode):
+        sp.set_type(assetCode, sp.TString)
+        sp.result((self.data.harbingerUpdateTime, self.data.harbingerValue))

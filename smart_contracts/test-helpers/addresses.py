@@ -75,3 +75,6 @@ BAKER_KEY_HASH = sp.key_hash(BAKER_PUBLIC_KEY_HASH)
 VOTING_POWERS = {
   BAKER_KEY_HASH: 8000,
 }
+
+# An address of the Quipuswap pool.
+QUIPUSWAP_ADDRESS = sp.address("tz3bvNMQ95vfAYtG8193ymshqjSvmxiCUuR5")
