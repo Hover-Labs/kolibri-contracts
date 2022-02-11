@@ -3,6 +3,7 @@ import { substituteVariables, sendOperation, ContractOriginationResult, deployCo
 import { KeyStore, TezosNodeReader } from 'conseiljs'
 import { NETWORK_CONFIG } from "config.mainnet";
 import { TezosToolkit } from "@taquito/taquito";
+import { KOLIBRI_CONFIG } from "config";
 
 /** This file shamelessly adapted from https://github.com/Hover-Labs/governance-deploy-scripts */
 
@@ -222,7 +223,6 @@ export async function deployAndWireFarmingSystem(
   await wireFarmingSystem(
     farmingSystemDeployResult,
     farmingSystemConfig,
-    kdaoAddress,
     daoAddress, networkConfig, tezos
   )
 
@@ -261,7 +261,7 @@ async function deployFarmingSystem(
 async function wireFarmingSystem(
   farmingSystemDeployResult: FarmingSystemDeployResult,
   farmingSystemConfig: FarmingSystemConfig,
-  kdaoAddress: string,
+  // kdaoAddress: string,
   daoAddress: string,
   networkConfig: NetworkConfig, 
   tezos: TezosToolkit,
@@ -281,14 +281,14 @@ async function wireFarmingSystem(
   )
   console.log('')
 
-  console.log('>>> [3/5] Setting reward plan on farm')
-  await sendOperation(
-    networkConfig, tezos,
-    farmingSystemDeployResult.farmDeployResult.contractAddress,
-    'updatePlan',
-    [ farmingSystemConfig.rewardPerBlock, farmingSystemConfig.totalBlocks ]
-  )
-  console.log('')
+  // console.log('>>> [3/5] Setting reward plan on farm')
+  // await sendOperation(
+  //   networkConfig, tezos,
+  //   farmingSystemDeployResult.farmDeployResult.contractAddress,
+  //   'updatePlan',
+  //   [ farmingSystemConfig.rewardPerBlock, farmingSystemConfig.totalBlocks ]
+  // )
+  // console.log('')
 
   console.log('>>> [4/5] Setting Governor on Reserve')
   await sendOperation(

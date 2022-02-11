@@ -34,22 +34,16 @@ def movekDAO(unit):
     )
 def governanceLambda(unit):
     sp.set_type(unit, sp.TUnit)
-    communityFundBreakGlassLambda = sp.contract(
-        sp.TLambda(sp.TUnit, sp.TList(sp.TOperation)),
-        sp.address("${communityFundBreakGlassContract}"),
-        "runLambda"
-    ).open_some()    
 
     farmHandle = sp.contract(
-        sp.TPair(sp.TNat, sp.TNat),
-        sp.address("${farm.farmDeployResult.contractAddress}"),
-        "updatePlan"
+        sp.TNat,
+        sp.address("KT1KVumbbpB58gFxDPxappP2m4QJTyZExLaE"),
+        "revoke"
     ).open_some()
 
     sp.result(
         [
-            sp.transfer_operation(movekDAO, sp.mutez(0), communityFundBreakGlassLambda),
-            sp.transfer_operation((sp.nat(${MIGRATION_CONFIG.farmingConfig.rewardPerBlock.toFixed()}), sp.nat(${MIGRATION_CONFIG.farmingConfig.totalBlocks.toFixed()})), sp.mutez(0), farmHandle)
+            sp.transfer_operation(sp.nat(10), sp.mutez(0), farmHandle)
         ]
     )
 
