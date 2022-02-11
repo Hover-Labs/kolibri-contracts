@@ -4,3 +4,6 @@
 [submodule "break-glass-contracts"]
 	path = break-glass-contracts
 	url = https://github.com/hover-labs/break-glass-contracts
+[submodule "kolibri-farms"]
+	path = kolibri-farms
+	url = https://github.com/Hover-Labs/kolibri-farms
