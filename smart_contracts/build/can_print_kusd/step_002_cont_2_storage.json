@@ -1,1 +1,0 @@
-{ "prim": "Pair", "args": [ { "string": "XTZ-USD" }, { "prim": "Pair", "args": [ { "string": "1970-01-01T00:00:00Z" }, { "int": "2000000" } ] } ] }

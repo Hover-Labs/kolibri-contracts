@@ -1,1 +1,0 @@
-sp.record(harbingerAsset = 'XTZ-USD', harbingerUpdateTime = sp.timestamp(0), harbingerValue = 2000000)

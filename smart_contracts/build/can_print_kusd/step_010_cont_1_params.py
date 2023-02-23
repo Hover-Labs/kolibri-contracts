@@ -1,1 +1,0 @@
-sp.address('KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p')
