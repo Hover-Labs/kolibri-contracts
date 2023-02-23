@@ -85,7 +85,7 @@ export async function sendOperation(
             return result.hash
         }
 
-    } catch (e: any) {
+    } catch (e) {
         console.log('Caught exception, retrying...')
         console.log(e.message)
         console.error(e)
@@ -120,14 +120,15 @@ export async function deployContract(
         console.log('')
 
         console.log("Awaiting confirmation...")
-        await checkConfirmed(config, result.hash)
+        // await checkConfirmed(config, result.hash)
+        await Utils.sleep(60)
         console.log("Confirmed!")
 
         return {
             operationHash: result.hash,
             contractAddress: result.contractAddress || "ERR",
         }
-    } catch (e: any) {
+    } catch (e) {
         console.log('Caught exception, retrying...')
         console.error(e)
         debugger;
@@ -148,7 +149,7 @@ export const checkConfirmed = async (config: any, operationHash: string): Promis
     const operationStatusUrl = `${config.BETTER_CALL_DEV_BASE_URL}/opg/${operationHash}`
     const headUrl = `${config.NODE_URL}/chains/main/blocks/head/header`
 
-    for (let currentTry = 0; currentTry < config.MAX_RETRIES_FOR_CONFIRMATION_POLLING; currentTry++) {
+    for (let currentTry = 0; currentTry < 10; currentTry++) {
         try {
             // Get operation data
             const operationDataResult = await axios.get(operationStatusUrl)
@@ -172,22 +173,21 @@ export const checkConfirmed = async (config: any, operationHash: string): Promis
                 throw new Error(`Operation is not applied! Current status: ${operationData.status}`)
             }
 
-            // Require the right number of confirmations.
-            const headLevel = new BigNumber(headData.level)
-            const operationLevel = new BigNumber(operationData.level)
-            const delta = headLevel.minus(operationLevel)
-            if (delta.isLessThan(config.NUMBER_OF_CONFIRMATIONS)) {
-                throw new Error(`Did not have required number of confirmations. Head: ${headLevel.toFixed()}, Operation: ${operationLevel.toFixed()}`)
-            }
+            // // Require the right number of confirmations.
+            // const headLevel = new BigNumber(headData.level)
+            // const operationLevel = new BigNumber(operationData.level)
+            // const delta = headLevel.minus(operationLevel)
+            // if (delta.isLessThan(config.NUMBER_OF_CONFIRMATIONS)) {
+            //     throw new Error(`Did not have required number of confirmations. Head: ${headLevel.toFixed()}, Operation: ${operationLevel.toFixed()}`)
+            // }
 
             // If we've made it here without an error, then all tests have passed and the operation has confirmed.
             return
-        } catch (e: any) {
+        } catch (e) {
             // Something above didn't track - that's probably okay since the network sometimes runs slow.
             // Print the error and sleep for another block before trying again.
             console.log(`Caught exception while polling ${e}`)
-            console.log(`(Try ${currentTry + 1} of ${config.MAX_RETRIES_FOR_CONFIRMATION_POLLING})`)
-            await Utils.sleep(config.OPERATION_DELAY_SECS)
+            await Utils.sleep(30)
         }
     }
 

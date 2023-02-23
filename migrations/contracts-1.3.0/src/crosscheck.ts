@@ -9,8 +9,6 @@ type CrossCheckResult = {
 
 export default async function crosscheck(config: any): Promise<CrossCheckResult> {
     console.log('>>> [1/4] Input params:')
-    console.log(`Tezos Node: ${config.NODE_URL}`)
-    console.log(`Indexer URL: ${config.BETTER_CALL_DEV_BASE_URL}`)
     console.log('')
 
     // console.log(`>>> [2/4] Initializing Conseil with logging level: ${config.LOG_LEVEL}`)

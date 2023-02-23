@@ -1,0 +1,13 @@
+{
+  "prim": "Pair",
+  "args": [
+    {
+      "prim": "Pair",
+      "args": [
+        { "string": "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" },
+        { "prim": "Pair", "args": [ { "string": "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" }, { "string": "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z" } ] }
+      ]
+    },
+    { "prim": "Pair", "args": [ { "string": "KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1" }, { "prim": "Pair", "args": [ { "int": "0" }, { "int": "0" } ] } ] }
+  ]
+}

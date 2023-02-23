@@ -13,7 +13,9 @@
   "dependencies": {
     "@hover-labs/kolibri-js": "^3.0.4",
     "@hover-labs/tezos-utils": "^0.0.17",
-    "@taquito/taquito": "^10.2.1",
+    "@tacoinfra/harbinger-lib": "^1.7.1",
+    "@taquito/signer": "^15.1.0",
+    "@taquito/taquito": "^15.1.0",
     "lodash": "^4.17.21",
     "node-fetch": "^3.3.0"
   },

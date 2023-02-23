@@ -1,0 +1,1 @@
+sp.record(minterAddress = sp.address('KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p'), myOvenAddress = sp.address('tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA'), ovenFactoryAddress = sp.address('KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z'), owner = sp.address('KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1'), state = 0, tokensToBorrow = 0)
