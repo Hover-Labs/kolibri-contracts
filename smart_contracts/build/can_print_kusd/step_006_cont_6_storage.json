@@ -8,8 +8,7 @@
         {
           "prim": "Pair",
           "args": [
-            { "prim": "None" },
-            { "prim": "Pair", "args": [ { "string": "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" }, { "string": "KT1Tezooo3zzSmartPyzzSTATiCzzzseJjWC" } ] }
+            { "prim": "None" }, { "prim": "Pair", "args": [ { "string": "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" }, { "string": "KT1Tezooo3zzSmartPyzzSTATiCzzzseJjWC" } ] }
           ]
         }
       ]

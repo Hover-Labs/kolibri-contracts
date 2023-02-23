@@ -187,7 +187,12 @@ if __name__ == "__main__":
             sender = governorContractAddress
         )
 
-        scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (Addresses.STABILITY_FUND_ADDRESS, Addresses.DEVELOPER_FUND_ADDRESS))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+
+        scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
+        scenario += minter.setTokenContract(token.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+        scenario += minter.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+        scenario += minter.setStabilityFundContract(Addresses.STABILITY_FUND_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
+        scenario += minter.setDeveloperFundContract(Addresses.DEVELOPER_FUND_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
 
         scenario += token.setAdministrator(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
 
@@ -235,7 +240,6 @@ if __name__ == "__main__":
         scenario.verify(token.data.balances[cracker.address].balance == kusd_to_mint) # kusd is on the contract
         # sending KUSD back to the owner is trivial and left out of the scope
 
-        # scenario.verify(owner.balance == sp.tez(1))
 
 
     sp.add_compilation_target("oven-cracker", OvenCracker())

@@ -11,12 +11,12 @@ Creating contract KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1
 Creating contract KT1Tezooo1zzSmartPyzzSTATiCzzzyfC8eF
  -> (Pair (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" {}) (Pair 1000000000000000000000000000000000000000000000000000000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 0)))
  => build/can_print_kusd/step_001_cont_1_storage.tz 1
- => build/can_print_kusd/step_001_cont_1_storage.json 68
+ => build/can_print_kusd/step_001_cont_1_storage.json 67
  => build/can_print_kusd/step_001_cont_1_sizes.csv 2
  => build/can_print_kusd/step_001_cont_1_storage.py 1
  => build/can_print_kusd/step_001_cont_1_types.py 7
- => build/can_print_kusd/step_001_cont_1_contract.tz 961
- => build/can_print_kusd/step_001_cont_1_contract.json 936
+ => build/can_print_kusd/step_001_cont_1_contract.tz 935
+ => build/can_print_kusd/step_001_cont_1_contract.json 935
  => build/can_print_kusd/step_001_cont_1_contract.py 114
 Creating contract KT1Tezooo2zzSmartPyzzSTATiCzzzwqqQ4H
  -> (Pair "XTZ-USD" (Pair "1970-01-01T00:00:00Z" 2000000))
@@ -55,75 +55,95 @@ Creating contract KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p
  => build/can_print_kusd/step_005_cont_5_sizes.csv 2
  => build/can_print_kusd/step_005_cont_5_storage.py 1
  => build/can_print_kusd/step_005_cont_5_types.py 7
- => build/can_print_kusd/step_005_cont_5_contract.tz 3686
- => build/can_print_kusd/step_005_cont_5_contract.json 3139
- => build/can_print_kusd/step_005_cont_5_contract.py 320
+ => build/can_print_kusd/step_005_cont_5_contract.tz 3620
+ => build/can_print_kusd/step_005_cont_5_contract.json 3071
+ => build/can_print_kusd/step_005_cont_5_contract.py 306
 Creating contract KT1Tezooo6zzSmartPyzzSTATiCzzztY1196
  -> (Pair (Pair (Pair None "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair None (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" "KT1Tezooo3zzSmartPyzzSTATiCzzzseJjWC"))) (Pair (Pair "KT1Tezooo4zzSmartPyzzSTATiCzzzyPVdv3" "tz1LLNkQK4UQV6QcFShiXJ2vT2ELw449MzAA") (Pair False (Pair 0 None))))
  => build/can_print_kusd/step_006_cont_6_storage.tz 1
- => build/can_print_kusd/step_006_cont_6_storage.json 25
+ => build/can_print_kusd/step_006_cont_6_storage.json 24
  => build/can_print_kusd/step_006_cont_6_sizes.csv 2
  => build/can_print_kusd/step_006_cont_6_storage.py 1
  => build/can_print_kusd/step_006_cont_6_types.py 7
  => build/can_print_kusd/step_006_cont_6_contract.tz 834
- => build/can_print_kusd/step_006_cont_6_contract.json 1344
+ => build/can_print_kusd/step_006_cont_6_contract.json 1343
  => build/can_print_kusd/step_006_cont_6_contract.py 141
-Creating contract KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1
+Creating contract KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z
  -> (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair (Some "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") None)) (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196") (Pair "KT1Tezooo4zzSmartPyzzSTATiCzzzyPVdv3" 0)))
- => build/can_print_kusd/step_007_cont_8_storage.tz 1
- => build/can_print_kusd/step_007_cont_8_storage.json 19
- => build/can_print_kusd/step_007_cont_8_sizes.csv 2
- => build/can_print_kusd/step_007_cont_8_storage.py 1
- => build/can_print_kusd/step_007_cont_8_types.py 7
- => build/can_print_kusd/step_007_cont_8_contract.tz 795
- => build/can_print_kusd/step_007_cont_8_contract.json 984
- => build/can_print_kusd/step_007_cont_8_contract.py 69
+ => build/can_print_kusd/step_007_cont_7_storage.tz 1
+ => build/can_print_kusd/step_007_cont_7_storage.json 19
+ => build/can_print_kusd/step_007_cont_7_sizes.csv 2
+ => build/can_print_kusd/step_007_cont_7_storage.py 1
+ => build/can_print_kusd/step_007_cont_7_types.py 7
+ => build/can_print_kusd/step_007_cont_7_contract.tz 796
+ => build/can_print_kusd/step_007_cont_7_contract.json 979
+ => build/can_print_kusd/step_007_cont_7_contract.py 69
  => build/can_print_kusd/step_008_cont_4_params.py 1
  => build/can_print_kusd/step_008_cont_4_params.tz 1
  => build/can_print_kusd/step_008_cont_4_params.json 1
-Executing setOvenFactoryContract(sp.address('KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1'))...
- -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1" {}))
+Executing setOvenFactoryContract(sp.address('KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z'))...
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z" {}))
  => build/can_print_kusd/step_009_cont_5_params.py 1
  => build/can_print_kusd/step_009_cont_5_params.tz 1
- => build/can_print_kusd/step_009_cont_5_params.json 19
-Executing updateContracts((sp.address('tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf'), (sp.address('KT1Tezooo1zzSmartPyzzSTATiCzzzyfC8eF'), (sp.address('KT1Tezooo6zzSmartPyzzSTATiCzzztY1196'), (sp.address('tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT'), sp.address('tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX'))))))...
+ => build/can_print_kusd/step_009_cont_5_params.json 1
+Executing setGovernorContract(sp.address('tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf'))...
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1970-01-01T00:00:00Z"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm")) (Pair (Pair 20000000000000000000 0) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "tz1cYufsxHXJcvANhvS55h3aY32a9BAFB494"))))
+ => build/can_print_kusd/step_010_cont_5_params.py 1
+ => build/can_print_kusd/step_010_cont_5_params.tz 1
+ => build/can_print_kusd/step_010_cont_5_params.json 1
+Executing setTokenContract(sp.address('KT1Tezooo1zzSmartPyzzSTATiCzzzyfC8eF'))...
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1970-01-01T00:00:00Z"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "tz1c461F8GirBvq5DpFftPoPyCcPR7HQM6gm")) (Pair (Pair 20000000000000000000 0) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "KT1Tezooo1zzSmartPyzzSTATiCzzzyfC8eF"))))
+ => build/can_print_kusd/step_011_cont_5_params.py 1
+ => build/can_print_kusd/step_011_cont_5_params.tz 1
+ => build/can_print_kusd/step_011_cont_5_params.json 1
+Executing setOvenProxyContract(sp.address('KT1Tezooo6zzSmartPyzzSTATiCzzztY1196'))...
  -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1970-01-01T00:00:00Z"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196")) (Pair (Pair 20000000000000000000 0) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "KT1Tezooo1zzSmartPyzzSTATiCzzzyfC8eF"))))
- => build/can_print_kusd/step_010_cont_1_params.py 1
- => build/can_print_kusd/step_010_cont_1_params.tz 1
- => build/can_print_kusd/step_010_cont_1_params.json 1
+ => build/can_print_kusd/step_012_cont_5_params.py 1
+ => build/can_print_kusd/step_012_cont_5_params.tz 1
+ => build/can_print_kusd/step_012_cont_5_params.json 1
+Executing setStabilityFundContract(sp.address('tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT'))...
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1970-01-01T00:00:00Z"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196")) (Pair (Pair 20000000000000000000 0) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "KT1Tezooo1zzSmartPyzzSTATiCzzzyfC8eF"))))
+ => build/can_print_kusd/step_013_cont_5_params.py 1
+ => build/can_print_kusd/step_013_cont_5_params.tz 1
+ => build/can_print_kusd/step_013_cont_5_params.json 1
+Executing setDeveloperFundContract(sp.address('tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX'))...
+ -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1970-01-01T00:00:00Z"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196")) (Pair (Pair 20000000000000000000 0) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "KT1Tezooo1zzSmartPyzzSTATiCzzzyfC8eF"))))
+ => build/can_print_kusd/step_014_cont_1_params.py 1
+ => build/can_print_kusd/step_014_cont_1_params.tz 1
+ => build/can_print_kusd/step_014_cont_1_params.json 1
 Executing setAdministrator(sp.address('KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p'))...
  -> (Pair (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" {}) (Pair 1000000000000000000000000000000000000000000000000000000000000000000000000 "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf")) (Pair (Pair {Elt "" 0x74657a6f732d73746f726167653a64617461; Elt "data" 0x7b206e616d653a2022204b6f6c6962726920546f6b656e20436f6e7472616374222c20226465736372697074696f6e223a20224641312e3220496d706c656d656e746174696f6e206f66206b555344222c2022617574686f72223a2022486f766572204c616273222c2022686f6d6570616765223a20202268747470733a2f2f6b6f6c696272692e66696e616e6365222c2022696e7465726661636573223a205b2022545a49502d3030372d323032312d30312d3239225d207d} False) (Pair {Elt 0 (Pair 0 {Elt "decimals" 0x3138; Elt "icon" 0x2068747470733a2f2f6b6f6c696272692d646174612e73332e616d617a6f6e6177732e636f6d2f6c6f676f2e706e67; Elt "name" 0x4b6f6c6962726920555344; Elt "symbol" 0x6b555344})} 0)))
 Creating contract KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX
- -> (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" "KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1")) (Pair "KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1" (Pair 0 0)))
- => build/can_print_kusd/step_011_cont_9_storage.tz 1
- => build/can_print_kusd/step_011_cont_9_storage.json 13
- => build/can_print_kusd/step_011_cont_9_sizes.csv 2
- => build/can_print_kusd/step_011_cont_9_storage.py 1
- => build/can_print_kusd/step_011_cont_9_types.py 7
- => build/can_print_kusd/step_011_cont_9_contract.tz 191
- => build/can_print_kusd/step_011_cont_9_contract.json 202
- => build/can_print_kusd/step_011_cont_9_contract.py 44
- => build/can_print_kusd/step_012_cont_9_params.py 1
- => build/can_print_kusd/step_012_cont_9_params.tz 1
- => build/can_print_kusd/step_012_cont_9_params.json 1
+ -> (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z")) (Pair "KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1" (Pair 0 0)))
+ => build/can_print_kusd/step_015_cont_9_storage.tz 1
+ => build/can_print_kusd/step_015_cont_9_storage.json 13
+ => build/can_print_kusd/step_015_cont_9_sizes.csv 2
+ => build/can_print_kusd/step_015_cont_9_storage.py 1
+ => build/can_print_kusd/step_015_cont_9_types.py 7
+ => build/can_print_kusd/step_015_cont_9_contract.tz 191
+ => build/can_print_kusd/step_015_cont_9_contract.json 202
+ => build/can_print_kusd/step_015_cont_9_contract.py 44
+ => build/can_print_kusd/step_016_cont_9_params.py 1
+ => build/can_print_kusd/step_016_cont_9_params.tz 1
+ => build/can_print_kusd/step_016_cont_9_params.json 1
 Executing oven_create(sp.unit)...
- -> (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" "KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1")) (Pair "KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1" (Pair 0 0)))
+ -> (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" (Pair "tz1bTpviNnyx2PXsNmGpCQTMQsGoYordkUoA" "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z")) (Pair "KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1" (Pair 0 0)))
   + Transfer
      params: sp.unit
      amount: sp.tez(0)
-     to:     sp.contract(sp.TUnit, sp.address('KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1%makeOven')).open_some()
+     to:     sp.contract(sp.TUnit, sp.address('KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z%makeOven')).open_some()
 Executing (queue) makeOven(sp.unit)...
  -> (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair (Some "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Some "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX"))) (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196") (Pair "KT1Tezooo4zzSmartPyzzSTATiCzzzyPVdv3" 1)))
   + Transfer
-     params: sp.contract(sp.TNat, sp.address('KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1%makeOven_minterCallback')).open_some()
+     params: sp.contract(sp.TNat, sp.address('KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z%makeOven_minterCallback')).open_some()
      amount: sp.tez(0)
      to:     sp.contract(sp.TContract(sp.TNat), sp.address('KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p%getInterestIndex')).open_some()
-Executing (queue) getInterestIndex(sp.contract(sp.TNat, sp.address('KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1%makeOven_minterCallback')).open_some())...
+Executing (queue) getInterestIndex(sp.contract(sp.TNat, sp.address('KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z%makeOven_minterCallback')).open_some())...
  -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1970-01-01T00:00:00Z"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196")) (Pair (Pair 20000000000000000000 0) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "KT1Tezooo1zzSmartPyzzSTATiCzzzyfC8eF"))))
   + Transfer
      params: 1000000000000000000
      amount: sp.tez(0)
-     to:     sp.contract(sp.TNat, sp.address('KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1%makeOven_minterCallback')).open_some()
+     to:     sp.contract(sp.TNat, sp.address('KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z%makeOven_minterCallback')).open_some()
 Executing (queue) makeOven_minterCallback(1000000000000000000)...
  -> (Pair (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair (Some "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") None)) (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196") (Pair "KT1Tezooo4zzSmartPyzzSTATiCzzzyPVdv3" 0)))
   + Create Contract(address: KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU, baker: sp.some(sp.key_hash('tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf')))sp.record(borrowedTokens = 0, interestIndex = 1000000000000000000, isLiquidated = False, ovenProxyContractAddress = sp.address('KT1Tezooo6zzSmartPyzzSTATiCzzztY1196'), owner = sp.address('KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX'), stabilityFeeTokens = 0)
@@ -133,34 +153,34 @@ Executing (queue) makeOven_minterCallback(1000000000000000000)...
      to:     sp.contract(sp.TPair(sp.TAddress, sp.TAddress), sp.address('KT1Tezooo4zzSmartPyzzSTATiCzzzyPVdv3%addOven')).open_some()
 Creating contract KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU
  -> (Pair (Pair 0 (Pair 1000000000000000000 False)) (Pair "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196" (Pair "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX" 0)))
- => build/can_print_kusd/step_012_cont_Dyn_0_storage.tz 1
- => build/can_print_kusd/step_012_cont_Dyn_0_storage.json 10
- => build/can_print_kusd/step_012_cont_Dyn_0_sizes.csv 2
- => build/can_print_kusd/step_012_cont_Dyn_0_storage.py 1
- => build/can_print_kusd/step_012_cont_Dyn_0_types.py 7
- => build/can_print_kusd/step_012_cont_Dyn_0_contract.tz 459
- => build/can_print_kusd/step_012_cont_Dyn_0_contract.json 592
- => build/can_print_kusd/step_012_cont_Dyn_0_contract.py 61
+ => build/can_print_kusd/step_016_cont_Dyn_0_storage.tz 1
+ => build/can_print_kusd/step_016_cont_Dyn_0_storage.json 10
+ => build/can_print_kusd/step_016_cont_Dyn_0_sizes.csv 2
+ => build/can_print_kusd/step_016_cont_Dyn_0_storage.py 1
+ => build/can_print_kusd/step_016_cont_Dyn_0_types.py 7
+ => build/can_print_kusd/step_016_cont_Dyn_0_contract.tz 459
+ => build/can_print_kusd/step_016_cont_Dyn_0_contract.json 592
+ => build/can_print_kusd/step_016_cont_Dyn_0_contract.py 61
 Executing (queue) addOven((sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'), sp.address('KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX')))...
- -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1" {Elt "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX"}))
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z" {Elt "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX"}))
 Computing 'Oven added by address:'...
  => 'Oven added by address:'
 Computing sp.contract_data(4).ovenMap[sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU')]...
  => sp.address('KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX')
 Verifying sp.contract_data(4).ovenMap[sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU')] == sp.address('KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX')...
  OK
- => build/can_print_kusd/step_016_cont_9_params.py 1
- => build/can_print_kusd/step_016_cont_9_params.tz 1
- => build/can_print_kusd/step_016_cont_9_params.json 1
+ => build/can_print_kusd/step_020_cont_9_params.py 1
+ => build/can_print_kusd/step_020_cont_9_params.tz 1
+ => build/can_print_kusd/step_020_cont_9_params.json 1
 Executing set_my_oven_address(sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'))...
- -> (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" (Pair "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1")) (Pair "KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1" (Pair 0 0)))
+ -> (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" (Pair "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z")) (Pair "KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1" (Pair 0 0)))
 Verifying sp.contract_data(9).myOvenAddress == sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU')...
  OK
- => build/can_print_kusd/step_018_cont_9_params.py 1
- => build/can_print_kusd/step_018_cont_9_params.tz 1
- => build/can_print_kusd/step_018_cont_9_params.json 1
+ => build/can_print_kusd/step_022_cont_9_params.py 1
+ => build/can_print_kusd/step_022_cont_9_params.tz 1
+ => build/can_print_kusd/step_022_cont_9_params.json 1
 Executing fake_mint(10000 * 1000000000000000000)...
- -> (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" (Pair "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1")) (Pair "KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1" (Pair 1 10000000000000000000000)))
+ -> (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" (Pair "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z")) (Pair "KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1" (Pair 1 10000000000000000000000)))
   + Transfer
      params: sp.unit
      amount: sp.tez(1)
@@ -186,7 +206,7 @@ Executing (queue) deposit((sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'), (
      amount: sp.tez(1)
      to:     sp.contract(sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TPair(sp.TBool, sp.TPair(sp.TInt, sp.TInt)))))), sp.address('KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p%deposit')).open_some()
 Executing (queue) isOven(sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'))...
- -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1" {Elt "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX"}))
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z" {Elt "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX"}))
 Executing (queue) deposit((sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'), (sp.address('KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX'), (1000000000000000000, (0, (False, (0, 1000000000000000000)))))))...
  -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1970-01-01T00:00:00Z"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196")) (Pair (Pair 20000000000000000000 0) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "KT1Tezooo1zzSmartPyzzSTATiCzzzyfC8eF"))))
   + Transfer
@@ -218,7 +238,7 @@ Executing (queue) withdraw((sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'), 
      amount: sp.tez(0)
      to:     sp.contract(sp.TContract(sp.TNat), sp.address('KT1Tezooo3zzSmartPyzzSTATiCzzzseJjWC%getXtzUsdRate')).open_some()
 Executing (queue) isOven(sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'))...
- -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1" {Elt "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX"}))
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z" {Elt "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX"}))
 Executing (queue) getXtzUsdRate(sp.contract(sp.TNat, sp.address('KT1Tezooo6zzSmartPyzzSTATiCzzztY1196%withdraw_callback')).open_some())...
  -> (Pair (Pair (Some "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196%withdraw_callback") "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair "KT1Tezooo2zzSmartPyzzSTATiCzzzwqqQ4H" (Pair 1800 1)))
   + Transfer
@@ -262,7 +282,7 @@ Executing (queue) updateState((sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'
 Executing (queue) updateState((sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'), (0, (0, (1000000000000000000, False)))))...
  -> (Pair (Pair 0 (Pair 1000000000000000000 False)) (Pair "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196" (Pair "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX" 0)))
 Executing (queue) default(sp.unit)...
- -> (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" (Pair "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1")) (Pair "KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1" (Pair 0 10000000000000000000000)))
+ -> (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" (Pair "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z")) (Pair "KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1" (Pair 0 10000000000000000000000)))
   + Transfer
      params: sp.unit
      amount: sp.tez(10000)
@@ -288,7 +308,7 @@ Executing (queue) deposit((sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'), (
      amount: sp.tez(10000)
      to:     sp.contract(sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TPair(sp.TBool, sp.TPair(sp.TInt, sp.TInt)))))), sp.address('KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p%deposit')).open_some()
 Executing (queue) isOven(sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'))...
- -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1" {Elt "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX"}))
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z" {Elt "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX"}))
 Executing (queue) deposit((sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'), (sp.address('KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX'), (10000000000000000000000, (0, (False, (0, 1000000000000000000)))))))...
  -> (Pair (Pair (Pair 200000000000000000000 (Pair 100000000000000000 "tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX")) (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair 1000000000000000000 "1970-01-01T00:00:00Z"))) (Pair (Pair 80000000000000000 (Pair "tz3QSGPoRp3Kn7n3vY24eYeu3Peuqo45LQ4D" "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196")) (Pair (Pair 20000000000000000000 0) (Pair "tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT" "KT1Tezooo1zzSmartPyzzSTATiCzzzyfC8eF"))))
   + Transfer
@@ -320,7 +340,7 @@ Executing (queue) borrow((sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'), (s
      amount: sp.tez(0)
      to:     sp.contract(sp.TContract(sp.TNat), sp.address('KT1Tezooo3zzSmartPyzzSTATiCzzzseJjWC%getXtzUsdRate')).open_some()
 Executing (queue) isOven(sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'))...
- -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1" {Elt "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX"}))
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z" {Elt "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX"}))
 Executing (queue) getXtzUsdRate(sp.contract(sp.TNat, sp.address('KT1Tezooo6zzSmartPyzzSTATiCzzztY1196%borrow_callback')).open_some())...
  -> (Pair (Pair (Some "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196%borrow_callback") "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair "KT1Tezooo2zzSmartPyzzSTATiCzzzwqqQ4H" (Pair 1800 1)))
   + Transfer
@@ -375,11 +395,11 @@ Computing sp.contract_data(1).balances[sp.address('KT1Tezooo9zzSmartPyzzSTATiCzz
  => 10000000000000000000000
 Computing 'Owner balance'...
  => 'Owner balance'
- => build/can_print_kusd/step_024_cont_9_params.py 1
- => build/can_print_kusd/step_024_cont_9_params.tz 1
- => build/can_print_kusd/step_024_cont_9_params.json 1
+ => build/can_print_kusd/step_028_cont_9_params.py 1
+ => build/can_print_kusd/step_028_cont_9_params.tz 1
+ => build/can_print_kusd/step_028_cont_9_params.json 1
 Executing drain(sp.tez(10000))...
- -> (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" (Pair "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1")) (Pair "KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1" (Pair 0 10000000000000000000000)))
+ -> (Pair (Pair "KT1Tezooo5zzSmartPyzzSTATiCzzzz48Z4p" (Pair "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z")) (Pair "KT1TezoooozzSmartPyzzSTATiCzzzwwBFA1" (Pair 0 10000000000000000000000)))
   + Transfer
      params: sp.tez(10000)
      amount: sp.tez(0)
@@ -401,7 +421,7 @@ Executing (queue) withdraw((sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'), 
      amount: sp.tez(0)
      to:     sp.contract(sp.TContract(sp.TNat), sp.address('KT1Tezooo3zzSmartPyzzSTATiCzzzseJjWC%getXtzUsdRate')).open_some()
 Executing (queue) isOven(sp.address('KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU'))...
- -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1" {Elt "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX"}))
+ -> (Pair "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf" (Pair "KT1Tezooo7zzSmartPyzzSTATiCzzzvTbG1z" {Elt "KT1TezoooozzSmartPyzzDYNAMiCzzpLu4LU" "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX"}))
 Executing (queue) getXtzUsdRate(sp.contract(sp.TNat, sp.address('KT1Tezooo6zzSmartPyzzSTATiCzzztY1196%withdraw_callback')).open_some())...
  -> (Pair (Pair (Some "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196%withdraw_callback") "tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf") (Pair "KT1Tezooo2zzSmartPyzzSTATiCzzzwqqQ4H" (Pair 1800 1)))
   + Transfer

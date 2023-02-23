@@ -227,8 +227,7 @@
                                   {
                                     "prim": "pair",
                                     "args": [
-                                      { "prim": "nat" },
-                                      { "prim": "pair", "args": [ { "prim": "bool" }, { "prim": "pair", "args": [ { "prim": "int" }, { "prim": "int" } ] } ] }
+                                      { "prim": "nat" }, { "prim": "pair", "args": [ { "prim": "bool" }, { "prim": "pair", "args": [ { "prim": "int" }, { "prim": "int" } ] } ] }
                                     ]
                                   }
                                 ]

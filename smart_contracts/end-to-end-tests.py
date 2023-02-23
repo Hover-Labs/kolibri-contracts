@@ -61,7 +61,14 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setStabilityFundContract(stabilityFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setDeveloperFundContract(developerFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  # scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -73,8 +80,8 @@ def test():
 
   # AND alice has an oven.
   aliceOven = Oven.OvenContract(owner = alice.address, ovenProxyContractAddress = ovenProxy.address)
-  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
   scenario += aliceOven
+  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
 
   # VERIFY alice can deposit into the oven.
   currentTime = currentTime.add_seconds(1)
@@ -134,7 +141,13 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setStabilityFundContract(stabilityFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setDeveloperFundContract(developerFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -146,8 +159,8 @@ def test():
 
   # AND alice has an oven.
   aliceOven = Oven.OvenContract(owner = alice.address, ovenProxyContractAddress = ovenProxy.address)
-  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
   scenario += aliceOven
+  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
 
   # VERIFY alice can deposit into the oven and then mint tokens
   currentTime = currentTime.add_seconds(1)
@@ -216,7 +229,13 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setStabilityFundContract(stabilityFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setDeveloperFundContract(developerFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -228,8 +247,8 @@ def test():
 
   # AND alice has an oven.
   aliceOven = Oven.OvenContract(owner = alice.address, ovenProxyContractAddress = ovenProxy.address)
-  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
   scenario += aliceOven
+  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
 
   # VERIFY alice can withdraw partial amounts of collateral after repaying
   # Alice deposits $20 of XTZ and mints $10 of kUSD
@@ -289,6 +308,8 @@ def test():
   devFundSplit = sp.nat(100000000000000000) # 10%
   liquidationFeePercent = sp.nat(100000000000000000) # 10%
   administrator = Dummy.DummyContract()
+  scenario += administrator
+
   developerFund = DevFund.DevFundContract(
     administratorContractAddress = administrator.address
   )
@@ -307,7 +328,6 @@ def test():
   ovenRegistry = OvenRegistry.OvenRegistryContract()
   token = Token.FA12()
 
-  scenario += administrator
   scenario += developerFund
   scenario += stabilityFund
   scenario += minter
@@ -323,7 +343,13 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setStabilityFundContract(stabilityFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setDeveloperFundContract(developerFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -335,8 +361,8 @@ def test():
 
   # AND alice has an oven.
   aliceOven = Oven.OvenContract(owner = alice.address, ovenProxyContractAddress = ovenProxy.address)
-  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
   scenario += aliceOven
+  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
 
   # VERIFY the StabilityFund can liquidate an oven.
   # Alice deposits $20 of XTZ and mints $10 of kUSD
@@ -402,6 +428,8 @@ def test():
   devFundSplit = sp.nat(100000000000000000) # 10%
   liquidationFeePercent = sp.nat(100000000000000000) # 10%
   administrator = Dummy.DummyContract()
+  scenario += administrator
+
   developerFund = DevFund.DevFundContract(
     administratorContractAddress = administrator.address
   )
@@ -422,7 +450,6 @@ def test():
     liquidationFeePercent = liquidationFeePercent,
   )
 
-  scenario += administrator
   scenario += developerFund
   scenario += stabilityFund
   scenario += minter
@@ -443,7 +470,13 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setStabilityFundContract(stabilityFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setDeveloperFundContract(developerFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+
   scenario += minter.setLiquidityPoolContract(liquidityPool.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -456,8 +489,8 @@ def test():
 
   # AND alice has an oven.
   aliceOven = Oven.OvenContract(owner = alice.address, ovenProxyContractAddress = ovenProxy.address)
-  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
   scenario += aliceOven
+  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
 
   # VERIFY the StabilityFund can liquidate an oven.
   # Alice deposits $40 of XTZ and mints $12 of kUSD
@@ -535,7 +568,10 @@ def test():
   # AND a universe of Stablecoin contracts
   devFundSplit = sp.nat(100000000000000000) # 10%
   liquidationFeePercent = sp.nat(100000000000000000) # 10%
+
   administrator = Dummy.DummyContract()
+  scenario += administrator
+
   developerFund = DevFund.DevFundContract(
     administratorContractAddress = administrator.address
   )
@@ -556,7 +592,6 @@ def test():
     liquidationFeePercent = liquidationFeePercent,
   )
 
-  scenario += administrator
   scenario += developerFund
   scenario += stabilityFund
   scenario += minter
@@ -577,7 +612,13 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setStabilityFundContract(stabilityFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setDeveloperFundContract(developerFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+
   scenario += minter.setLiquidityPoolContract(liquidityPool.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -590,8 +631,8 @@ def test():
 
   # AND alice has an oven.
   aliceOven = Oven.OvenContract(owner = alice.address, ovenProxyContractAddress = ovenProxy.address)
-  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
   scenario += aliceOven
+  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
 
   # VERIFY the StabilityFund can liquidate an oven.
   # Alice deposits $40 of XTZ and mints $11 of kUSD
@@ -642,7 +683,10 @@ def test():
   # AND a universe of Stablecoin contracts
   devFundSplit = sp.nat(100000000000000000) # 10%
   liquidationFeePercent = sp.nat(100000000000000000) # 10%
+
   administrator = Dummy.DummyContract()
+  scenario += administrator
+
   developerFund = DevFund.DevFundContract(
     administratorContractAddress = administrator.address
   )
@@ -663,7 +707,6 @@ def test():
     liquidationFeePercent = liquidationFeePercent,
   )
 
-  scenario += administrator
   scenario += developerFund
   scenario += stabilityFund
   scenario += minter
@@ -680,7 +723,13 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setStabilityFundContract(stabilityFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setDeveloperFundContract(developerFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+
   scenario += minter.setLiquidityPoolContract(liquidityPool.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -693,8 +742,8 @@ def test():
 
   # AND alice has an oven.
   aliceOven = Oven.OvenContract(owner = alice.address, ovenProxyContractAddress = ovenProxy.address)
-  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
   scenario += aliceOven
+  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
 
   # VERIFY the StabilityFund can liquidate an oven.
   # Alice deposits $40 of XTZ and mints $11 of kUSD
@@ -772,7 +821,10 @@ def test():
   # AND a universe of Stablecoin contracts
   devFundSplit = sp.nat(100000000000000000) # 10%
   liquidationFeePercent = sp.nat(100000000000000000) # 10%
+
   administrator = Dummy.DummyContract()
+  scenario += administrator
+
   developerFund = DevFund.DevFundContract(
     administratorContractAddress = administrator.address
   )
@@ -793,7 +845,6 @@ def test():
     liquidationFeePercent = liquidationFeePercent,
   )
 
-  scenario += administrator
   scenario += developerFund
   scenario += stabilityFund
   scenario += minter
@@ -810,7 +861,13 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setStabilityFundContract(stabilityFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setDeveloperFundContract(developerFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+
   scenario += minter.setLiquidityPoolContract(liquidityPool.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -823,8 +880,8 @@ def test():
 
   # AND alice has an oven.
   aliceOven = Oven.OvenContract(owner = alice.address, ovenProxyContractAddress = ovenProxy.address)
-  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
   scenario += aliceOven
+  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
 
   # VERIFY the StabilityFund can liquidate an oven. 
   # Alice deposits $40 of XTZ and mints $11 of kUSD
@@ -923,7 +980,13 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setStabilityFundContract(stabilityFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setDeveloperFundContract(developerFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -943,8 +1006,8 @@ def test():
     ovenProxyContractAddress = ovenProxy.address,
     interestIndex = sp.to_int(initialInterestIndex)
   )
-  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
   scenario += aliceOven
+  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
 
   # WHEN alice deposits 1 XTZ at compound period = 2
   currentTime = sp.timestamp(Constants.SECONDS_PER_COMPOUND * 2)
@@ -1032,7 +1095,13 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setStabilityFundContract(stabilityFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setDeveloperFundContract(developerFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -1052,8 +1121,8 @@ def test():
     ovenProxyContractAddress = ovenProxy.address,
     interestIndex = sp.to_int(Constants.PRECISION)
   )
-  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
   scenario += aliceOven
+  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
 
   # WHEN alice deposits 1 XTZ at compound period = 2
   currentTime = sp.timestamp(Constants.SECONDS_PER_COMPOUND * 2)
@@ -1126,7 +1195,13 @@ def test():
 
   # AND the contracts are wired together
   scenario += stabilityFund.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
-  scenario += minter.updateContracts((Addresses.GOVERNOR_ADDRESS, (token.address, (ovenProxy.address, (stabilityFund.address, developerFund.address))))).run(sender = Addresses.GOVERNOR_ADDRESS)
+
+  scenario += minter.setGovernorContract(Addresses.GOVERNOR_ADDRESS).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setTokenContract(token.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setStabilityFundContract(stabilityFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+  scenario += minter.setDeveloperFundContract(developerFund.address).run(sender = Addresses.GOVERNOR_ADDRESS)
+
   scenario += ovenFactory.setOvenRegistryContract(ovenRegistry.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setOvenProxyContract(ovenProxy.address).run(sender = Addresses.GOVERNOR_ADDRESS)
   scenario += ovenFactory.setMinterContract(minter.address).run(sender = Addresses.GOVERNOR_ADDRESS)
@@ -1146,8 +1221,8 @@ def test():
     ovenProxyContractAddress = ovenProxy.address,
     interestIndex = sp.to_int(initialInterestIndex)
   )
-  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
   scenario += aliceOven
+  scenario += ovenRegistry.addOven((aliceOven.address, alice.address)).run(sender = ovenFactory.address)
 
   # WHEN alice deposits 1 XTZ at compound period = 3
   currentTime = sp.timestamp(Constants.SECONDS_PER_COMPOUND * 3)

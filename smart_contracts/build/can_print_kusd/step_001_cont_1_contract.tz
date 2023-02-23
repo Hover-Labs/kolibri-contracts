@@ -35,9 +35,7 @@ code
                     UNIT;       # unit : nat : @parameter%approve : @storage
                     FAILWITH;   # FAILED
                   }
-                  {
-                    # of_some: Get-item:83 # @some : nat : @parameter%approve : @storage
-                  }; # @some : nat : @parameter%approve : @storage
+                  {}; # @some : nat : @parameter%approve : @storage
                 CAR;        # map address nat : nat : @parameter%approve : @storage
                 DUP 3;      # @parameter%approve : map address nat : nat : @parameter%approve : @storage
                 CAR;        # address : map address nat : nat : @parameter%approve : @storage
@@ -46,9 +44,7 @@ code
                   {
                     PUSH nat 0; # nat : nat : @parameter%approve : @storage
                   }
-                  {
-                    # of_some: Get-item:83 # @some : nat : @parameter%approve : @storage
-                  }; # nat : nat : @parameter%approve : @storage
+                  {}; # nat : nat : @parameter%approve : @storage
                 COMPARE;    # int : @parameter%approve : @storage
                 EQ;         # bool : @parameter%approve : @storage
                 IF
@@ -138,9 +134,7 @@ code
                         UNIT;       # unit : nat : @parameter%burn : @storage
                         FAILWITH;   # FAILED
                       }
-                      {
-                        # of_some: Get-item:128 # @some : nat : @parameter%burn : @storage
-                      }; # @some : nat : @parameter%burn : @storage
+                      {}; # @some : nat : @parameter%burn : @storage
                     CDR;        # nat : nat : @parameter%burn : @storage
                     COMPARE;    # int : @parameter%burn : @storage
                     GE;         # bool : @parameter%burn : @storage
@@ -184,9 +178,7 @@ code
                         UNIT;       # unit : nat : @some : address : big_map address (pair (map %approvals address nat) (nat %balance)) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%burn
                         FAILWITH;   # FAILED
                       }
-                      {
-                        # of_some: Get-item:129 # @some : nat : @some : address : big_map address (pair (map %approvals address nat) (nat %balance)) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%burn
-                      }; # @some : nat : @some : address : big_map address (pair (map %approvals address nat) (nat %balance)) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%burn
+                      {}; # @some : nat : @some : address : big_map address (pair (map %approvals address nat) (nat %balance)) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%burn
                     CDR;        # nat : nat : @some : address : big_map address (pair (map %approvals address nat) (nat %balance)) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%burn
                     SUB;        # int : @some : address : big_map address (pair (map %approvals address nat) (nat %balance)) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%burn
                     ISNAT;      # option nat : @some : address : big_map address (pair (map %approvals address nat) (nat %balance)) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%burn
@@ -266,9 +258,7 @@ code
                         UNIT;       # unit : @parameter%getAllowance : @storage
                         FAILWITH;   # FAILED
                       }
-                      {
-                        # of_some: Get-item:97 # @some : @parameter%getAllowance : @storage
-                      }; # @some : @parameter%getAllowance : @storage
+                      {}; # @some : @parameter%getAllowance : @storage
                     CAR;        # map address nat : @parameter%getAllowance : @storage
                     SWAP;       # @parameter%getAllowance : map address nat : @storage
                     DUP;        # @parameter%getAllowance : @parameter%getAllowance : map address nat : @storage
@@ -281,9 +271,7 @@ code
                         UNIT;       # unit : @parameter%getAllowance : @storage
                         FAILWITH;   # FAILED
                       }
-                      {
-                        # of_some: Get-item:97 # @some : @parameter%getAllowance : @storage
-                      }; # @some : @parameter%getAllowance : @storage
+                      {}; # @some : @parameter%getAllowance : @storage
                     # sp.transfer(__s2.value, sp.tez(0), sp.snd(params)) # @some : @parameter%getAllowance : @storage
                     NIL operation; # list operation : @some : @parameter%getAllowance : @storage
                     DIG 2;      # @parameter%getAllowance : list operation : @some : @storage
@@ -312,9 +300,7 @@ code
                         UNIT;       # unit : @parameter%getBalance : @storage
                         FAILWITH;   # FAILED
                       }
-                      {
-                        # of_some: Get-item:93 # @some : @parameter%getBalance : @storage
-                      }; # @some : @parameter%getBalance : @storage
+                      {}; # @some : @parameter%getBalance : @storage
                     CDR;        # nat : @parameter%getBalance : @storage
                     # sp.transfer(__s3.value, sp.tez(0), sp.snd(params)) # nat : @parameter%getBalance : @storage
                     NIL operation; # list operation : nat : @parameter%getBalance : @storage
@@ -632,9 +618,7 @@ code
                                     UNIT;       # unit : nat : @parameter%transfer : @storage
                                     FAILWITH;   # FAILED
                                   }
-                                  {
-                                    # of_some: Get-item:71 # @some : nat : @parameter%transfer : @storage
-                                  }; # @some : nat : @parameter%transfer : @storage
+                                  {}; # @some : nat : @parameter%transfer : @storage
                                 CAR;        # map address nat : nat : @parameter%transfer : @storage
                                 SENDER;     # @sender : map address nat : nat : @parameter%transfer : @storage
                                 GET;        # option nat : nat : @parameter%transfer : @storage
@@ -643,9 +627,7 @@ code
                                     UNIT;       # unit : nat : @parameter%transfer : @storage
                                     FAILWITH;   # FAILED
                                   }
-                                  {
-                                    # of_some: Get-item:71 # @some : nat : @parameter%transfer : @storage
-                                  }; # @some : nat : @parameter%transfer : @storage
+                                  {}; # @some : nat : @parameter%transfer : @storage
                                 COMPARE;    # int : @parameter%transfer : @storage
                                 GE;         # bool : @parameter%transfer : @storage
                               }; # bool : @parameter%transfer : @storage
@@ -703,9 +685,7 @@ code
                         UNIT;       # unit : nat : @parameter%transfer : pair (pair (pair address (big_map address (pair (map address nat) nat))) (pair (nat %debtCeiling) (address %governorContractAddress))) (pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)))
                         FAILWITH;   # FAILED
                       }
-                      {
-                        # of_some: Get-item:73 # @some : nat : @parameter%transfer : pair (pair (pair address (big_map address (pair (map address nat) nat))) (pair (nat %debtCeiling) (address %governorContractAddress))) (pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)))
-                      }; # @some : nat : @parameter%transfer : pair (pair (pair address (big_map address (pair (map address nat) nat))) (pair (nat %debtCeiling) (address %governorContractAddress))) (pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)))
+                      {}; # @some : nat : @parameter%transfer : pair (pair (pair address (big_map address (pair (map address nat) nat))) (pair (nat %debtCeiling) (address %governorContractAddress))) (pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)))
                     CDR;        # nat : nat : @parameter%transfer : pair (pair (pair address (big_map address (pair (map address nat) nat))) (pair (nat %debtCeiling) (address %governorContractAddress))) (pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)))
                     COMPARE;    # int : @parameter%transfer : pair (pair (pair address (big_map address (pair (map address nat) nat))) (pair (nat %debtCeiling) (address %governorContractAddress))) (pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)))
                     GE;         # bool : @parameter%transfer : pair (pair (pair address (big_map address (pair (map address nat) nat))) (pair (nat %debtCeiling) (address %governorContractAddress))) (pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)))
@@ -749,9 +729,7 @@ code
                         UNIT;       # unit : nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%transfer
                         FAILWITH;   # FAILED
                       }
-                      {
-                        # of_some: Get-item:74 # @some : nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%transfer
-                      }; # @some : nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%transfer
+                      {}; # @some : nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%transfer
                     CDR;        # nat : nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%transfer
                     SUB;        # int : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%transfer
                     ISNAT;      # option nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply)) : @parameter%transfer
@@ -851,9 +829,7 @@ code
                             UNIT;       # unit : nat : map address nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))
                             FAILWITH;   # FAILED
                           }
-                          {
-                            # of_some: Get-item:77 # @some : nat : map address nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))
-                          }; # @some : nat : map address nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))
+                          {}; # @some : nat : map address nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))
                         CAR;        # map address nat : nat : map address nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))
                         SENDER;     # @sender : map address nat : nat : map address nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))
                         GET;        # option nat : nat : map address nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))
@@ -862,9 +838,7 @@ code
                             UNIT;       # unit : nat : map address nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))
                             FAILWITH;   # FAILED
                           }
-                          {
-                            # of_some: Get-item:77 # @some : nat : map address nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))
-                          }; # @some : nat : map address nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))
+                          {}; # @some : nat : map address nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))
                         SUB;        # int : map address nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))
                         ISNAT;      # option nat : map address nat : @some : address : big_map address (pair (map address nat) nat) : address : pair (nat %debtCeiling) (address %governorContractAddress) : pair (pair (big_map %metadata string bytes) (bool %paused)) (pair (big_map %token_metadata nat (pair nat (map string bytes))) (nat %totalSupply))
                         IF_NONE

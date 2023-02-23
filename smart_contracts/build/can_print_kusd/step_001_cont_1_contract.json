@@ -19,8 +19,7 @@
                       {
                         "prim": "pair",
                         "args": [
-                          { "prim": "map", "args": [ { "prim": "address" }, { "prim": "nat" } ], "annots": [ "%approvals" ] },
-                          { "prim": "nat", "annots": [ "%balance" ] }
+                          { "prim": "map", "args": [ { "prim": "address" }, { "prim": "nat" } ], "annots": [ "%approvals" ] }, { "prim": "nat", "annots": [ "%balance" ] }
                         ]
                       }
                     ],

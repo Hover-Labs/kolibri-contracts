@@ -132,7 +132,7 @@ class Contract(sp.Contract):
     sp.set_type(True, sp.TBool)
     sp.set_type(sp.tez(0), sp.TMutez)
     sp.transfer((match_pair_minter_327_fst, (0, (sp.to_int(0), (sp.to_int(self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime) // 60)))), True)))), sp.tez(0), sp.contract(sp.TPair(sp.TAddress, sp.TPair(sp.TNat, sp.TPair(sp.TInt, sp.TPair(sp.TInt, sp.TBool)))), self.data.ovenProxyContractAddress, entry_point='updateState').open_some())
-    sp.send(sp.snd(match_pair_minter_332_snd), sp.mul(match_pair_minter_329_fst // 1000000000000, sp.mutez(1)))
+    sp.send(sp.snd(match_pair_minter_332_snd), sp.mul(sp.set_type_expr(match_pair_minter_329_fst // 1000000000000, sp.TNat), sp.mutez(1)))
 
   @sp.entry_point
   def repay(self, params):
@@ -237,20 +237,6 @@ class Contract(sp.Contract):
     self.data.tokenContractAddress = params
 
   @sp.entry_point
-  def updateContracts(self, params):
-    sp.set_type(params, sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TAddress)))))
-    sp.verify(sp.sender == self.data.governorContractAddress, 4)
-    match_pair_minter_458_fst, match_pair_minter_458_snd = sp.match_tuple(params, "match_pair_minter_458_fst", "match_pair_minter_458_snd")
-    match_pair_minter_459_fst, match_pair_minter_459_snd = sp.match_tuple(match_pair_minter_458_snd, "match_pair_minter_459_fst", "match_pair_minter_459_snd")
-    match_pair_minter_460_fst, match_pair_minter_460_snd = sp.match_tuple(match_pair_minter_459_snd, "match_pair_minter_460_fst", "match_pair_minter_460_snd")
-    match_pair_minter_461_fst, match_pair_minter_461_snd = sp.match_tuple(match_pair_minter_460_snd, "match_pair_minter_461_fst", "match_pair_minter_461_snd")
-    self.data.governorContractAddress = match_pair_minter_458_fst
-    self.data.tokenContractAddress = match_pair_minter_459_fst
-    self.data.ovenProxyContractAddress = match_pair_minter_460_fst
-    self.data.stabilityFundContractAddress = match_pair_minter_461_fst
-    self.data.developerFundContractAddress = match_pair_minter_461_snd
-
-  @sp.entry_point
   def updateFundSplits(self, params):
     sp.set_type(params, sp.TRecord(developerFundSplit = sp.TNat, stabilityFundSplit = sp.TNat).layout(("developerFundSplit", "stabilityFundSplit")))
     sp.verify((params.developerFundSplit + params.stabilityFundSplit) == 1000000000000000000, 25)
@@ -298,23 +284,23 @@ class Contract(sp.Contract):
     sp.set_type(sp.as_nat(match_pair_minter_273_fst) + self.calculateNewAccruedInterest((sp.fst(match_pair_minter_273_snd), (match_pair_minter_271_fst, (sp.as_nat(match_pair_minter_273_fst), self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime) // 60))))))), sp.TNat)
     sp.set_type(self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime) // 60))), sp.TNat)
     sp.set_type(match_pair_minter_272_fst, sp.TBool)
-    sp.set_type(sp.mul(match_pair_minter_270_fst // 1000000000000, sp.mutez(1)) - sp.snd(match_pair_minter_273_snd), sp.TMutez)
-    sp.transfer((match_pair_minter_268_fst, (match_pair_minter_271_fst, (sp.to_int(sp.as_nat(match_pair_minter_273_fst) + self.calculateNewAccruedInterest((sp.fst(match_pair_minter_273_snd), (match_pair_minter_271_fst, (sp.as_nat(match_pair_minter_273_fst), self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime) // 60)))))))), (sp.to_int(self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime) // 60)))), match_pair_minter_272_fst)))), sp.mul(match_pair_minter_270_fst // 1000000000000, sp.mutez(1)) - sp.snd(match_pair_minter_273_snd), sp.contract(sp.TPair(sp.TAddress, sp.TPair(sp.TNat, sp.TPair(sp.TInt, sp.TPair(sp.TInt, sp.TBool)))), self.data.ovenProxyContractAddress, entry_point='updateState').open_some())
+    sp.set_type(sp.mul(sp.set_type_expr(match_pair_minter_270_fst // 1000000000000, sp.TNat), sp.mutez(1)) - sp.snd(match_pair_minter_273_snd), sp.TMutez)
+    sp.transfer((match_pair_minter_268_fst, (match_pair_minter_271_fst, (sp.to_int(sp.as_nat(match_pair_minter_273_fst) + self.calculateNewAccruedInterest((sp.fst(match_pair_minter_273_snd), (match_pair_minter_271_fst, (sp.as_nat(match_pair_minter_273_fst), self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime) // 60)))))))), (sp.to_int(self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, sp.as_nat(sp.now - self.data.lastInterestIndexUpdateTime) // 60)))), match_pair_minter_272_fst)))), sp.mul(sp.set_type_expr(match_pair_minter_270_fst // 1000000000000, sp.TNat), sp.mutez(1)) - sp.snd(match_pair_minter_273_snd), sp.contract(sp.TPair(sp.TAddress, sp.TPair(sp.TNat, sp.TPair(sp.TInt, sp.TPair(sp.TInt, sp.TBool)))), self.data.ovenProxyContractAddress, entry_point='updateState').open_some())
     sp.send(match_pair_minter_269_fst, sp.snd(match_pair_minter_273_snd))
 
-  @sp.global_lambda
+  @sp.private_lambda()
   def calculateNewAccruedInterest(_x0):
     sp.set_type(_x0, sp.TPair(sp.TInt, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat))))
     sp.result(sp.as_nat(sp.fst(sp.ediv(sp.fst(sp.ediv(sp.snd(sp.snd(sp.snd(_x0))) * 1000000000000000000, sp.as_nat(sp.fst(_x0))).open_some()) * (sp.fst(sp.snd(_x0)) + sp.fst(sp.snd(sp.snd(_x0)))), 1000000000000000000).open_some()) - (sp.fst(sp.snd(_x0)) + sp.fst(sp.snd(sp.snd(_x0))))))
 
-  @sp.global_lambda
-  def compoundWithLinearApproximation(_x1):
-    sp.set_type(_x1, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
-    sp.result((sp.fst(_x1) * (1000000000000000000 + (sp.snd(sp.snd(_x1)) * sp.fst(sp.snd(_x1))))) // 1000000000000000000)
-
-  @sp.global_lambda
-  def computeCollateralizationPercentage(_x2):
+  @sp.private_lambda()
+  def compoundWithLinearApproximation(_x2):
     sp.set_type(_x2, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
-    sp.result(((((sp.fst(_x2) * sp.fst(sp.snd(_x2))) // 1000000000000000000) * 1000000000000000000) // sp.snd(sp.snd(_x2))) * 100)
+    sp.result((sp.fst(_x2) * (1000000000000000000 + (sp.snd(sp.snd(_x2)) * sp.fst(sp.snd(_x2))))) // 1000000000000000000)
+
+  @sp.private_lambda()
+  def computeCollateralizationPercentage(_x4):
+    sp.set_type(_x4, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TNat)))
+    sp.result(((((sp.fst(_x4) * sp.fst(sp.snd(_x4))) // 1000000000000000000) * 1000000000000000000) // sp.snd(sp.snd(_x4))) * 100)
 
 sp.add_compilation_target("test", Contract())
