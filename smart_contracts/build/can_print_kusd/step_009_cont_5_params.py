@@ -1,0 +1,1 @@
+(sp.address('tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf'), (sp.address('KT1Tezooo1zzSmartPyzzSTATiCzzzyfC8eF'), (sp.address('KT1Tezooo6zzSmartPyzzSTATiCzzztY1196'), (sp.address('tz1W5VkdB5s7ENMESVBtwyt9kyvLqPcUczRT'), sp.address('tz1R6Ej25VSerE3MkSoEEeBjKHCDTFbpKuSX')))))

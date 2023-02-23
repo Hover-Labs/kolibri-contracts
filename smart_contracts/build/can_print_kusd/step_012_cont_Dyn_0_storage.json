@@ -1,0 +1,10 @@
+{
+  "prim": "Pair",
+  "args": [
+    { "prim": "Pair", "args": [ { "int": "0" }, { "prim": "Pair", "args": [ { "int": "1000000000000000000" }, { "prim": "False" } ] } ] },
+    {
+      "prim": "Pair",
+      "args": [ { "string": "KT1Tezooo6zzSmartPyzzSTATiCzzztY1196" }, { "prim": "Pair", "args": [ { "string": "KT1Tezooo9zzSmartPyzzSTATiCzzztdBMLX" }, { "int": "0" } ] } ]
+    }
+  ]
+}

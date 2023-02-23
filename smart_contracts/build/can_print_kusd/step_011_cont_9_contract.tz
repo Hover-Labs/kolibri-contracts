@@ -1,0 +1,191 @@
+parameter (or (or (unit %default) (mutez %drain)) (or (nat %fake_mint) (or (unit %oven_create) (address %set_my_oven_address))));
+storage   (pair (pair (address %minterAddress) (pair (address %myOvenAddress) (address %ovenFactoryAddress))) (pair (address %owner) (pair (int %state) (nat %tokensToBorrow))));
+code
+  {
+    UNPAIR;     # @parameter : @storage
+    IF_LEFT
+      {
+        IF_LEFT
+          {
+            DROP;       # @storage
+            # == default ==
+            # if self.data.state == 0: # @storage
+            DUP;        # @storage : @storage
+            GET 5;      # int : @storage
+            PUSH int 0; # int : int : @storage
+            COMPARE;    # int : @storage
+            EQ;         # bool : @storage
+            IF
+              {
+                # sp.send(self.data.owner, sp.balance) # @storage
+                DUP;        # @storage : @storage
+                GET 3;      # address : @storage
+                CONTRACT unit; # option (contract unit) : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : @storage
+                NIL operation; # list operation : @some : @storage
+                SWAP;       # @some : list operation : @storage
+                BALANCE;    # @balance : @some : list operation : @storage
+                UNIT;       # unit : @balance : @some : list operation : @storage
+                TRANSFER_TOKENS; # operation : list operation : @storage
+                CONS;       # list operation : @storage
+              }
+              {
+                # sp.send(self.data.myOvenAddress, sp.balance) # @storage
+                DUP;        # @storage : @storage
+                CAR;        # pair (address %minterAddress) (pair (address %myOvenAddress) (address %ovenFactoryAddress)) : @storage
+                GET 3;      # address : @storage
+                CONTRACT unit; # option (contract unit) : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : @storage
+                NIL operation; # list operation : @some : @storage
+                SWAP;       # @some : list operation : @storage
+                BALANCE;    # @balance : @some : list operation : @storage
+                UNIT;       # unit : @balance : @some : list operation : @storage
+                TRANSFER_TOKENS; # operation : list operation : @storage
+                CONS;       # list operation : @storage
+                SWAP;       # @storage : list operation
+                # sp.transfer(self.data.tokensToBorrow, sp.tez(0), sp.contract(sp.TNat, self.data.myOvenAddress, entry_point='borrow').open_some()) # @storage : list operation
+                DUP;        # @storage : @storage : list operation
+                DUG 2;      # @storage : list operation : @storage
+                CAR;        # pair (address %minterAddress) (pair (address %myOvenAddress) (address %ovenFactoryAddress)) : list operation : @storage
+                GET 3;      # address : list operation : @storage
+                CONTRACT %borrow nat; # option (contract nat) : list operation : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : list operation : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : list operation : @storage
+                PUSH mutez 0; # mutez : @some : list operation : @storage
+                DUP 4;      # @storage : mutez : @some : list operation : @storage
+                GET 6;      # nat : mutez : @some : list operation : @storage
+                TRANSFER_TOKENS; # operation : list operation : @storage
+                CONS;       # list operation : @storage
+                SWAP;       # @storage : list operation
+                # self.data.state = 0 # @storage : list operation
+                PUSH int 0; # int : @storage : list operation
+                UPDATE 5;   # @storage : list operation
+                SWAP;       # list operation : @storage
+              }; # list operation : @storage
+          }
+          {
+            # == drain ==
+            # sp.transfer(params, sp.tez(0), sp.contract(sp.TMutez, self.data.myOvenAddress, entry_point='withdraw').open_some()) # @parameter%drain : @storage
+            NIL operation; # list operation : @parameter%drain : @storage
+            DUP 3;      # @storage : list operation : @parameter%drain : @storage
+            CAR;        # pair (address %minterAddress) (pair (address %myOvenAddress) (address %ovenFactoryAddress)) : list operation : @parameter%drain : @storage
+            GET 3;      # address : list operation : @parameter%drain : @storage
+            CONTRACT %withdraw mutez; # option (contract mutez) : list operation : @parameter%drain : @storage
+            IF_NONE
+              {
+                UNIT;       # unit : list operation : @parameter%drain : @storage
+                FAILWITH;   # FAILED
+              }
+              {}; # @some : list operation : @parameter%drain : @storage
+            PUSH mutez 0; # mutez : @some : list operation : @parameter%drain : @storage
+            DIG 3;      # @parameter%drain : mutez : @some : list operation : @storage
+            TRANSFER_TOKENS; # operation : list operation : @storage
+            CONS;       # list operation : @storage
+          }; # list operation : @storage
+      }
+      {
+        IF_LEFT
+          {
+            # == fake_mint ==
+            # self.data.tokensToBorrow = params # @parameter%fake_mint : @storage
+            UPDATE 6;   # @storage
+            # self.data.state = 1 # @storage
+            PUSH int 1; # int : @storage
+            UPDATE 5;   # @storage
+            # sp.send(self.data.myOvenAddress, sp.tez(1)) # @storage
+            DUP;        # @storage : @storage
+            CAR;        # pair (address %minterAddress) (pair (address %myOvenAddress) (address %ovenFactoryAddress)) : @storage
+            GET 3;      # address : @storage
+            CONTRACT unit; # option (contract unit) : @storage
+            IF_NONE
+              {
+                UNIT;       # unit : @storage
+                FAILWITH;   # FAILED
+              }
+              {}; # @some : @storage
+            NIL operation; # list operation : @some : @storage
+            SWAP;       # @some : list operation : @storage
+            PUSH mutez 1000000; # mutez : @some : list operation : @storage
+            UNIT;       # unit : mutez : @some : list operation : @storage
+            TRANSFER_TOKENS; # operation : list operation : @storage
+            CONS;       # list operation : @storage
+            SWAP;       # @storage : list operation
+            # sp.transfer(sp.tez(1), sp.tez(0), sp.contract(sp.TMutez, self.data.myOvenAddress, entry_point='withdraw').open_some()) # @storage : list operation
+            DUP;        # @storage : @storage : list operation
+            DUG 2;      # @storage : list operation : @storage
+            CAR;        # pair (address %minterAddress) (pair (address %myOvenAddress) (address %ovenFactoryAddress)) : list operation : @storage
+            GET 3;      # address : list operation : @storage
+            CONTRACT %withdraw mutez; # option (contract mutez) : list operation : @storage
+            IF_NONE
+              {
+                UNIT;       # unit : list operation : @storage
+                FAILWITH;   # FAILED
+              }
+              {}; # @some : list operation : @storage
+            PUSH mutez 0; # mutez : @some : list operation : @storage
+            PUSH mutez 1000000; # mutez : mutez : @some : list operation : @storage
+            TRANSFER_TOKENS; # operation : list operation : @storage
+            CONS;       # list operation : @storage
+          }
+          {
+            IF_LEFT
+              {
+                DROP;       # @storage
+                # == oven_create ==
+                # sp.send(self.data.ovenFactoryAddress, sp.tez(0)) # @storage
+                DUP;        # @storage : @storage
+                CAR;        # pair (address %minterAddress) (pair (address %myOvenAddress) (address %ovenFactoryAddress)) : @storage
+                GET 4;      # address : @storage
+                CONTRACT %makeOven unit; # option (contract unit) : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : @storage
+                NIL operation; # list operation : @some : @storage
+                SWAP;       # @some : list operation : @storage
+                PUSH mutez 0; # mutez : @some : list operation : @storage
+                UNIT;       # unit : mutez : @some : list operation : @storage
+                TRANSFER_TOKENS; # operation : list operation : @storage
+                CONS;       # list operation : @storage
+              }
+              {
+                SWAP;       # @storage : @parameter%set_my_oven_address
+                # == set_my_oven_address ==
+                # self.data.myOvenAddress = params # @storage : @parameter%set_my_oven_address
+                UNPAIR;     # pair (address %minterAddress) (pair (address %myOvenAddress) (address %ovenFactoryAddress)) : pair (address %owner) (pair (int %state) (nat %tokensToBorrow)) : @parameter%set_my_oven_address
+                UNPAIR;     # address : pair (address %myOvenAddress) (address %ovenFactoryAddress) : pair (address %owner) (pair (int %state) (nat %tokensToBorrow)) : @parameter%set_my_oven_address
+                SWAP;       # pair (address %myOvenAddress) (address %ovenFactoryAddress) : address : pair (address %owner) (pair (int %state) (nat %tokensToBorrow)) : @parameter%set_my_oven_address
+                CDR;        # address : address : pair (address %owner) (pair (int %state) (nat %tokensToBorrow)) : @parameter%set_my_oven_address
+                DIG 3;      # @parameter%set_my_oven_address : address : address : pair (address %owner) (pair (int %state) (nat %tokensToBorrow))
+                PAIR;       # pair @parameter%set_my_oven_address address : address : pair (address %owner) (pair (int %state) (nat %tokensToBorrow))
+                SWAP;       # address : pair @parameter%set_my_oven_address address : pair (address %owner) (pair (int %state) (nat %tokensToBorrow))
+                PAIR;       # pair address (pair @parameter%set_my_oven_address address) : pair (address %owner) (pair (int %state) (nat %tokensToBorrow))
+                PAIR;       # pair (pair address (pair @parameter%set_my_oven_address address)) (pair (address %owner) (pair (int %state) (nat %tokensToBorrow)))
+                NIL operation; # list operation : pair (pair address (pair @parameter%set_my_oven_address address)) (pair (address %owner) (pair (int %state) (nat %tokensToBorrow)))
+              }; # list operation : pair (pair address (pair address address)) (pair (address %owner) (pair (int %state) (nat %tokensToBorrow)))
+          }; # list operation : pair (pair address (pair address address)) (pair (address %owner) (pair (int %state) (nat %tokensToBorrow)))
+      }; # list operation : pair (pair address (pair address address)) (pair (address %owner) (pair (int %state) (nat %tokensToBorrow)))
+    NIL operation; # list operation : list operation : pair (pair address (pair address address)) (pair (address %owner) (pair (int %state) (nat %tokensToBorrow)))
+    SWAP;       # list operation : list operation : pair (pair address (pair address address)) (pair (address %owner) (pair (int %state) (nat %tokensToBorrow)))
+    ITER
+      {
+        CONS;       # list operation : pair (pair address (pair address address)) (pair (address %owner) (pair (int %state) (nat %tokensToBorrow)))
+      }; # list operation : pair (pair address (pair address address)) (pair (address %owner) (pair (int %state) (nat %tokensToBorrow)))
+    PAIR;       # pair (list operation) (pair (pair address (pair address address)) (pair (address %owner) (pair (int %state) (nat %tokensToBorrow))))
+  };

@@ -1,0 +1,115 @@
+parameter (or (or (pair %addOven address address) (unit %default)) (or (address %isOven) (or (address %setGovernorContract) (address %setOvenFactoryContract))));
+storage   (pair (address %governorContractAddress) (pair (address %ovenFactoryContractAddress) (big_map %ovenMap address address)));
+code
+  {
+    UNPAIR;     # @parameter : @storage
+    IF_LEFT
+      {
+        IF_LEFT
+          {
+            SWAP;       # @storage : @parameter%addOven
+            # == addOven ==
+            # sp.verify(sp.sender == self.data.ovenFactoryContractAddress, 7) # @storage : @parameter%addOven
+            DUP;        # @storage : @storage : @parameter%addOven
+            DUG 2;      # @storage : @parameter%addOven : @storage
+            GET 3;      # address : @parameter%addOven : @storage
+            SENDER;     # @sender : address : @parameter%addOven : @storage
+            COMPARE;    # int : @parameter%addOven : @storage
+            EQ;         # bool : @parameter%addOven : @storage
+            IF
+              {}
+              {
+                PUSH int 7; # int : @parameter%addOven : @storage
+                FAILWITH;   # FAILED
+              }; # @parameter%addOven : @storage
+            SWAP;       # @storage : @parameter%addOven
+            # self.data.ovenMap[sp.fst(params)] = sp.snd(params) # @storage : @parameter%addOven
+            DUP;        # @storage : @storage : @parameter%addOven
+            GET 4;      # big_map address address : @storage : @parameter%addOven
+            DUP 3;      # @parameter%addOven : big_map address address : @storage : @parameter%addOven
+            CDR;        # address : big_map address address : @storage : @parameter%addOven
+            SOME;       # option address : big_map address address : @storage : @parameter%addOven
+            DIG 3;      # @parameter%addOven : option address : big_map address address : @storage
+            CAR;        # address : option address : big_map address address : @storage
+            UPDATE;     # big_map address address : @storage
+            UPDATE 4;   # @storage
+          }
+          {
+            PUSH int 19; # int : @parameter%default : @storage
+            FAILWITH;   # FAILED
+          }; # @storage
+      }
+      {
+        IF_LEFT
+          {
+            SWAP;       # @storage : @parameter%isOven
+            # == isOven ==
+            # sp.verify(self.data.ovenMap.contains(params), 1) # @storage : @parameter%isOven
+            DUP;        # @storage : @storage : @parameter%isOven
+            DUG 2;      # @storage : @parameter%isOven : @storage
+            GET 4;      # big_map address address : @parameter%isOven : @storage
+            SWAP;       # @parameter%isOven : big_map address address : @storage
+            MEM;        # bool : @storage
+            IF
+              {}
+              {
+                PUSH int 1; # int : @storage
+                FAILWITH;   # FAILED
+              }; # @storage
+            # sp.verify(sp.amount == sp.tez(0), 15) # @storage
+            PUSH mutez 0; # mutez : @storage
+            AMOUNT;     # @amount : mutez : @storage
+            COMPARE;    # int : @storage
+            EQ;         # bool : @storage
+            IF
+              {}
+              {
+                PUSH int 15; # int : @storage
+                FAILWITH;   # FAILED
+              }; # @storage
+          }
+          {
+            IF_LEFT
+              {
+                SWAP;       # @storage : @parameter%setGovernorContract
+                # == setGovernorContract ==
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setGovernorContract
+                DUP;        # @storage : @storage : @parameter%setGovernorContract
+                DUG 2;      # @storage : @parameter%setGovernorContract : @storage
+                CAR;        # address : @parameter%setGovernorContract : @storage
+                SENDER;     # @sender : address : @parameter%setGovernorContract : @storage
+                COMPARE;    # int : @parameter%setGovernorContract : @storage
+                EQ;         # bool : @parameter%setGovernorContract : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 4; # int : @parameter%setGovernorContract : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%setGovernorContract : @storage
+                # self.data.governorContractAddress = params # @parameter%setGovernorContract : @storage
+                UPDATE 1;   # @storage
+              }
+              {
+                SWAP;       # @storage : @parameter%setOvenFactoryContract
+                # == setOvenFactoryContract ==
+                # sp.verify(sp.sender == self.data.governorContractAddress, 4) # @storage : @parameter%setOvenFactoryContract
+                DUP;        # @storage : @storage : @parameter%setOvenFactoryContract
+                DUG 2;      # @storage : @parameter%setOvenFactoryContract : @storage
+                CAR;        # address : @parameter%setOvenFactoryContract : @storage
+                SENDER;     # @sender : address : @parameter%setOvenFactoryContract : @storage
+                COMPARE;    # int : @parameter%setOvenFactoryContract : @storage
+                EQ;         # bool : @parameter%setOvenFactoryContract : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 4; # int : @parameter%setOvenFactoryContract : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%setOvenFactoryContract : @storage
+                # self.data.ovenFactoryContractAddress = params # @parameter%setOvenFactoryContract : @storage
+                UPDATE 3;   # @storage
+              }; # @storage
+          }; # @storage
+      }; # @storage
+    NIL operation; # list operation : @storage
+    PAIR;       # pair (list operation) @storage
+  };

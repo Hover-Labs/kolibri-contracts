@@ -69,12 +69,12 @@ class MinterContract(sp.Contract):
         numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
         newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
 
-        # Transfer results to requester.
-        sp.transfer(newMinterInterestIndex, sp.mutez(0), param)
-
         # Update internal state.
         self.data.interestIndex = newMinterInterestIndex
         self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+
+        # Transfer results to requester.
+        sp.transfer(newMinterInterestIndex, sp.mutez(0), param)
 
     ################################################################
     # Oven Interface
@@ -134,15 +134,15 @@ class MinterContract(sp.Contract):
             newCollateralizationPercentage = self.computeCollateralizationPercentage((ovenBalance, (oraclePrice, totalOutstandingTokens)))
             sp.verify(newCollateralizationPercentage >= self.data.collateralizationPercentage, message = Errors.OVEN_UNDER_COLLATERALIZED)
 
-        # Call mint in token contract
-        self.mintTokens(tokensToBorrow, ownerAddress)
+        # Update internal state
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
         # Inform oven of new state.
         self.updateOvenState(ovenAddress, newTotalBorrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, sp.balance)
 
-        # Update internal state
-        self.data.interestIndex = newMinterInterestIndex
-        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        # Call mint in token contract
+        self.mintTokens(tokensToBorrow, ownerAddress)
 
     # repay
     @sp.entry_point
@@ -199,16 +199,16 @@ class MinterContract(sp.Contract):
             remainingStabilityFeeTokens.value = sp.nat(0)
             remainingBorrowedTokenBalance.value = sp.as_nat(borrowedTokens - sp.as_nat(tokensToRepay - newStabilityFeeTokens))
 
-        # Burn and mint tokens in Dev fund.
-        self.mintTokensToStabilityAndDevFund(stabilityFeeTokensRepaid.value)
-        self.burnTokens(tokensToRepay, ownerAddress)
+        # Update internal state
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
         # Inform oven of new state.
         self.updateOvenState(ovenAddress, remainingBorrowedTokenBalance.value, remainingStabilityFeeTokens.value, newMinterInterestIndex, isLiquidated, sp.balance)
 
-        # Update internal state
-        self.data.interestIndex = newMinterInterestIndex
-        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        # Burn and mint tokens in Dev fund.
+        self.mintTokensToStabilityAndDevFund(stabilityFeeTokensRepaid.value)
+        self.burnTokens(tokensToRepay, ownerAddress)
 
     # deposit
     @sp.entry_point
@@ -249,13 +249,13 @@ class MinterContract(sp.Contract):
         accruedStabilityFeeTokens = self.calculateNewAccruedInterest((interestIndex, (borrowedTokens, (stabilityFeeTokens, (newMinterInterestIndex)))))
         newStabilityFeeTokens = stabilityFeeTokens + accruedStabilityFeeTokens
 
-        # Intentional no-op. Pass value back to oven.
-        self.updateOvenState(ovenAddress, borrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, sp.balance)
-        
         # Update internal state
         self.data.interestIndex = newMinterInterestIndex
         self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
+        # Intentional no-op. Pass value back to oven.
+        self.updateOvenState(ovenAddress, borrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, sp.balance)
+        
     @sp.entry_point
     def withdraw(self, param):
         sp.set_type(param, OvenApi.WITHDRAW_PARAMETER_TYPE_ORACLE)
@@ -303,16 +303,16 @@ class MinterContract(sp.Contract):
             newCollateralizationPercentage = self.computeCollateralizationPercentage((newOvenBalance, (oraclePrice, totalOutstandingTokens))) 
             sp.verify(newCollateralizationPercentage >= self.data.collateralizationPercentage, message = Errors.OVEN_UNDER_COLLATERALIZED)
 
-        # Withdraw mutez to the owner.
-        sp.send(ownerAddress, mutezToWithdraw)
+        # Update internal state
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
         # Update the oven's state and return the remaining mutez to it.
         remainingMutez = sp.utils.nat_to_mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION) - mutezToWithdraw
         self.updateOvenState(ovenAddress, borrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, remainingMutez)
         
-        # Update internal state
-        self.data.interestIndex = newMinterInterestIndex
-        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        # Withdraw mutez to the owner.
+        sp.send(ownerAddress, mutezToWithdraw)
 
     # liquidate
     @sp.entry_point
@@ -382,15 +382,15 @@ class MinterContract(sp.Contract):
         # Mint the extra tokens in the dev fund if they were paid.
         self.mintTokensToStabilityAndDevFund(newStabilityFeeTokens + liquidationFee)
 
-        # Send collateral to liquidator.
-        sp.send(liquidatorAddress, sp.utils.nat_to_mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION))
+        # Update internal state
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
         # Inform oven it is liquidated, clear owed tokens and return no collateral.
         self.updateOvenState(ovenAddress, sp.nat(0), sp.nat(0), newMinterInterestIndex, True, sp.mutez(0))
 
-        # Update internal state
-        self.data.interestIndex = newMinterInterestIndex
-        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        #  Send collateral to liquidator.
+        sp.send(liquidatorAddress, sp.utils.nat_to_mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION))
 
     ################################################################
     # Governance

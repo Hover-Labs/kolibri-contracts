@@ -1,0 +1,459 @@
+parameter (or (or (nat %borrow) (or (unit %default) (unit %liquidate))) (or (or (nat %repay) (option %setDelegate key_hash)) (or (pair %updateState address (pair nat (pair int (pair int bool)))) (mutez %withdraw))));
+storage   (pair (pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated))) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))));
+code
+  {
+    UNPAIR;     # @parameter : @storage
+    IF_LEFT
+      {
+        IF_LEFT
+          {
+            SWAP;       # @storage : @parameter%borrow
+            # == borrow ==
+            # sp.verify(sp.sender == self.data.owner, 6) # @storage : @parameter%borrow
+            DUP;        # @storage : @storage : @parameter%borrow
+            DUG 2;      # @storage : @parameter%borrow : @storage
+            GET 5;      # address : @parameter%borrow : @storage
+            SENDER;     # @sender : address : @parameter%borrow : @storage
+            COMPARE;    # int : @parameter%borrow : @storage
+            EQ;         # bool : @parameter%borrow : @storage
+            IF
+              {}
+              {
+                PUSH int 6; # int : @parameter%borrow : @storage
+                FAILWITH;   # FAILED
+              }; # @parameter%borrow : @storage
+            # sp.verify(sp.amount == sp.tez(0), 15) # @parameter%borrow : @storage
+            PUSH mutez 0; # mutez : @parameter%borrow : @storage
+            AMOUNT;     # @amount : mutez : @parameter%borrow : @storage
+            COMPARE;    # int : @parameter%borrow : @storage
+            EQ;         # bool : @parameter%borrow : @storage
+            IF
+              {}
+              {
+                PUSH int 15; # int : @parameter%borrow : @storage
+                FAILWITH;   # FAILED
+              }; # @parameter%borrow : @storage
+            # sp.transfer((sp.self_address, (self.data.owner, (sp.fst(sp.ediv(sp.balance, sp.mutez(1)).open_some()) * 1000000000000, (self.data.borrowedTokens, (self.data.isLiquidated, (self.data.stabilityFeeTokens, (self.data.interestIndex, params))))))), sp.balance, sp.contract(sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TPair(sp.TBool, sp.TPair(sp.TInt, sp.TPair(sp.TInt, sp.TNat))))))), self.data.ovenProxyContractAddress, entry_point='borrow').open_some()) # @parameter%borrow : @storage
+            NIL operation; # list operation : @parameter%borrow : @storage
+            DUP 3;      # @storage : list operation : @parameter%borrow : @storage
+            GET 3;      # address : list operation : @parameter%borrow : @storage
+            CONTRACT %borrow (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int nat))))))); # option (contract (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int nat)))))))) : list operation : @parameter%borrow : @storage
+            IF_NONE
+              {
+                UNIT;       # unit : list operation : @parameter%borrow : @storage
+                FAILWITH;   # FAILED
+              }
+              {}; # @some : list operation : @parameter%borrow : @storage
+            BALANCE;    # @balance : @some : list operation : @parameter%borrow : @storage
+            DIG 3;      # @parameter%borrow : @balance : @some : list operation : @storage
+            DUP 5;      # @storage : @parameter%borrow : @balance : @some : list operation : @storage
+            CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : @parameter%borrow : @balance : @some : list operation : @storage
+            GET 3;      # int : @parameter%borrow : @balance : @some : list operation : @storage
+            PAIR;       # pair int @parameter%borrow : @balance : @some : list operation : @storage
+            DUP 5;      # @storage : pair int @parameter%borrow : @balance : @some : list operation : @storage
+            GET 6;      # int : pair int @parameter%borrow : @balance : @some : list operation : @storage
+            PAIR;       # pair int (pair int @parameter%borrow) : @balance : @some : list operation : @storage
+            DUP 5;      # @storage : pair int (pair int @parameter%borrow) : @balance : @some : list operation : @storage
+            CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : pair int (pair int @parameter%borrow) : @balance : @some : list operation : @storage
+            GET 4;      # bool : pair int (pair int @parameter%borrow) : @balance : @some : list operation : @storage
+            PAIR;       # pair bool (pair int (pair int @parameter%borrow)) : @balance : @some : list operation : @storage
+            DUP 5;      # @storage : pair bool (pair int (pair int @parameter%borrow)) : @balance : @some : list operation : @storage
+            CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : pair bool (pair int (pair int @parameter%borrow)) : @balance : @some : list operation : @storage
+            CAR;        # nat : pair bool (pair int (pair int @parameter%borrow)) : @balance : @some : list operation : @storage
+            PAIR;       # pair nat (pair bool (pair int (pair int @parameter%borrow))) : @balance : @some : list operation : @storage
+            PUSH nat 1000000000000; # nat : pair nat (pair bool (pair int (pair int @parameter%borrow))) : @balance : @some : list operation : @storage
+            PUSH mutez 1; # mutez : nat : pair nat (pair bool (pair int (pair int @parameter%borrow))) : @balance : @some : list operation : @storage
+            BALANCE;    # @balance : mutez : nat : pair nat (pair bool (pair int (pair int @parameter%borrow))) : @balance : @some : list operation : @storage
+            EDIV;       # option (pair nat mutez) : nat : pair nat (pair bool (pair int (pair int @parameter%borrow))) : @balance : @some : list operation : @storage
+            IF_NONE
+              {
+                UNIT;       # unit : nat : pair nat (pair bool (pair int (pair int @parameter%borrow))) : @balance : @some : list operation : @storage
+                FAILWITH;   # FAILED
+              }
+              {}; # @some : nat : pair nat (pair bool (pair int (pair int @parameter%borrow))) : @balance : @some : list operation : @storage
+            CAR;        # nat : nat : pair nat (pair bool (pair int (pair int @parameter%borrow))) : @balance : @some : list operation : @storage
+            MUL;        # nat : pair nat (pair bool (pair int (pair int @parameter%borrow))) : @balance : @some : list operation : @storage
+            PAIR;       # pair nat (pair nat (pair bool (pair int (pair int @parameter%borrow)))) : @balance : @some : list operation : @storage
+            DUP 5;      # @storage : pair nat (pair nat (pair bool (pair int (pair int @parameter%borrow)))) : @balance : @some : list operation : @storage
+            GET 5;      # address : pair nat (pair nat (pair bool (pair int (pair int @parameter%borrow)))) : @balance : @some : list operation : @storage
+            PAIR;       # pair address (pair nat (pair nat (pair bool (pair int (pair int @parameter%borrow))))) : @balance : @some : list operation : @storage
+            SELF_ADDRESS; # @self : pair address (pair nat (pair nat (pair bool (pair int (pair int @parameter%borrow))))) : @balance : @some : list operation : @storage
+            PAIR;       # pair @self (pair address (pair nat (pair nat (pair bool (pair int (pair int @parameter%borrow)))))) : @balance : @some : list operation : @storage
+            TRANSFER_TOKENS; # operation : list operation : @storage
+            CONS;       # list operation : @storage
+          }
+          {
+            IF_LEFT
+              {
+                DROP;       # @storage
+                # == default ==
+                # sp.transfer((sp.self_address, (self.data.owner, (sp.fst(sp.ediv(sp.balance, sp.mutez(1)).open_some()) * 1000000000000, (self.data.borrowedTokens, (self.data.isLiquidated, (self.data.stabilityFeeTokens, self.data.interestIndex)))))), sp.balance, sp.contract(sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TPair(sp.TBool, sp.TPair(sp.TInt, sp.TInt)))))), self.data.ovenProxyContractAddress, entry_point='deposit').open_some()) # @storage
+                DUP;        # @storage : @storage
+                GET 3;      # address : @storage
+                CONTRACT %deposit (pair address (pair address (pair nat (pair nat (pair bool (pair int int)))))); # option (contract (pair address (pair address (pair nat (pair nat (pair bool (pair int int))))))) : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : @storage
+                NIL operation; # list operation : @some : @storage
+                SWAP;       # @some : list operation : @storage
+                BALANCE;    # @balance : @some : list operation : @storage
+                DIG 3;      # @storage : @balance : @some : list operation
+                DUP;        # @storage : @storage : @balance : @some : list operation
+                CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : @storage : @balance : @some : list operation
+                GET 3;      # int : @storage : @balance : @some : list operation
+                SWAP;       # @storage : int : @balance : @some : list operation
+                DUP;        # @storage : @storage : int : @balance : @some : list operation
+                DUG 5;      # @storage : int : @balance : @some : list operation : @storage
+                GET 6;      # int : int : @balance : @some : list operation : @storage
+                PAIR;       # pair int int : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair int int : @balance : @some : list operation : @storage
+                CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : pair int int : @balance : @some : list operation : @storage
+                GET 4;      # bool : pair int int : @balance : @some : list operation : @storage
+                PAIR;       # pair bool (pair int int) : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair bool (pair int int) : @balance : @some : list operation : @storage
+                CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : pair bool (pair int int) : @balance : @some : list operation : @storage
+                CAR;        # nat : pair bool (pair int int) : @balance : @some : list operation : @storage
+                PAIR;       # pair nat (pair bool (pair int int)) : @balance : @some : list operation : @storage
+                PUSH nat 1000000000000; # nat : pair nat (pair bool (pair int int)) : @balance : @some : list operation : @storage
+                PUSH mutez 1; # mutez : nat : pair nat (pair bool (pair int int)) : @balance : @some : list operation : @storage
+                BALANCE;    # @balance : mutez : nat : pair nat (pair bool (pair int int)) : @balance : @some : list operation : @storage
+                EDIV;       # option (pair nat mutez) : nat : pair nat (pair bool (pair int int)) : @balance : @some : list operation : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : nat : pair nat (pair bool (pair int int)) : @balance : @some : list operation : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : nat : pair nat (pair bool (pair int int)) : @balance : @some : list operation : @storage
+                CAR;        # nat : nat : pair nat (pair bool (pair int int)) : @balance : @some : list operation : @storage
+                MUL;        # nat : pair nat (pair bool (pair int int)) : @balance : @some : list operation : @storage
+                PAIR;       # pair nat (pair nat (pair bool (pair int int))) : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair nat (pair nat (pair bool (pair int int))) : @balance : @some : list operation : @storage
+                GET 5;      # address : pair nat (pair nat (pair bool (pair int int))) : @balance : @some : list operation : @storage
+                PAIR;       # pair address (pair nat (pair nat (pair bool (pair int int)))) : @balance : @some : list operation : @storage
+                SELF_ADDRESS; # @self : pair address (pair nat (pair nat (pair bool (pair int int)))) : @balance : @some : list operation : @storage
+                PAIR;       # pair @self (pair address (pair nat (pair nat (pair bool (pair int int))))) : @balance : @some : list operation : @storage
+                TRANSFER_TOKENS; # operation : list operation : @storage
+                CONS;       # list operation : @storage
+              }
+              {
+                DROP;       # @storage
+                # == liquidate ==
+                # sp.verify(sp.amount == sp.tez(0), 15) # @storage
+                PUSH mutez 0; # mutez : @storage
+                AMOUNT;     # @amount : mutez : @storage
+                COMPARE;    # int : @storage
+                EQ;         # bool : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 15; # int : @storage
+                    FAILWITH;   # FAILED
+                  }; # @storage
+                # sp.transfer((sp.self_address, (self.data.owner, (sp.fst(sp.ediv(sp.balance, sp.mutez(1)).open_some()) * 1000000000000, (self.data.borrowedTokens, (self.data.isLiquidated, (self.data.stabilityFeeTokens, (self.data.interestIndex, sp.sender))))))), sp.balance, sp.contract(sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TPair(sp.TBool, sp.TPair(sp.TInt, sp.TPair(sp.TInt, sp.TAddress))))))), self.data.ovenProxyContractAddress, entry_point='liquidate').open_some()) # @storage
+                DUP;        # @storage : @storage
+                GET 3;      # address : @storage
+                CONTRACT %liquidate (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int address))))))); # option (contract (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int address)))))))) : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : @storage
+                NIL operation; # list operation : @some : @storage
+                SWAP;       # @some : list operation : @storage
+                BALANCE;    # @balance : @some : list operation : @storage
+                SENDER;     # @sender : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : @sender : @balance : @some : list operation : @storage
+                CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : @sender : @balance : @some : list operation : @storage
+                GET 3;      # int : @sender : @balance : @some : list operation : @storage
+                PAIR;       # pair int @sender : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair int @sender : @balance : @some : list operation : @storage
+                GET 6;      # int : pair int @sender : @balance : @some : list operation : @storage
+                PAIR;       # pair int (pair int @sender) : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair int (pair int @sender) : @balance : @some : list operation : @storage
+                CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : pair int (pair int @sender) : @balance : @some : list operation : @storage
+                GET 4;      # bool : pair int (pair int @sender) : @balance : @some : list operation : @storage
+                PAIR;       # pair bool (pair int (pair int @sender)) : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair bool (pair int (pair int @sender)) : @balance : @some : list operation : @storage
+                CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : pair bool (pair int (pair int @sender)) : @balance : @some : list operation : @storage
+                CAR;        # nat : pair bool (pair int (pair int @sender)) : @balance : @some : list operation : @storage
+                PAIR;       # pair nat (pair bool (pair int (pair int @sender))) : @balance : @some : list operation : @storage
+                PUSH nat 1000000000000; # nat : pair nat (pair bool (pair int (pair int @sender))) : @balance : @some : list operation : @storage
+                PUSH mutez 1; # mutez : nat : pair nat (pair bool (pair int (pair int @sender))) : @balance : @some : list operation : @storage
+                BALANCE;    # @balance : mutez : nat : pair nat (pair bool (pair int (pair int @sender))) : @balance : @some : list operation : @storage
+                EDIV;       # option (pair nat mutez) : nat : pair nat (pair bool (pair int (pair int @sender))) : @balance : @some : list operation : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : nat : pair nat (pair bool (pair int (pair int @sender))) : @balance : @some : list operation : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : nat : pair nat (pair bool (pair int (pair int @sender))) : @balance : @some : list operation : @storage
+                CAR;        # nat : nat : pair nat (pair bool (pair int (pair int @sender))) : @balance : @some : list operation : @storage
+                MUL;        # nat : pair nat (pair bool (pair int (pair int @sender))) : @balance : @some : list operation : @storage
+                PAIR;       # pair nat (pair nat (pair bool (pair int (pair int @sender)))) : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair nat (pair nat (pair bool (pair int (pair int @sender)))) : @balance : @some : list operation : @storage
+                GET 5;      # address : pair nat (pair nat (pair bool (pair int (pair int @sender)))) : @balance : @some : list operation : @storage
+                PAIR;       # pair address (pair nat (pair nat (pair bool (pair int (pair int @sender))))) : @balance : @some : list operation : @storage
+                SELF_ADDRESS; # @self : pair address (pair nat (pair nat (pair bool (pair int (pair int @sender))))) : @balance : @some : list operation : @storage
+                PAIR;       # pair @self (pair address (pair nat (pair nat (pair bool (pair int (pair int @sender)))))) : @balance : @some : list operation : @storage
+                TRANSFER_TOKENS; # operation : list operation : @storage
+                CONS;       # list operation : @storage
+              }; # list operation : @storage
+          }; # list operation : @storage
+      }
+      {
+        IF_LEFT
+          {
+            IF_LEFT
+              {
+                SWAP;       # @storage : @parameter%repay
+                # == repay ==
+                # sp.verify(sp.sender == self.data.owner, 6) # @storage : @parameter%repay
+                DUP;        # @storage : @storage : @parameter%repay
+                DUG 2;      # @storage : @parameter%repay : @storage
+                GET 5;      # address : @parameter%repay : @storage
+                SENDER;     # @sender : address : @parameter%repay : @storage
+                COMPARE;    # int : @parameter%repay : @storage
+                EQ;         # bool : @parameter%repay : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 6; # int : @parameter%repay : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%repay : @storage
+                # sp.verify(sp.amount == sp.tez(0), 15) # @parameter%repay : @storage
+                PUSH mutez 0; # mutez : @parameter%repay : @storage
+                AMOUNT;     # @amount : mutez : @parameter%repay : @storage
+                COMPARE;    # int : @parameter%repay : @storage
+                EQ;         # bool : @parameter%repay : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 15; # int : @parameter%repay : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%repay : @storage
+                # sp.transfer((sp.self_address, (self.data.owner, (sp.fst(sp.ediv(sp.balance, sp.mutez(1)).open_some()) * 1000000000000, (self.data.borrowedTokens, (self.data.isLiquidated, (self.data.stabilityFeeTokens, (self.data.interestIndex, params))))))), sp.balance, sp.contract(sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TPair(sp.TBool, sp.TPair(sp.TInt, sp.TPair(sp.TInt, sp.TNat))))))), self.data.ovenProxyContractAddress, entry_point='repay').open_some()) # @parameter%repay : @storage
+                NIL operation; # list operation : @parameter%repay : @storage
+                DUP 3;      # @storage : list operation : @parameter%repay : @storage
+                GET 3;      # address : list operation : @parameter%repay : @storage
+                CONTRACT %repay (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int nat))))))); # option (contract (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int nat)))))))) : list operation : @parameter%repay : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : list operation : @parameter%repay : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : list operation : @parameter%repay : @storage
+                BALANCE;    # @balance : @some : list operation : @parameter%repay : @storage
+                DIG 3;      # @parameter%repay : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : @parameter%repay : @balance : @some : list operation : @storage
+                CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : @parameter%repay : @balance : @some : list operation : @storage
+                GET 3;      # int : @parameter%repay : @balance : @some : list operation : @storage
+                PAIR;       # pair int @parameter%repay : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair int @parameter%repay : @balance : @some : list operation : @storage
+                GET 6;      # int : pair int @parameter%repay : @balance : @some : list operation : @storage
+                PAIR;       # pair int (pair int @parameter%repay) : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair int (pair int @parameter%repay) : @balance : @some : list operation : @storage
+                CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : pair int (pair int @parameter%repay) : @balance : @some : list operation : @storage
+                GET 4;      # bool : pair int (pair int @parameter%repay) : @balance : @some : list operation : @storage
+                PAIR;       # pair bool (pair int (pair int @parameter%repay)) : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair bool (pair int (pair int @parameter%repay)) : @balance : @some : list operation : @storage
+                CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : pair bool (pair int (pair int @parameter%repay)) : @balance : @some : list operation : @storage
+                CAR;        # nat : pair bool (pair int (pair int @parameter%repay)) : @balance : @some : list operation : @storage
+                PAIR;       # pair nat (pair bool (pair int (pair int @parameter%repay))) : @balance : @some : list operation : @storage
+                PUSH nat 1000000000000; # nat : pair nat (pair bool (pair int (pair int @parameter%repay))) : @balance : @some : list operation : @storage
+                PUSH mutez 1; # mutez : nat : pair nat (pair bool (pair int (pair int @parameter%repay))) : @balance : @some : list operation : @storage
+                BALANCE;    # @balance : mutez : nat : pair nat (pair bool (pair int (pair int @parameter%repay))) : @balance : @some : list operation : @storage
+                EDIV;       # option (pair nat mutez) : nat : pair nat (pair bool (pair int (pair int @parameter%repay))) : @balance : @some : list operation : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : nat : pair nat (pair bool (pair int (pair int @parameter%repay))) : @balance : @some : list operation : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : nat : pair nat (pair bool (pair int (pair int @parameter%repay))) : @balance : @some : list operation : @storage
+                CAR;        # nat : nat : pair nat (pair bool (pair int (pair int @parameter%repay))) : @balance : @some : list operation : @storage
+                MUL;        # nat : pair nat (pair bool (pair int (pair int @parameter%repay))) : @balance : @some : list operation : @storage
+                PAIR;       # pair nat (pair nat (pair bool (pair int (pair int @parameter%repay)))) : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair nat (pair nat (pair bool (pair int (pair int @parameter%repay)))) : @balance : @some : list operation : @storage
+                GET 5;      # address : pair nat (pair nat (pair bool (pair int (pair int @parameter%repay)))) : @balance : @some : list operation : @storage
+                PAIR;       # pair address (pair nat (pair nat (pair bool (pair int (pair int @parameter%repay))))) : @balance : @some : list operation : @storage
+                SELF_ADDRESS; # @self : pair address (pair nat (pair nat (pair bool (pair int (pair int @parameter%repay))))) : @balance : @some : list operation : @storage
+                PAIR;       # pair @self (pair address (pair nat (pair nat (pair bool (pair int (pair int @parameter%repay)))))) : @balance : @some : list operation : @storage
+                TRANSFER_TOKENS; # operation : list operation : @storage
+                CONS;       # list operation : @storage
+              }
+              {
+                SWAP;       # @storage : @parameter%setDelegate
+                # == setDelegate ==
+                # sp.verify(sp.sender == self.data.owner, 6) # @storage : @parameter%setDelegate
+                DUP;        # @storage : @storage : @parameter%setDelegate
+                DUG 2;      # @storage : @parameter%setDelegate : @storage
+                GET 5;      # address : @parameter%setDelegate : @storage
+                SENDER;     # @sender : address : @parameter%setDelegate : @storage
+                COMPARE;    # int : @parameter%setDelegate : @storage
+                EQ;         # bool : @parameter%setDelegate : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 6; # int : @parameter%setDelegate : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%setDelegate : @storage
+                # sp.verify(sp.amount == sp.tez(0), 15) # @parameter%setDelegate : @storage
+                PUSH mutez 0; # mutez : @parameter%setDelegate : @storage
+                AMOUNT;     # @amount : mutez : @parameter%setDelegate : @storage
+                COMPARE;    # int : @parameter%setDelegate : @storage
+                EQ;         # bool : @parameter%setDelegate : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 15; # int : @parameter%setDelegate : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%setDelegate : @storage
+                # sp.set_delegate(params) # @parameter%setDelegate : @storage
+                SET_DELEGATE; # operation : @storage
+                NIL operation; # list operation : operation : @storage
+                SWAP;       # operation : list operation : @storage
+                CONS;       # list operation : @storage
+              }; # list operation : @storage
+          }
+          {
+            IF_LEFT
+              {
+                SWAP;       # @storage : @parameter%updateState
+                # == updateState ==
+                # sp.verify(sp.sender == self.data.ovenProxyContractAddress, 2) # @storage : @parameter%updateState
+                DUP;        # @storage : @storage : @parameter%updateState
+                DUG 2;      # @storage : @parameter%updateState : @storage
+                GET 3;      # address : @parameter%updateState : @storage
+                SENDER;     # @sender : address : @parameter%updateState : @storage
+                COMPARE;    # int : @parameter%updateState : @storage
+                EQ;         # bool : @parameter%updateState : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 2; # int : @parameter%updateState : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%updateState : @storage
+                # sp.verify(sp.fst(params) == sp.self_address, 13) # @parameter%updateState : @storage
+                DUP;        # @parameter%updateState : @parameter%updateState : @storage
+                CAR;        # address : @parameter%updateState : @storage
+                SELF_ADDRESS; # @self : address : @parameter%updateState : @storage
+                COMPARE;    # int : @parameter%updateState : @storage
+                EQ;         # bool : @parameter%updateState : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 13; # int : @parameter%updateState : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%updateState : @storage
+                SWAP;       # @storage : @parameter%updateState
+                # self.data.borrowedTokens = sp.fst(sp.snd(params)) # @storage : @parameter%updateState
+                UNPAIR;     # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)) : @parameter%updateState
+                CDR;        # pair (int %interestIndex) (bool %isLiquidated) : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)) : @parameter%updateState
+                DUP 3;      # @parameter%updateState : pair (int %interestIndex) (bool %isLiquidated) : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)) : @parameter%updateState
+                GET 3;      # nat : pair (int %interestIndex) (bool %isLiquidated) : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)) : @parameter%updateState
+                PAIR;       # pair nat (pair (int %interestIndex) (bool %isLiquidated)) : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)) : @parameter%updateState
+                PAIR;       # pair (pair nat (pair (int %interestIndex) (bool %isLiquidated))) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))) : @parameter%updateState
+                SWAP;       # @parameter%updateState : pair (pair nat (pair (int %interestIndex) (bool %isLiquidated))) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)))
+                # self.data.stabilityFeeTokens = sp.fst(sp.snd(sp.snd(params))) # @parameter%updateState : pair (pair nat (pair (int %interestIndex) (bool %isLiquidated))) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)))
+                DUP;        # @parameter%updateState : @parameter%updateState : pair (pair nat (pair (int %interestIndex) (bool %isLiquidated))) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)))
+                DUG 2;      # @parameter%updateState : pair (pair nat (pair (int %interestIndex) (bool %isLiquidated))) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))) : @parameter%updateState
+                GET 5;      # int : pair (pair nat (pair (int %interestIndex) (bool %isLiquidated))) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))) : @parameter%updateState
+                UPDATE 6;   # pair (pair nat (pair (int %interestIndex) (bool %isLiquidated))) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))) : @parameter%updateState
+                # self.data.interestIndex = sp.fst(sp.snd(sp.snd(sp.snd(params)))) # pair (pair nat (pair (int %interestIndex) (bool %isLiquidated))) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))) : @parameter%updateState
+                UNPAIR;     # pair nat (pair (int %interestIndex) (bool %isLiquidated)) : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)) : @parameter%updateState
+                CAR;        # nat : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)) : @parameter%updateState
+                DUP 3;      # @parameter%updateState : nat : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)) : @parameter%updateState
+                GET 7;      # int : nat : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)) : @parameter%updateState
+                # self.data.isLiquidated = sp.snd(sp.snd(sp.snd(sp.snd(params)))) # int : nat : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)) : @parameter%updateState
+                DIG 3;      # @parameter%updateState : int : nat : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))
+                GET 8;      # bool : int : nat : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))
+                SWAP;       # int : bool : nat : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))
+                PAIR;       # pair int bool : nat : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))
+                SWAP;       # nat : pair int bool : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))
+                PAIR;       # pair nat (pair int bool) : pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))
+                PAIR;       # pair (pair nat (pair int bool)) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)))
+                NIL operation; # list operation : pair (pair nat (pair int bool)) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)))
+              }
+              {
+                SWAP;       # @storage : @parameter%withdraw
+                # == withdraw ==
+                # sp.verify(sp.sender == self.data.owner, 6) # @storage : @parameter%withdraw
+                DUP;        # @storage : @storage : @parameter%withdraw
+                DUG 2;      # @storage : @parameter%withdraw : @storage
+                GET 5;      # address : @parameter%withdraw : @storage
+                SENDER;     # @sender : address : @parameter%withdraw : @storage
+                COMPARE;    # int : @parameter%withdraw : @storage
+                EQ;         # bool : @parameter%withdraw : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 6; # int : @parameter%withdraw : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%withdraw : @storage
+                # sp.verify(sp.amount == sp.tez(0), 15) # @parameter%withdraw : @storage
+                PUSH mutez 0; # mutez : @parameter%withdraw : @storage
+                AMOUNT;     # @amount : mutez : @parameter%withdraw : @storage
+                COMPARE;    # int : @parameter%withdraw : @storage
+                EQ;         # bool : @parameter%withdraw : @storage
+                IF
+                  {}
+                  {
+                    PUSH int 15; # int : @parameter%withdraw : @storage
+                    FAILWITH;   # FAILED
+                  }; # @parameter%withdraw : @storage
+                # sp.transfer((sp.self_address, (self.data.owner, (sp.fst(sp.ediv(sp.balance, sp.mutez(1)).open_some()) * 1000000000000, (self.data.borrowedTokens, (self.data.isLiquidated, (self.data.stabilityFeeTokens, (self.data.interestIndex, params))))))), sp.balance, sp.contract(sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TPair(sp.TNat, sp.TPair(sp.TNat, sp.TPair(sp.TBool, sp.TPair(sp.TInt, sp.TPair(sp.TInt, sp.TMutez))))))), self.data.ovenProxyContractAddress, entry_point='withdraw').open_some()) # @parameter%withdraw : @storage
+                NIL operation; # list operation : @parameter%withdraw : @storage
+                DUP 3;      # @storage : list operation : @parameter%withdraw : @storage
+                GET 3;      # address : list operation : @parameter%withdraw : @storage
+                CONTRACT %withdraw (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int mutez))))))); # option (contract (pair address (pair address (pair nat (pair nat (pair bool (pair int (pair int mutez)))))))) : list operation : @parameter%withdraw : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : list operation : @parameter%withdraw : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : list operation : @parameter%withdraw : @storage
+                BALANCE;    # @balance : @some : list operation : @parameter%withdraw : @storage
+                DIG 3;      # @parameter%withdraw : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : @parameter%withdraw : @balance : @some : list operation : @storage
+                CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : @parameter%withdraw : @balance : @some : list operation : @storage
+                GET 3;      # int : @parameter%withdraw : @balance : @some : list operation : @storage
+                PAIR;       # pair int @parameter%withdraw : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair int @parameter%withdraw : @balance : @some : list operation : @storage
+                GET 6;      # int : pair int @parameter%withdraw : @balance : @some : list operation : @storage
+                PAIR;       # pair int (pair int @parameter%withdraw) : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair int (pair int @parameter%withdraw) : @balance : @some : list operation : @storage
+                CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : pair int (pair int @parameter%withdraw) : @balance : @some : list operation : @storage
+                GET 4;      # bool : pair int (pair int @parameter%withdraw) : @balance : @some : list operation : @storage
+                PAIR;       # pair bool (pair int (pair int @parameter%withdraw)) : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair bool (pair int (pair int @parameter%withdraw)) : @balance : @some : list operation : @storage
+                CAR;        # pair (nat %borrowedTokens) (pair (int %interestIndex) (bool %isLiquidated)) : pair bool (pair int (pair int @parameter%withdraw)) : @balance : @some : list operation : @storage
+                CAR;        # nat : pair bool (pair int (pair int @parameter%withdraw)) : @balance : @some : list operation : @storage
+                PAIR;       # pair nat (pair bool (pair int (pair int @parameter%withdraw))) : @balance : @some : list operation : @storage
+                PUSH nat 1000000000000; # nat : pair nat (pair bool (pair int (pair int @parameter%withdraw))) : @balance : @some : list operation : @storage
+                PUSH mutez 1; # mutez : nat : pair nat (pair bool (pair int (pair int @parameter%withdraw))) : @balance : @some : list operation : @storage
+                BALANCE;    # @balance : mutez : nat : pair nat (pair bool (pair int (pair int @parameter%withdraw))) : @balance : @some : list operation : @storage
+                EDIV;       # option (pair nat mutez) : nat : pair nat (pair bool (pair int (pair int @parameter%withdraw))) : @balance : @some : list operation : @storage
+                IF_NONE
+                  {
+                    UNIT;       # unit : nat : pair nat (pair bool (pair int (pair int @parameter%withdraw))) : @balance : @some : list operation : @storage
+                    FAILWITH;   # FAILED
+                  }
+                  {}; # @some : nat : pair nat (pair bool (pair int (pair int @parameter%withdraw))) : @balance : @some : list operation : @storage
+                CAR;        # nat : nat : pair nat (pair bool (pair int (pair int @parameter%withdraw))) : @balance : @some : list operation : @storage
+                MUL;        # nat : pair nat (pair bool (pair int (pair int @parameter%withdraw))) : @balance : @some : list operation : @storage
+                PAIR;       # pair nat (pair nat (pair bool (pair int (pair int @parameter%withdraw)))) : @balance : @some : list operation : @storage
+                DUP 5;      # @storage : pair nat (pair nat (pair bool (pair int (pair int @parameter%withdraw)))) : @balance : @some : list operation : @storage
+                GET 5;      # address : pair nat (pair nat (pair bool (pair int (pair int @parameter%withdraw)))) : @balance : @some : list operation : @storage
+                PAIR;       # pair address (pair nat (pair nat (pair bool (pair int (pair int @parameter%withdraw))))) : @balance : @some : list operation : @storage
+                SELF_ADDRESS; # @self : pair address (pair nat (pair nat (pair bool (pair int (pair int @parameter%withdraw))))) : @balance : @some : list operation : @storage
+                PAIR;       # pair @self (pair address (pair nat (pair nat (pair bool (pair int (pair int @parameter%withdraw)))))) : @balance : @some : list operation : @storage
+                TRANSFER_TOKENS; # operation : list operation : @storage
+                CONS;       # list operation : @storage
+              }; # list operation : pair (pair nat (pair int bool)) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)))
+          }; # list operation : pair (pair nat (pair int bool)) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)))
+      }; # list operation : pair (pair nat (pair int bool)) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens)))
+    PAIR;       # pair (list operation) (pair (pair nat (pair int bool)) (pair (address %ovenProxyContractAddress) (pair (address %owner) (int %stabilityFeeTokens))))
+  };

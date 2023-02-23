@@ -1,0 +1,42 @@
+parameter (or (pair %get string (contract (pair string (pair timestamp nat)))) (or (nat %setNewPrice) (unit %update)));
+storage   (pair (string %harbingerAsset) (pair (timestamp %harbingerUpdateTime) (nat %harbingerValue)));
+code
+  {
+    UNPAIR;     # @parameter : @storage
+    IF_LEFT
+      {
+        # == get ==
+        # sp.transfer((self.data.harbingerAsset, (self.data.harbingerUpdateTime, self.data.harbingerValue)), sp.tez(0), sp.snd(params)) # @parameter%get : @storage
+        CDR;        # contract (pair string (pair timestamp nat)) : @storage
+        NIL operation; # list operation : contract (pair string (pair timestamp nat)) : @storage
+        SWAP;       # contract (pair string (pair timestamp nat)) : list operation : @storage
+        PUSH mutez 0; # mutez : contract (pair string (pair timestamp nat)) : list operation : @storage
+        DIG 3;      # @storage : mutez : contract (pair string (pair timestamp nat)) : list operation
+        DUP;        # @storage : @storage : mutez : contract (pair string (pair timestamp nat)) : list operation
+        GET 4;      # nat : @storage : mutez : contract (pair string (pair timestamp nat)) : list operation
+        SWAP;       # @storage : nat : mutez : contract (pair string (pair timestamp nat)) : list operation
+        DUP;        # @storage : @storage : nat : mutez : contract (pair string (pair timestamp nat)) : list operation
+        DUG 5;      # @storage : nat : mutez : contract (pair string (pair timestamp nat)) : list operation : @storage
+        GET 3;      # timestamp : nat : mutez : contract (pair string (pair timestamp nat)) : list operation : @storage
+        PAIR;       # pair timestamp nat : mutez : contract (pair string (pair timestamp nat)) : list operation : @storage
+        DUP 5;      # @storage : pair timestamp nat : mutez : contract (pair string (pair timestamp nat)) : list operation : @storage
+        CAR;        # string : pair timestamp nat : mutez : contract (pair string (pair timestamp nat)) : list operation : @storage
+        PAIR;       # pair string (pair timestamp nat) : mutez : contract (pair string (pair timestamp nat)) : list operation : @storage
+        TRANSFER_TOKENS; # operation : list operation : @storage
+        CONS;       # list operation : @storage
+      }
+      {
+        IF_LEFT
+          {
+            # == setNewPrice ==
+            # self.data.harbingerValue = params # @parameter%setNewPrice : @storage
+            UPDATE 4;   # @storage
+          }
+          {
+            DROP;       # @storage
+            # == update == # @storage
+          }; # @storage
+        NIL operation; # list operation : @storage
+      }; # list operation : @storage
+    PAIR;       # pair (list operation) @storage
+  };

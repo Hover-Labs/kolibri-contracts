@@ -1,0 +1,32 @@
+[
+  { "prim": "storage", "args": [ { "prim": "pair", "args": [ { "prim": "int", "annots": [ "%intValue" ] }, { "prim": "nat", "annots": [ "%natValue" ] } ] } ] },
+  {
+    "prim": "parameter",
+    "args": [
+      {
+        "prim": "or",
+        "args": [
+          { "prim": "unit", "annots": [ "%default" ] },
+          { "prim": "or", "args": [ { "prim": "int", "annots": [ "%intCallback" ] }, { "prim": "nat", "annots": [ "%natCallback" ] } ] }
+        ]
+      }
+    ]
+  },
+  {
+    "prim": "code",
+    "args": [
+      [
+        { "prim": "UNPAIR" },
+        {
+          "prim": "IF_LEFT",
+          "args": [
+            [ { "prim": "DROP" } ],
+            [ { "prim": "IF_LEFT", "args": [ [ { "prim": "UPDATE", "args": [ { "int": "1" } ] } ], [ { "prim": "UPDATE", "args": [ { "int": "2" } ] } ] ] } ]
+          ]
+        },
+        { "prim": "NIL", "args": [ { "prim": "operation" } ] },
+        { "prim": "PAIR" }
+      ]
+    ]
+  }
+]

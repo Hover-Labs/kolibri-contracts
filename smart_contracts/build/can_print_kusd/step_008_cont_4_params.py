@@ -1,0 +1,1 @@
+sp.address('KT1Tezooo8zzSmartPyzzSTATiCzzzzp29d1')

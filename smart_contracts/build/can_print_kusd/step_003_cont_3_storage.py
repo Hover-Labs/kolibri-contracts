@@ -1,0 +1,1 @@
+sp.record(clientCallback = sp.none, governorContractAddress = sp.address('tz1abmz7jiCV2GH2u81LRrGgAFFgvQgiDiaf'), harbingerContractAddress = sp.address('KT1Tezooo2zzSmartPyzzSTATiCzzzwqqQ4H'), maxDataDelaySec = 1800, state = 0)
