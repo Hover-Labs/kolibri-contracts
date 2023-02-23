@@ -69,12 +69,12 @@ class MinterContract(sp.Contract):
         numPeriods = timeDeltaSeconds // Constants.SECONDS_PER_COMPOUND
         newMinterInterestIndex = self.compoundWithLinearApproximation((self.data.interestIndex, (self.data.stabilityFee, numPeriods)))
 
-        # Transfer results to requester.
-        sp.transfer(newMinterInterestIndex, sp.mutez(0), param)
-
         # Update internal state.
         self.data.interestIndex = newMinterInterestIndex
         self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+
+        # Transfer results to requester.
+        sp.transfer(newMinterInterestIndex, sp.mutez(0), param)
 
     ################################################################
     # Oven Interface
@@ -134,15 +134,15 @@ class MinterContract(sp.Contract):
             newCollateralizationPercentage = self.computeCollateralizationPercentage((ovenBalance, (oraclePrice, totalOutstandingTokens)))
             sp.verify(newCollateralizationPercentage >= self.data.collateralizationPercentage, message = Errors.OVEN_UNDER_COLLATERALIZED)
 
-        # Call mint in token contract
-        self.mintTokens(tokensToBorrow, ownerAddress)
+        # Update internal state
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
         # Inform oven of new state.
         self.updateOvenState(ovenAddress, newTotalBorrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, sp.balance)
 
-        # Update internal state
-        self.data.interestIndex = newMinterInterestIndex
-        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        # Call mint in token contract
+        self.mintTokens(tokensToBorrow, ownerAddress)
 
     # repay
     @sp.entry_point
@@ -199,16 +199,16 @@ class MinterContract(sp.Contract):
             remainingStabilityFeeTokens.value = sp.nat(0)
             remainingBorrowedTokenBalance.value = sp.as_nat(borrowedTokens - sp.as_nat(tokensToRepay - newStabilityFeeTokens))
 
-        # Burn and mint tokens in Dev fund.
-        self.mintTokensToStabilityAndDevFund(stabilityFeeTokensRepaid.value)
-        self.burnTokens(tokensToRepay, ownerAddress)
+        # Update internal state
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
         # Inform oven of new state.
         self.updateOvenState(ovenAddress, remainingBorrowedTokenBalance.value, remainingStabilityFeeTokens.value, newMinterInterestIndex, isLiquidated, sp.balance)
 
-        # Update internal state
-        self.data.interestIndex = newMinterInterestIndex
-        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        # Burn and mint tokens in Dev fund.
+        self.mintTokensToStabilityAndDevFund(stabilityFeeTokensRepaid.value)
+        self.burnTokens(tokensToRepay, ownerAddress)
 
     # deposit
     @sp.entry_point
@@ -249,13 +249,13 @@ class MinterContract(sp.Contract):
         accruedStabilityFeeTokens = self.calculateNewAccruedInterest((interestIndex, (borrowedTokens, (stabilityFeeTokens, (newMinterInterestIndex)))))
         newStabilityFeeTokens = stabilityFeeTokens + accruedStabilityFeeTokens
 
-        # Intentional no-op. Pass value back to oven.
-        self.updateOvenState(ovenAddress, borrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, sp.balance)
-        
         # Update internal state
         self.data.interestIndex = newMinterInterestIndex
         self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
+        # Intentional no-op. Pass value back to oven.
+        self.updateOvenState(ovenAddress, borrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, sp.balance)
+        
     @sp.entry_point
     def withdraw(self, param):
         sp.set_type(param, OvenApi.WITHDRAW_PARAMETER_TYPE_ORACLE)
@@ -303,16 +303,16 @@ class MinterContract(sp.Contract):
             newCollateralizationPercentage = self.computeCollateralizationPercentage((newOvenBalance, (oraclePrice, totalOutstandingTokens))) 
             sp.verify(newCollateralizationPercentage >= self.data.collateralizationPercentage, message = Errors.OVEN_UNDER_COLLATERALIZED)
 
-        # Withdraw mutez to the owner.
-        sp.send(ownerAddress, mutezToWithdraw)
+        # Update internal state
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
         # Update the oven's state and return the remaining mutez to it.
         remainingMutez = sp.utils.nat_to_mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION) - mutezToWithdraw
         self.updateOvenState(ovenAddress, borrowedTokens, newStabilityFeeTokens, newMinterInterestIndex, isLiquidated, remainingMutez)
         
-        # Update internal state
-        self.data.interestIndex = newMinterInterestIndex
-        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        # Withdraw mutez to the owner.
+        sp.send(ownerAddress, mutezToWithdraw)
 
     # liquidate
     @sp.entry_point
@@ -382,15 +382,15 @@ class MinterContract(sp.Contract):
         # Mint the extra tokens in the dev fund if they were paid.
         self.mintTokensToStabilityAndDevFund(newStabilityFeeTokens + liquidationFee)
 
-        # Send collateral to liquidator.
-        sp.send(liquidatorAddress, sp.utils.nat_to_mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION))
+        # Update internal state
+        self.data.interestIndex = newMinterInterestIndex
+        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
 
         # Inform oven it is liquidated, clear owed tokens and return no collateral.
         self.updateOvenState(ovenAddress, sp.nat(0), sp.nat(0), newMinterInterestIndex, True, sp.mutez(0))
 
-        # Update internal state
-        self.data.interestIndex = newMinterInterestIndex
-        self.data.lastInterestIndexUpdateTime = self.data.lastInterestIndexUpdateTime.add_seconds(sp.to_int(numPeriods * Constants.SECONDS_PER_COMPOUND))
+        #  Send collateral to liquidator.
+        sp.send(liquidatorAddress, sp.utils.nat_to_mutez(ovenBalance // Constants.MUTEZ_TO_KOLIBRI_CONVERSION))
 
     ################################################################
     # Governance
@@ -446,25 +446,6 @@ class MinterContract(sp.Contract):
     def setCollateralizationPercentage(self, newCollateralizationPercentage):
         sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
         self.data.collateralizationPercentage = newCollateralizationPercentage
-
-    # DEPRECATED: Please use setXXXContract entrypoints instead. This entrypoint will be removed in a future update.
-    # Params: (governor (token, (ovenProxy, (stabilityFund, devFund))))
-    @sp.entry_point
-    def updateContracts(self, newParams):
-        sp.set_type(newParams, sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TPair(sp.TAddress, sp.TAddress)))))
-
-        sp.verify(sp.sender == self.data.governorContractAddress, message = Errors.NOT_GOVERNOR)
-
-        newGovernorContractAddress, pair1                                = sp.match_pair(newParams)
-        newTokenContractAddress, pair2                                   = sp.match_pair(pair1)
-        newOvenProxyContractAddress, pair3                               = sp.match_pair(pair2)
-        newStabilityFundContractAddress, newDeveloperFundContractAddress = sp.match_pair(pair3)
-
-        self.data.governorContractAddress      = newGovernorContractAddress
-        self.data.tokenContractAddress         = newTokenContractAddress
-        self.data.ovenProxyContractAddress     = newOvenProxyContractAddress       
-        self.data.stabilityFundContractAddress = newStabilityFundContractAddress
-        self.data.developerFundContractAddress = newDeveloperFundContractAddress
 
     @sp.entry_point
     def setLiquidityPoolContract(self, newLiquidityPoolContract):
@@ -650,11 +631,11 @@ if __name__ == "__main__":
 
         @sp.entry_point
         def test(self, params):
-            self.data.lambdaResult = sp.some(self.lambdaFunc(params))
+            self.data.lambdaResult = sp.some(self.lambdaFunc(self, params))
 
         @sp.entry_point
         def check(self, params, result):
-            sp.verify(self.lambdaFunc(params) == result)
+            sp.verify(self.lambdaFunc(self, params) == result)
 
     ################################################################
     # calculateNewAccruedInterest
@@ -2943,65 +2924,6 @@ if __name__ == "__main__":
             amount = sp.mutez(1),
             valid = False,
             now = sp.timestamp_from_utc_now(),
-        )
-
-    ################################################################
-    # updateContracts
-    ################################################################
-
-    @sp.add_test(name="updateContracts - updates contracts")
-    def test():
-        scenario = sp.test_scenario()
-
-        # GIVEN a Minter contract
-        governorAddress = Addresses.GOVERNOR_ADDRESS
-        minter = MinterContract(
-            governorContractAddress = governorAddress
-        )
-        scenario += minter
-
-        # WHEN updateContracts is called by the governor
-        newGovernorContractAddress = DummyContract.DummyContract().address
-        newTokenContractAddress = DummyContract.DummyContract().address
-        newOvenProxyContractAddress = DummyContract.DummyContract().address
-        newStabilityFundContractAddress = DummyContract.DummyContract().address
-        newdeveloperFundContractAddress = DummyContract.DummyContract().address
-        newContracts = (newGovernorContractAddress, (newTokenContractAddress, (newOvenProxyContractAddress, (newStabilityFundContractAddress, newdeveloperFundContractAddress))))
-        scenario += minter.updateContracts(newContracts).run(
-            sender = governorAddress,
-            now = sp.timestamp_from_utc_now(),
-        )
-
-        # THEN the contracts are updated.
-        scenario.verify(minter.data.governorContractAddress == newGovernorContractAddress)
-        scenario.verify(minter.data.tokenContractAddress == newTokenContractAddress)
-        scenario.verify(minter.data.ovenProxyContractAddress == newOvenProxyContractAddress)
-        scenario.verify(minter.data.stabilityFundContractAddress == newStabilityFundContractAddress)
-        scenario.verify(minter.data.developerFundContractAddress == newdeveloperFundContractAddress)
-
-    @sp.add_test(name="updateContracts - fails if not called by governor")
-    def test():
-        scenario = sp.test_scenario()
-
-        # GIVEN a Minter contract
-        governorAddress = Addresses.GOVERNOR_ADDRESS
-        minter = MinterContract(
-            governorContractAddress = governorAddress
-        )
-        scenario += minter
-
-        # WHEN updateContracts is called by someone other than the governor THEN the request fails
-        newGovernorContractAddress = DummyContract.DummyContract().address
-        newTokenContractAddress = DummyContract.DummyContract().address
-        newOvenProxyContractAddress = DummyContract.DummyContract().address
-        newStabilityFundContractAddress = DummyContract.DummyContract().address
-        newdeveloperFundContractAddress = DummyContract.DummyContract().address
-        newContracts = (newGovernorContractAddress, (newTokenContractAddress, (newOvenProxyContractAddress, (newStabilityFundContractAddress, newdeveloperFundContractAddress))))
-        notGovernor = Addresses.NULL_ADDRESS
-        scenario += minter.updateContracts(newContracts).run(
-            sender = notGovernor,
-            now = sp.timestamp_from_utc_now(),
-            valid = False
         )
 
     ################################################################
