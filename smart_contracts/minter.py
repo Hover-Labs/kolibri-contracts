@@ -650,11 +650,11 @@ if __name__ == "__main__":
 
         @sp.entry_point
         def test(self, params):
-            self.data.lambdaResult = sp.some(self.lambdaFunc(params))
+            self.data.lambdaResult = sp.some(self.lambdaFunc(self, params))
 
         @sp.entry_point
         def check(self, params, result):
-            sp.verify(self.lambdaFunc(params) == result)
+            sp.verify(self.lambdaFunc(self, params) == result)
 
     ################################################################
     # calculateNewAccruedInterest
