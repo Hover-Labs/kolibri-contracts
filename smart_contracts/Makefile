@@ -1,6 +1,12 @@
 SMART_PY_CLI := ~/smartpy-cli/SmartPy.sh
 OUT_DIR := ./.smartpy_out
 
+LIGO_CLI := ligo
+
+# Ensure we have a Ligo binary.
+check-ligo:
+	@type $(LIGO_CLI) >/dev/null 2>&1
+
 ###### AGGREGATE TARGETS ###### 
 
 all:
@@ -16,6 +22,7 @@ compile:
 	make compile-savings-pool
 	make compile-stability-fund
 	make compile-token
+	make compile-oracle-on-demand
 
 # TODO(keefertaylor): Write rules for all contracts, and add them here.
 test:
@@ -27,6 +34,7 @@ test:
 	make test-stability-fund
 	make test-token	
 	make test-e2e
+	make test-oracle-on-demand
 
 ###### TESTS ###### 
 
@@ -113,3 +121,9 @@ compile-token:
 	$(SMART_PY_CLI) compile token.py $(OUT_DIR)
 	cp $(OUT_DIR)/token/step_000_cont_0_contract.tz token.tz
 	rm -rf $(OUT_DIR)	
+
+compile-oracle-on-demand: check-ligo
+	$(LIGO_CLI) compile contract oracle-on-demand.jsligo -m KolibriOracleAdapter -o oracle-on-demand.tz
+
+test-oracle-on-demand: check-ligo
+	$(LIGO_CLI) run test oracle-on-demand.jsligo

@@ -31,6 +31,11 @@ const HARBINGER_NORMALIZER = IS_MAINNET
   ? 'KT1AdbYiPYb5hDuEuVrfxmFehtnBCXv4Np7r'
   : 'KT1SUP27JhX24Kvr11oUdWswk7FnCW78ZyUn'
 
+// UBINETIC On-Demand Proxy Contract to call on.
+const UBINETIC_ON_DEMAND_PROXY = IS_MAINNET
+  ? 'KT1B74ywpG3nX2F3ZgpYi4MnsyuoYyQtQTAn'
+  : null // FIXME: No contract in ghostnet
+
 // Key which will deploy the contracts.
 const DEPLOYER_PRIVATE_KEY =
   'edsk3aeocSRnxdWVFm3ShaALUeCTy4PgL6JdeGvzbLjX5jn8D9ZXw5'
@@ -123,6 +128,9 @@ async function main() {
   )
   const oracleSource = loadContract(
     `${__dirname}/../../smart_contracts/oracle.tz`,
+  )
+  const oracleOnDemandSource = loadContract(
+    `${__dirname}/../../smart_contracts/oracle-on-demand.tz`,
   )
   console.log('Contracts loaded.')
   console.log('')
@@ -245,11 +253,28 @@ async function main() {
   console.log('Deployed.')
   console.log('')
 
+  // FIXME: Outdated oracle
+  // console.log('>>> [8/9] Deploying Oracle Contract...')
+  // // Constants:
+  // // clientCallback: None
+  // // state: 0 (IDLE)
+  // const oracleStorage = `(Pair(Pair None "${keystore.publicKeyHash}")(Pair "${HARBINGER_NORMALIZER}"(Pair ${MAX_DATA_DELAY_SECS} 0)))`
+  // counter++
+  // const oracleDeployResult = await deployContract(
+  //   oracleSource,
+  //   oracleStorage,
+  //   keystore,
+  //   counter,
+  //   NODE_ADDRESS,
+  // )
+  // console.log('Deployed.')
+  // console.log('')
+
   console.log('>>> [8/9] Deploying Oracle Contract...')
-  // Constants:
-  // clientCallback: None
-  // state: 0 (IDLE)
-  const oracleStorage = `(Pair(Pair None "${keystore.publicKeyHash}")(Pair "${HARBINGER_NORMALIZER}"(Pair ${MAX_DATA_DELAY_SECS} 0)))`
+  // TODO: Check if this format is correct
+  // Alt format will be: 
+  // `(Pair "${UBINETIC_ON_DEMAND_PROXY}" ${MAX_DATA_DELAY_SECS} "${keystore.publicKeyHash}")`
+  const oracleStorage = `(Pair "${UBINETIC_ON_DEMAND_PROXY}" (Pair ${MAX_DATA_DELAY_SECS} "${keystore.publicKeyHash}"))`
   counter++
   const oracleDeployResult = await deployContract(
     oracleSource,

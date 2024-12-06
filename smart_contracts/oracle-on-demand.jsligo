@@ -1,0 +1,515 @@
+// -------------------------------------
+// Test mocks the Kolibri Oracle Adapter
+// -------------------------------------
+// #region
+export namespace Mocks {
+
+    // This is a mock callback receiver
+    // It is used to test the adapter response as a callback contract
+    //    which accepts a single nat as a parameter
+    export namespace FakeCallbackReceiver {
+        export type storage = nat;
+
+        type @return = [list<operation>, storage];
+
+        //  Disallow direct transfers.
+        @entry
+        function @default(_: unit, s: storage): @return {
+          Assert.Error.assert(Tezos.get_amount() == 0mutez, "DONT_SEND_TEZOS");
+          return [[], s]
+        }
+        // Callback which receives a single nat and writes it to the contract storage
+        @entry
+        function receivePriceCallback(value: nat, _s: storage): @return {
+            return [[], value]
+        }
+        // Additional view just for easyness of looking into the contract storage
+        @view
+        function getPrice(_:unit, s: storage): nat {
+            return s;
+        }
+    }
+    // This is a mock of Ubinetic on-demand oracle
+    export namespace FakeOnDemandOracle {
+        type priceType = @layout("comb") {
+            price: nat;
+            last_update_timestamp: timestamp; 
+        };
+
+        export type storage = {
+            prices: big_map<string, priceType>;
+        };
+
+        type @return = [list<operation>, storage];
+
+        type updateParam = @layout("comb") {
+            asset: string;
+            price: nat;
+            updatedAt: timestamp;
+        };
+        // Target view which used to retrieve price from the oracle
+        @view
+        function get_price_with_timestamp(asset: string, s: storage): priceType {
+            return match(Big_map.find_opt (asset, s.prices)) {
+                when(Some(value)): value;
+                when(None): failwith("No value.")
+            };
+        }
+        // Update price enrtypoint just for testing purposes
+        @entry
+        function updatePrice(param: updateParam, s: storage): @return {
+            const priceEntry: priceType = { 
+                price: param.price, 
+                last_update_timestamp: param.updatedAt 
+            };
+            Big_map.update(param.asset, Some(priceEntry), s.prices);
+            return [[], s]
+        }
+    }
+}
+// #endregion
+// -------------------------------------
+
+
+namespace ErrorCodes {
+  // -----------
+  // Error codes
+  // NOTE see: ./common/errors.py for full list of error codes
+  // -----------
+  // #region
+  export const amount_not_allowed = "15";
+  export const not_oracle = "3";
+  export const not_governor = "4";
+  export const stale_data = "17";
+  // #endregion
+  // -----------
+}
+
+namespace Utils {
+  // -----
+  // Utils
+  // -----
+  // #region
+  // Zero timestamp for casting
+  export const zeroTimestamp: timestamp = 0 as timestamp;
+  // Empty list of operations constant
+  export const no_operations: list<operation> = [];
+  // Disallows transfers of tez to the contract
+  @inline
+  export const non_tez_operation = (_: unit): unit => 
+    Assert.Error.assert(Tezos.get_amount() == 0mutez, ErrorCodes.amount_not_allowed);
+  // Asserts that the caller is the governor
+  @inline
+  export const only_governor = (governor: address): unit => 
+    Assert.Error.assert(Tezos.get_sender() == governor, ErrorCodes.not_governor);
+  // #endregion
+  // -----
+}
+
+namespace UbineticOracleUtils {
+  // -----------------------------------
+  // Ubinetic oracle constants and types
+  // -----------------------------------
+  // #region
+  // Asset code which is used to retrieve price
+  const asset_code = "XTZUSDT";
+  // Oracle view response type
+  type oracleResponse = @layout("comb"){ 
+    price: nat;
+    last_update_timestamp: timestamp;
+  };
+  // #endregion
+  // -----------------------------------
+
+  @inline
+  function timestampFromMilliseconds(tsAsMilliseconds: timestamp): timestamp {
+    const tsAsIntWoMilliseconds: int = (tsAsMilliseconds - Utils.zeroTimestamp) / 1000;
+    const ts: timestamp = tsAsIntWoMilliseconds + Utils.zeroTimestamp;
+    return ts;
+  }
+  
+  // Retrieve price from oracle
+  @inline
+  export function retrieveXTZtoUSDTPrice(oracleContract: address, delay: nat): nat {
+    // Retrieve data from oracle view
+    const response: oracleResponse = Option.value_with_error(
+      ErrorCodes.not_oracle, // If asked contract has not view which fits request parameters.
+      Tezos.call_view(
+        "get_price_with_timestamp", 
+        asset_code, 
+        oracleContract
+      )
+    );
+    // Assert data is recent. Checks if response timestamp is not older than delay in seconds.
+    Assert.Error.assert(
+      timestampFromMilliseconds(response.last_update_timestamp) >= Tezos.get_now() - int(delay), 
+      ErrorCodes.stale_data
+    );
+    return response.price;
+  }
+}
+
+namespace KolibriUtils {
+  // -------------------------
+  // Kolibri utility constants
+  // -------------------------
+  // #region
+  export const mutez_to_kolibri_conversion = 1000000000000n;
+  // #endregion
+  // -------------------------
+}
+
+
+export namespace KolibriOracleAdapter {
+  // ----------------------------
+  // Storage Data and Return type
+  // ----------------------------
+  // #region
+  export type storage = {
+    oracleProxyContractAddress : address,
+    maxDataDelaySec            : nat,
+    governorContractAddress    : address,
+  };
+  type @return = [list<operation>, storage];
+  // #endregion
+  // ----------------------------
+
+  // ----------
+  // Governance 
+  // ----------
+  // #region
+
+  //  Update the max data delay.
+  //  Parameters:
+  //    newMaxDataDelaySec The amount of seconds of maximum possible delay of data timestamp.
+  @entry
+  function setMaxDataDelaySec(newMaxDataDelaySec: nat, s: storage): @return {
+    // Verify there is no tez in transfer
+    Utils.non_tez_operation();
+    // Verify that the caller is the governor
+    Utils.only_governor(s.governorContractAddress);
+    return [
+      Utils.no_operations, // No any additional calls
+      {
+        ...s, 
+        maxDataDelaySec: newMaxDataDelaySec // Update max data delay in storage
+      }
+    ];
+  };
+
+  //  Update the governor contract.
+  //  Parameters:
+  //    newGovernorContractAddress The address of new Governance contract.
+  @entry
+  function setGovernorContract(newGovernorContractAddress: address, s: storage): @return {
+    // Verify there is no tez in transfer
+    Utils.non_tez_operation();
+    // Verify that the caller is the governor
+    Utils.only_governor(s.governorContractAddress);
+    return [
+      Utils.no_operations, // No any additional calls
+      {
+        ...s, 
+        governorContractAddress: newGovernorContractAddress // Update governor address in storage
+      }
+    ];
+  };
+  // #endregion
+  // ----------
+
+  // ----------------
+  // Public Interface
+  // ----------------
+  // #region
+  
+  //  Retrieve the price of the XTZ-USDT pair.
+  //  Parameters:
+  //    callback: A callback to call with the result. Parameter to callback is a single nat.
+  @entry
+  function getXtzUsdRate(callback: contract<nat>, s: storage): @return {
+    // Verify there is no tez in transfer
+    Utils.non_tez_operation();
+    // Get and validate correctness of the price
+    const priceValue = UbineticOracleUtils.retrieveXTZtoUSDTPrice(
+      s.oracleProxyContractAddress, 
+      s.maxDataDelaySec
+    );
+    // Convert price to Kolibri precision
+    const callbackResult: nat = priceValue * KolibriUtils.mutez_to_kolibri_conversion;
+    return [
+      // Call client callback with prepared result
+      [Tezos.Next.Operation.transaction(callbackResult, 0mutez, callback)], 
+      s
+    ];
+  };
+
+  //  Disallow direct transfers.
+  @entry
+  function @default(_: unit, s: storage): @return {
+    // Verify there is no tez in transfer
+    Utils.non_tez_operation();
+    // Nothing will happen on default
+    return [Utils.no_operations, s]
+  }
+  // #endregion
+  // ----------------
+}
+
+// ---------------
+// Test Constants
+// ---------------
+// #region
+const xtzValue = 2310000n;
+const twoDays = 86_400 * 2
+// NOTE: the Ubinetic oracle store the timestamps in non-standard way, with milliseconds. 
+// Highlighted here: https://discord.com/channels/790468417844412456/790469864934211604/1314628665669058630
+// Issue opened here: https://github.com/ecadlabs/taquito/issues/3093
+const nowInMilliseconds = ((Tezos.get_now() - Utils.zeroTimestamp) * 1000) + Utils.zeroTimestamp;
+const twoDaysEarlierInMilliseconds = ((Tezos.get_now() - twoDays) - Utils.zeroTimestamp) * 1000 + Utils.zeroTimestamp;
+const mockedOracle = contract_of(Mocks.FakeOnDemandOracle);
+const oracleStorage: Mocks.FakeOnDemandOracle.storage = {
+    prices: Big_map.literal([
+      ["XTZUSDT", {price: xtzValue, last_update_timestamp: nowInMilliseconds}],
+    ])
+  };
+
+const oracleStorageOutdated: Mocks.FakeOnDemandOracle.storage = {
+    prices: Big_map.literal([
+      ["XTZUSDT", {price: xtzValue, last_update_timestamp: twoDaysEarlierInMilliseconds}],
+    ])
+  };
+const mockedCallbackReceiver = contract_of(Mocks.FakeCallbackReceiver);
+const callbackStorage : Mocks.FakeCallbackReceiver.storage = 0n;
+const adapter = contract_of(KolibriOracleAdapter);
+
+const admin_account = Test.Next.Account.address(0n);
+const user_account = Test.Next.Account.address(1n);
+
+
+// #endregion
+
+// --------------
+// Test Functions
+// --------------
+// #region
+
+// -------------
+// getXtzUsdRate
+// -------------
+function test_with_amount(): unit {
+  Test.Next.IO.log("getXtzUsdRate - fails when called with an amount");
+  const fakeOracle = Test.Next.Originate.contract(
+    mockedOracle, 
+    oracleStorage, 
+    0mutez
+  );
+  const adapterStorage: KolibriOracleAdapter.storage = {
+    oracleProxyContractAddress: Test.Next.Typed_address.to_address(fakeOracle.taddr),
+    maxDataDelaySec: 999999n,
+    governorContractAddress: admin_account,
+  };
+  const adapterContract = Test.Next.Originate.contract(
+    adapter,
+    adapterStorage, 
+    0mutez
+  );
+  const callbackContract = Test.Next.Originate.contract(
+    mockedCallbackReceiver,
+    callbackStorage, 
+    0mutez
+  );
+
+  const callback: contract<nat> = Test.Next.Typed_address.get_entrypoint("receivePriceCallback", callbackContract.taddr);
+  const result = Test.Next.Contract.transfer(Test.Next.Typed_address.get_entrypoint("getXtzUsdRate", adapterContract.taddr), callback, 1tez);
+  match(result) {
+    when(Fail(_x)): Test.Next.IO.log("[Success] Failed as expected");
+    when(Success(_s)): failwith("[Fail] This should not succeed")
+  };
+}
+
+function test_retrieve(): unit {
+  Test.Next.IO.log("getXtzUsdRate - retrieves correct value");
+  const fakeOracle = Test.Next.Originate.contract(
+    mockedOracle, 
+    oracleStorage, 
+    0mutez
+  );
+  const adapterStorage: KolibriOracleAdapter.storage = {
+    oracleProxyContractAddress: Test.Next.Typed_address.to_address(fakeOracle.taddr),
+    maxDataDelaySec: 60n * 30n,
+    governorContractAddress: admin_account,
+  };
+  const adapterContract = Test.Next.Originate.contract(
+    adapter,
+    adapterStorage, 
+    0mutez
+  );
+  const callbackContract = Test.Next.Originate.contract(
+    mockedCallbackReceiver,
+    callbackStorage, 
+    0mutez
+  );
+
+  const callback: contract<nat> = Test.Next.Typed_address.get_entrypoint("receivePriceCallback", callbackContract.taddr);
+  const result = Test.Next.Contract.transfer(Test.Next.Typed_address.get_entrypoint("getXtzUsdRate", adapterContract.taddr), callback, 0mutez);
+  match(result) {
+    when(Fail(_x)): failwith("[Fail] This should not fail");
+    when(Success(_s)): Test.Next.IO.log("[Success] Succeed as expected");
+  };
+  const expectedValue = xtzValue * KolibriUtils.mutez_to_kolibri_conversion;
+  return Assert.assert(Test.Next.Typed_address.get_storage(callbackContract.taddr) == expectedValue);
+}
+
+function test_outdated_retrieve(): unit {
+  Test.Next.IO.log("getXtzUsdRate - failed to retrieve outdated value");
+  const fakeOracle = Test.Next.Originate.contract(
+    mockedOracle, 
+    oracleStorageOutdated, 
+    0mutez
+  );
+  const adapterStorage: KolibriOracleAdapter.storage = {
+    oracleProxyContractAddress: Test.Next.Typed_address.to_address(fakeOracle.taddr),
+    maxDataDelaySec: 60n * 30n,
+    governorContractAddress: admin_account,
+  };
+  const adapterContract = Test.Next.Originate.contract(
+    adapter,
+    adapterStorage, 
+    0mutez
+  );
+  const callbackContract = Test.Next.Originate.contract(
+    mockedCallbackReceiver,
+    callbackStorage, 
+    0mutez
+  );
+
+  const callback: contract<nat> = Test.Next.Typed_address.get_entrypoint("receivePriceCallback", callbackContract.taddr);
+  const result = Test.Next.Contract.transfer(Test.Next.Typed_address.get_entrypoint("getXtzUsdRate", adapterContract.taddr), callback, 0mutez);
+  match(result) {
+    when(Fail(_x)): Test.Next.IO.log("[Success] Failed as expected");
+    when(Success(_s)): failwith("[Fail] This should not succeed")
+  };
+}
+// -------
+// default
+// -------
+function test_default(): unit {
+  Test.Next.IO.log("default - fails when called with an amount");
+  const adapterStorage: KolibriOracleAdapter.storage = {
+    oracleProxyContractAddress: user_account, // we don't care here
+    maxDataDelaySec: 60n * 30n,
+    governorContractAddress: admin_account,
+  };
+  const adapterContract = Test.Next.Originate.contract(
+    adapter,
+    adapterStorage, 
+    0mutez
+  );
+  const result = Test.Next.Contract.transfer(Test.Next.Typed_address.get_entrypoint("default", adapterContract.taddr), unit, 1mutez);
+  match(result) {
+    when(Fail(_x)): Test.Next.IO.log("[Success] Failed as expected");
+    when(Success(_s)): failwith("[Fail] This should not succeed")
+  };
+}
+
+// ------------------
+// setMaxDataDelaySec
+// ------------------
+function test_governor_set_delay(): unit {
+  Test.Next.IO.log("setMaxDataDelaySec - succeeds when called by governor");
+  Test.Next.State.set_source(admin_account);
+  const adapterStorage: KolibriOracleAdapter.storage = {
+    oracleProxyContractAddress: user_account,
+    maxDataDelaySec: 60n * 30n,
+    governorContractAddress: admin_account,
+  };
+  const adapterContract = Test.Next.Originate.contract(
+    adapter,
+    adapterStorage, 
+    0mutez
+  );
+  const newDelay = 1n;
+  const result = Test.Next.Contract.transfer(Test.Next.Typed_address.get_entrypoint("setMaxDataDelaySec", adapterContract.taddr), newDelay, 0mutez);
+ match(result) {
+    when(Fail(_x)): failwith("[Fail] This should not fail");
+    when(Success(_s)): Test.Next.IO.log("[Success] Succeed as expected");
+  };
+  return Assert.assert(Test.Next.Typed_address.get_storage(adapterContract.taddr).maxDataDelaySec == newDelay);
+}
+
+function test_not_governor_set_delay(): unit {
+  Test.Next.IO.log("setMaxDataDelaySec - fails when not called by governor");
+  Test.Next.State.set_source(user_account);
+  const adapterStorage: KolibriOracleAdapter.storage = {
+    oracleProxyContractAddress: user_account,
+    maxDataDelaySec: 60n * 30n,
+    governorContractAddress: admin_account,
+  };
+  const adapterContract = Test.Next.Originate.contract(
+    adapter,
+    adapterStorage, 
+    0mutez
+  );
+  const result = Test.Next.Contract.transfer(Test.Next.Typed_address.get_entrypoint("setMaxDataDelaySec", adapterContract.taddr), 0n, 0mutez);
+  match(result) {
+    when(Fail(_x)): Test.Next.IO.log("[Success] Failed as expected");
+    when(Success(_s)): failwith("[Fail] This should not succeed")
+  };
+}
+
+// -------------------
+// setGovernorContract
+// -------------------
+function test_governor_set_governor(): unit {
+  Test.Next.IO.log("setGovernorContract - succeeds when called by governor");
+  Test.Next.State.set_source(admin_account);
+  const adapterStorage: KolibriOracleAdapter.storage = {
+    oracleProxyContractAddress: user_account,
+    maxDataDelaySec: 60n * 30n,
+    governorContractAddress: admin_account,
+  };
+  const adapterContract = Test.Next.Originate.contract(
+    adapter,
+    adapterStorage, 
+    0mutez
+  );
+  const newGovernor = user_account;
+  const result = Test.Next.Contract.transfer(Test.Next.Typed_address.get_entrypoint("setGovernorContract", adapterContract.taddr), newGovernor, 0mutez);
+  match(result) {
+    when(Fail(_x)): failwith("[Fail] This should not fail");
+    when(Success(_s)): Test.Next.IO.log("[Success] Succeed as expected");
+  };
+  return Assert.assert(Test.Next.Typed_address.get_storage(adapterContract.taddr).governorContractAddress == newGovernor);
+}
+
+function test_not_governor_set_governor(): unit {
+  Test.Next.IO.log("setGovernorContract - fails when not called by governor");
+  Test.Next.State.set_source(user_account);
+  const adapterStorage: KolibriOracleAdapter.storage = {
+    oracleProxyContractAddress: user_account,
+    maxDataDelaySec: 60n * 30n,
+    governorContractAddress: admin_account,
+  };
+  const adapterContract = Test.Next.Originate.contract(
+    adapter,
+    adapterStorage, 
+    0mutez
+  );
+  const result = Test.Next.Contract.transfer(Test.Next.Typed_address.get_entrypoint("setGovernorContract", adapterContract.taddr), user_account, 0mutez);
+  match(result) {
+    when(Fail(_x)): Test.Next.IO.log("[Success] Failed as expected");
+    when(Success(_s)): failwith("[Fail] This should not succeed")
+  };
+}
+// #endregion
+
+// #region Run Tests
+const test1 = test_default();
+const test2 = test_retrieve();
+const test3 = test_governor_set_delay();
+const test4 = test_governor_set_governor();
+const test5 = test_with_amount();
+const test6 = test_not_governor_set_delay();
+const test7 = test_not_governor_set_governor();
+const test8 = test_outdated_retrieve();
+// #endregion
